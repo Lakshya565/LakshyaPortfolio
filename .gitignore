@@ -1,0 +1,19 @@
+# Dependencies and generated output
+web/node_modules/
+web/.next/
+web/out/
+web/coverage/
+web/.vercel/
+web/*.tsbuildinfo
+web/next-env.d.ts
+
+# Local configuration and logs
+.env*
+!.env.example
+*.log
+
+# Editor and operating-system files
+.DS_Store
+Thumbs.db
+.idea/
+
