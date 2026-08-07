@@ -6,6 +6,7 @@ const requiredFields: readonly SiteProfileField[] = [
   "name",
   "headline",
   "shortIntro",
+  "location",
 ];
 
 export function getSiteProfileValidationIssues(
@@ -23,4 +24,3 @@ export function assertValidSiteProfile(profile: SiteProfile): void {
     throw new Error(`Invalid site profile:\n- ${issues.join("\n- ")}`);
   }
 }
-

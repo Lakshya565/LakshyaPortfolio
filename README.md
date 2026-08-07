@@ -2,7 +2,7 @@
 
 A static-first personal portfolio showcasing software, AI, embedded, and hardware projects through detailed case studies and an eventual atmospheric sci-fi circuit interface.
 
-Phase 0 establishes the repository and application foundation. The current page is intentionally minimal; project content, case-study routes, and the interactive circuit scene belong to later approved phases.
+Phases 0 and 1 establish the repository, application, and validated local content foundation. The current page is intentionally minimal; case-study routes and the interactive circuit scene belong to later approved phases.
 
 ## Architecture
 
@@ -13,6 +13,8 @@ Phase 0 establishes the repository and application foundation. The current page 
 - Vercel is the intended host, but no hosted project has been created yet.
 
 The decision and tradeoffs are recorded in [`docs/decisions/0001-static-content-architecture.md`](docs/decisions/0001-static-content-architecture.md). Product requirements and phase gates live in [`docs/portfolio-overview.md`](docs/portfolio-overview.md) and [`docs/portfolio-implementation-phases.md`](docs/portfolio-implementation-phases.md).
+
+Content conventions and publication checks are documented in [`docs/content-authoring.md`](docs/content-authoring.md).
 
 ## Prerequisites
 
@@ -40,6 +42,7 @@ Run these from `web/`:
 |---|---|
 | `npm.cmd run dev` | Start the local development server. |
 | `npm.cmd run validate:content` | Validate the local site-content boundary. |
+| `npm.cmd run validate:content:release` | Enforce final publication readiness; expected to fail while approved placeholders remain. |
 | `npm.cmd run lint` | Run ESLint. |
 | `npm.cmd run typecheck` | Run TypeScript without emitting files. |
 | `npm.cmd test` | Run focused unit tests once. |
@@ -53,7 +56,7 @@ Phase 0 verification does not require starting the development server or opening
 ```text
 web/
   app/                 Next.js routes and global styles
-  content/             Canonical local portfolio content
+  content/             Canonical manifests and constrained MDX case studies
   lib/content/         Content validation and access
   scripts/             Repository validation entry points
   tests/               Focused unit tests
@@ -64,4 +67,4 @@ docs/
 
 ## Deferred inputs
 
-The GitHub URL, LinkedIn URL, public email, final Cisco omissions, and assigned Vercel URL are intentionally deferred. The planning documents record when they must be requested. Temporary values must never reach a production deployment.
+The GitHub URL, LinkedIn URL, public email, final Cisco omissions, and assigned Vercel URL are intentionally deferred. The contact entries are typed pending records with no fake URLs. Release validation prevents them and all other placeholder content from reaching a production deployment.

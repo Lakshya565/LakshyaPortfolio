@@ -10,6 +10,7 @@ const validProfile: SiteProfile = {
   name: "Lakshya Agarwal",
   headline: "Computer Engineering student.",
   shortIntro: "Building across software and hardware.",
+  location: "UIUC",
 };
 
 describe("site profile validation", () => {
@@ -23,12 +24,14 @@ describe("site profile validation", () => {
       name: " ",
       headline: "",
       shortIntro: "\n",
+      location: " ",
     };
 
     expect(getSiteProfileValidationIssues(invalidProfile)).toEqual([
       "name must not be empty",
       "headline must not be empty",
       "shortIntro must not be empty",
+      "location must not be empty",
     ]);
   });
 

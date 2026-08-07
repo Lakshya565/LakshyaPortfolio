@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675" role="img" aria-labelledby="title description">
+  <title id="title">Cisco system diagram placeholder</title>
+  <desc id="description">A temporary dark grid with connected green modules.</desc>
+  <rect width="1200" height="675" fill="#07100d"/>
+  <path d="M120 338h240m120 0h240m120 0h240" stroke="#38d996" stroke-width="6" stroke-dasharray="16 14"/>
+  <g fill="#0d2019" stroke="#38d996" stroke-width="3">
+    <rect x="80" y="258" width="280" height="160" rx="18"/>
+    <rect x="460" y="258" width="280" height="160" rx="18"/>
+    <rect x="840" y="258" width="280" height="160" rx="18"/>
+  </g>
+  <g fill="#d8fff0" font-family="Segoe UI, sans-serif" font-size="28" text-anchor="middle">
+    <text x="220" y="346">Local reasoning</text>
+    <text x="600" y="346">Runbook assembly</text>
+    <text x="980" y="346">Evaluation loop</text>
+  </g>
+</svg>
+

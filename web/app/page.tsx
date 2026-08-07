@@ -1,7 +1,11 @@
-import { getSiteProfile } from "@/lib/content/get-site-profile";
+import {
+  getContentFoundationSummary,
+  getSiteProfile,
+} from "@/lib/content/get-site-profile";
 
 export default function Home() {
   const profile = getSiteProfile();
+  const contentSummary = getContentFoundationSummary();
 
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-5xl items-center px-6 py-16 sm:px-10 lg:px-16">
@@ -22,8 +26,10 @@ export default function Home() {
           {profile.shortIntro}
         </p>
         <div className="mt-10 border-l border-emerald-400/40 pl-5 text-sm leading-6 text-slate-400">
-          The content system, case studies, and atmospheric circuit interface will
-          arrive in their approved implementation phases.
+          Content foundation: {contentSummary.projectCount} planned projects, {" "}
+          {contentSummary.caseStudyCount} case-study drafts, and {" "}
+          {contentSummary.archiveCount} substantial archive cards. Routes and the
+          atmospheric circuit interface remain in later approved phases.
         </div>
       </section>
     </main>

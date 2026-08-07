@@ -163,10 +163,10 @@ Create the typed, version-controlled content system that represents both sparse 
 #### Representative content
 
 - Add typed placeholder metadata for every intended public project.
-- Create representative MDX for a minimal archive project and a rich featured project.
+- Create representative MDX for a minimal supporting case study and a rich featured case study; archive cards intentionally have no MDX route.
 - Add long-title, empty-optional, multiple-metric, and asset-heavy fixtures.
 - Add structured skills and About placeholders without resumes or a duplicate Cisco experience block.
-- Add visibly marked temporary GitHub, LinkedIn, and email placeholders that production validation rejects until Lakshya supplies the final values.
+- Add typed pending GitHub, LinkedIn, and email slots with `href: null`; release validation rejects the pending inputs until Lakshya supplies final values, while development builds remain usable.
 - Mark unapproved/unfinished text so a production validation mode rejects it.
 
 #### Validation tool
@@ -798,7 +798,7 @@ Completion requires production verification and handoff documentation; a provide
 
 ## Deferred input checkpoints
 
-- Phase 1 may use clearly marked GitHub, LinkedIn, and email placeholders; production validation must reject them.
+- Phase 1 uses typed pending GitHub, LinkedIn, and email slots with no fake URLs; release validation rejects them until final values are supplied.
 - Before Phase 8, request the real public URLs/email and Lakshya's final Cisco omission list.
 - During Phase 10, capture the assigned Vercel URL for canonical metadata.
 - Cisco appears only as a case study, not as a duplicate standalone experience feature.
