@@ -681,10 +681,12 @@ All listed projects will appear publicly, but forcing a full case-study template
 
 These values are intentionally deferred and must be requested before final content/publication work:
 
-- Exact GitHub profile URL.
-- Exact LinkedIn profile URL.
-- Public contact email address.
 - Final Cisco omissions, including any customer names, metrics, screenshots, diagrams, repositories, or technical details Lakshya chooses not to publish.
 - Vercel production URL after the project is created, for canonical metadata and social previews.
+
+The public contact inputs were resolved before Phase 3: GitHub is
+`https://github.com/Lakshya565`, LinkedIn is
+`https://www.linkedin.com/in/lakshya-agarwal-b43515317/`, and email is
+`lakshya6@illinois.edu`.
 
 Temporary placeholders may exist only in development content. They must be visibly marked and production validation must prevent placeholder URLs or email addresses from shipping.

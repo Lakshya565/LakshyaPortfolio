@@ -13,22 +13,19 @@ export const socialLinks = [
   {
     kind: "github",
     label: "GitHub",
-    status: "pending",
-    href: null,
-    requestedInput: "Lakshya's public GitHub profile URL",
+    status: "published",
+    href: "https://github.com/Lakshya565",
   },
   {
     kind: "linkedin",
     label: "LinkedIn",
-    status: "pending",
-    href: null,
-    requestedInput: "Lakshya's public LinkedIn profile URL",
+    status: "published",
+    href: "https://www.linkedin.com/in/lakshya-agarwal-b43515317/",
   },
   {
     kind: "email",
     label: "Email",
-    status: "pending",
-    href: null,
-    requestedInput: "Lakshya's public contact email address",
+    status: "published",
+    href: "mailto:lakshya6@illinois.edu",
   },
 ] as const satisfies readonly SocialLink[];

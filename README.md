@@ -2,7 +2,10 @@
 
 A static-first personal portfolio showcasing software, AI, embedded, and hardware projects through detailed case studies and an eventual atmospheric sci-fi circuit interface.
 
-Phases 0 and 1 establish the repository, application, and validated local content foundation. The current page is intentionally minimal; case-study routes and the interactive circuit scene belong to later approved phases.
+Phases 0 through 3 establish the repository, validated local content foundation,
+five statically generated case-study routes, and a conventionally navigable
+responsive site shell. The interactive circuit scene and final visual polish
+belong to later approved phases.
 
 ## Architecture
 
@@ -10,6 +13,7 @@ Phases 0 and 1 establish the repository, application, and validated local conten
 - Version-controlled local content with build-time validation.
 - Server Components by default; narrowly scoped Client Components only when interaction requires them.
 - No runtime API, database, authentication, analytics, or secrets.
+- Published case studies prerender at `/projects/<slug>` from explicit local MDX imports; unknown and archive-only slugs return 404.
 - Vercel is the intended host, but no hosted project has been created yet.
 
 The decision and tradeoffs are recorded in [`docs/decisions/0001-static-content-architecture.md`](docs/decisions/0001-static-content-architecture.md). Product requirements and phase gates live in [`docs/portfolio-overview.md`](docs/portfolio-overview.md) and [`docs/portfolio-implementation-phases.md`](docs/portfolio-implementation-phases.md).
@@ -49,7 +53,8 @@ Run these from `web/`:
 | `npm.cmd run build` | Create the production build and report route rendering mode. |
 | `npm.cmd run check` | Run validation, lint, type checking, and tests. |
 
-Phase 0 verification does not require starting the development server or opening a browser.
+Phase 3 verification uses focused offline checks and a production build; it does
+not require starting a persistent development server.
 
 ## Current structure
 
@@ -57,7 +62,8 @@ Phase 0 verification does not require starting the development server or opening
 web/
   app/                 Next.js routes and global styles
   content/             Canonical manifests and constrained MDX case studies
-  lib/content/         Content validation and access
+  lib/content/         Content validation, normalization, and queries
+  lib/metadata/        Metadata projections from canonical content
   scripts/             Repository validation entry points
   tests/               Focused unit tests
   types/               Shared content contracts
@@ -67,4 +73,7 @@ docs/
 
 ## Deferred inputs
 
-The GitHub URL, LinkedIn URL, public email, final Cisco omissions, and assigned Vercel URL are intentionally deferred. The contact entries are typed pending records with no fake URLs. Release validation prevents them and all other placeholder content from reaching a production deployment.
+The public GitHub, LinkedIn, and email values are now configured. Final Cisco
+omissions and the assigned Vercel URL remain deferred. Release validation still
+prevents placeholder project content and media from reaching a production
+deployment.

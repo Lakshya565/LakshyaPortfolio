@@ -798,8 +798,8 @@ Completion requires production verification and handoff documentation; a provide
 
 ## Deferred input checkpoints
 
-- Phase 1 uses typed pending GitHub, LinkedIn, and email slots with no fake URLs; release validation rejects them until final values are supplied.
-- Before Phase 8, request the real public URLs/email and Lakshya's final Cisco omission list.
+- Phase 1 initially used typed pending contact slots; GitHub, LinkedIn, and email were resolved before Phase 3 and now use validated published records.
+- Before Phase 8, request Lakshya's final Cisco omission list.
 - During Phase 10, capture the assigned Vercel URL for canonical metadata.
 - Cisco appears only as a case study, not as a duplicate standalone experience feature.
 - Archive projects may launch as substantial public cards without full case-study routes.

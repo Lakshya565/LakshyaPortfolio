@@ -18,19 +18,14 @@ describe("portfolio content validation", () => {
     expect(issues).toEqual([]);
   });
 
-  it("keeps deferred inputs and draft content out of a release", async () => {
+  it("keeps deferred inputs and placeholder content out of a release", async () => {
     const issues = await getPortfolioContentValidationIssues(portfolioContent, {
       mode: "release",
       webRoot: process.cwd(),
       checkFiles: false,
     });
 
-    expect(issues).toContain(
-      "socialLinks.github: Lakshya's public GitHub profile URL is still pending",
-    );
-    expect(issues).toContain(
-      "projects.repoframe: initial-launch project is still draft",
-    );
+    expect(issues.some((issue) => issue.startsWith("socialLinks."))).toBe(false);
     expect(issues).toContain(
       "projects.repoframe: content is still placeholder",
     );
@@ -165,19 +160,14 @@ describe("portfolio content validation", () => {
   });
 
   it("excludes drafts from published project queries", () => {
-    expect(getPublishedProjects(portfolioContent)).toEqual([]);
-
-    const publishedProject = {
+    const draftProject = {
       ...portfolioContent.projects[0],
-      publication: "published",
+      publication: "draft",
     } as Project;
-    const contentWithPublishedProject = {
-      projects: [publishedProject, ...portfolioContent.projects.slice(1)],
-    };
+    const draftOnlyContent = { projects: [draftProject] };
 
-    expect(getPublishedProjects(contentWithPublishedProject)).toEqual([
-      publishedProject,
-    ]);
+    expect(getPublishedProjects(draftOnlyContent)).toEqual([]);
+    expect(getPublishedProjects(portfolioContent)).toHaveLength(10);
   });
 });
 
