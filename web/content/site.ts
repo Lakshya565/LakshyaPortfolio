@@ -2,10 +2,9 @@ import type { SiteProfile, SocialLink } from "@/types/content";
 
 export const siteProfile = {
   name: "Lakshya Agarwal",
-  headline:
-    "Computer Engineering student building across software, AI, and hardware.",
+  headline: "I make computers do useful things in the real world.",
   shortIntro:
-    "I build complete systems across software and hardware, with an emphasis on thoughtful technical decisions, evidence, and the people a system is meant to help.",
+    "I am a Computer Engineering student at UIUC building software, hardware, and AI systems that have to survive contact with real people and real constraints.",
   location: "University of Illinois Urbana-Champaign",
 } as const satisfies SiteProfile;
 

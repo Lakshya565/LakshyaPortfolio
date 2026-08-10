@@ -146,7 +146,7 @@ Create the typed, version-controlled content system that represents both sparse 
 
 #### Type system and manifest
 
-- Define discriminated types for project kind, publication state, asset type, link type, accent token, metrics, experience, skills, and About items.
+- Define discriminated types for project kind, publication state, asset type, link type, accent token, metrics, skills, and About items.
 - Define a singleton site manifest for identity and public social/contact links.
 - Define the project manifest with stable slug, title, category, summary, role, dates, technology array, priority, links, assets, metrics, MDX module key, and display order.
 - Enforce mutually exclusive featured/archive states and deterministic ordering.
@@ -329,6 +329,12 @@ The portfolio is already useful as a straightforward website. Future animation m
 
 ## Phase 4 — Case-study renderer and local media
 
+**Implementation note:** The foundational Phase 4 renderer is complete. It uses
+one typed normalization path for optional header facts, links, metrics, media,
+video links, outlines, and adjacent case studies. The compiler and validator
+share the same restricted MDX policy; project-specific final media and wording
+remain correctly deferred to Phase 8.
+
 ### Objective
 
 Build one resilient renderer that presents sparse and rich projects intentionally and safely handles Markdown and version-controlled media.
@@ -370,7 +376,11 @@ Build one resilient renderer that presents sparse and rich projects intentionall
 - Resolve validated `/media/...` paths through the frontend origin.
 - Preserve intrinsic dimensions and prevent layout shifts.
 - Support explicit hero, screenshot, diagram, hardware photo, gallery, and video-thumbnail types.
-- Define video behavior separately from image handling.
+- Define video behavior separately from image handling, with repeatable videos
+  and explicit optional thumbnail references rather than a fixed count or
+  positional pairing.
+- Let image and video grids adapt to collection size without project-specific
+  layout branches.
 - Make absence intentional; do not add generic placeholders everywhere.
 
 #### Fixtures
@@ -401,6 +411,13 @@ Build one resilient renderer that presents sparse and rich projects intentionall
 At least one sparse and one rich project look intentional through the same safe renderer.
 
 ## Phase 5 — Interactive 2D project environment
+
+**Implementation note:** The base circuit environment is complete. A disposable
+desktop/mobile prototype validated the identity-core, primary-module, and
+peripheral hierarchy before production code was written. Production uses typed
+placement, server-rendered native links, decorative SVG traces, CSS signal
+motion, offscreen/hidden-tab pausing, reduced-motion suppression, and a distinct
+vertical mobile signal path. Conventional project rows remain unchanged below.
 
 ### Objective
 
@@ -477,6 +494,13 @@ The scene is enjoyable but disposable: disabling/replacing it cannot break proje
 
 ## Phase 6 — Route and interaction transitions
 
+**Implementation note:** Phase 6 uses a small arrival-side controller rather
+than an overlay, exit delay, or shared-element clone. Pointer navigation gets an
+interruptible 220ms transform/opacity entry after routing has begun. Keyboard
+and reduced-motion navigation stay instant. Every path change restores focus to
+the arriving `h1` or explicit fragment target, and direct loads require no
+transition context.
+
 ### Objective
 
 Connect project selections to case studies with fast coherent motion while preserving native navigation, history, direct URLs, and reduced-motion access.
@@ -520,6 +544,13 @@ Connect project selections to case studies with fast coherent motion while prese
 Motion adds continuity without changing correctness, time-to-content, or access. Replace brittle shared-element work with a simpler accent/fade if necessary.
 
 ## Phase 7 — Cohesive visual design
+
+**Implementation note:** Phase 7 establishes an intentionally editable visual
+foundation rather than pretending placeholder content supports a locked final
+art direction. Semantic OKLCH/state tokens, local font stacks, widths, radii,
+layers, and motion timings are centralized and documented. Homepage, circuit,
+case-study, About, contact, sparse/dense, hover, focus, active, and reduced-motion
+states use the same system. Final font/art/media choices remain Phase 8 inputs.
 
 ### Objective
 
@@ -660,6 +691,15 @@ Replace representative fixtures with accurate, specific, approved public content
 
 The repository contains a public release candidate approved for viewing. Production publication remains separately authorized.
 
+**Input handoff note:** The repository now contains
+`docs/content-inventory.md`, an explicit checklist for ownership, direct URLs,
+Cisco omissions, and media. LinkedIn and repository evidence have resolved the
+ten project records. Lakshya approved the current Cisco wording for local review
+and chose an intentionally media-free initial candidate on 2026-08-09. The
+Phase 8 exit gate now remains open only for local rendered/confidentiality review
+and final ownership confirmation for linked evidence. No resume or profile PDF
+is public, and production publication is not authorized.
+
 ## Phase 9 — Accessibility, performance, resilience, and SEO audit
 
 ### Objective
@@ -719,6 +759,16 @@ Record the environment/build identifier, automated command results, manual matri
 ### Exit gate
 
 No known issue blocks content, confidentiality, navigation, keyboard use, reduced motion, mobile use, or indexing. Remaining limitations are documented and accepted.
+
+**Implementation note:** The pre-release Phase 9 foundation now includes a
+validated production-origin boundary, preview-safe indexing behavior, canonical
+and published-route sitemap generation, a static social card, and
+`docs/release-audit.md`. Local Chrome, Edge, Lighthouse, JavaScript-disabled,
+reduced-motion, reflow, text-enlargement, 404, and dense/sparse route checks
+resolved three accessibility issues. Disposable Firefox and WebKit audits also
+passed the responsive, semantic, keyboard, motion, JavaScript-disabled, and 404
+matrix without adding browser binaries to the repository. The exit gate remains
+open until final content/media and production-origin checks are complete.
 
 ## Phase 10 — Production deployment and handoff
 
@@ -780,6 +830,12 @@ Confirm account ownership, billing expectations, Vercel project name/URL, and ro
 ### Exit gate
 
 Completion requires production verification and handoff documentation; a provider reporting “deployed” is not sufficient.
+
+**Preparation note:** `docs/operations.md` now documents the edit, approve,
+configure, deploy, verify, rollback, and maintenance workflow. No Vercel project,
+hosted variable, domain, analytics integration, or deployment was created.
+Deployment is explicitly deferred while the frontend is reviewed and overhauled
+on localhost.
 
 ## Cross-phase checklist
 

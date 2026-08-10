@@ -1,20 +1,15 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 
+import { RouteTransitionController } from "@/components/navigation/route-transition-controller";
 import { SiteFooter } from "@/components/site/site-footer";
 import { SiteHeader } from "@/components/site/site-header";
 import { getSiteShellData } from "@/lib/content/portfolio-repository";
+import { buildRootMetadata } from "@/lib/metadata/site-metadata";
 
 import "./globals.css";
 
-export const metadata: Metadata = {
-  title: {
-    default: "Lakshya Agarwal — Computer Engineer",
-    template: "%s | Lakshya Agarwal",
-  },
-  description:
-    "Lakshya Agarwal builds software, AI systems, embedded devices, and hardware products.",
-};
+export const metadata: Metadata = buildRootMetadata();
 
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
   const shellData = getSiteShellData();
@@ -26,6 +21,7 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
           Skip to content
         </a>
         <SiteHeader data={shellData} />
+        <RouteTransitionController />
         {children}
         <SiteFooter data={shellData} />
       </body>

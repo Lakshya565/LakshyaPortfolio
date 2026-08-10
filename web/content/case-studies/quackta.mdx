@@ -1,12 +1,32 @@
 ## Overview
 
-QuackTA is a physical study companion built around a Raspberry Pi, Arduino, custom 3D-printed duck enclosure, app interface, guided AI tutoring, and scheduling support.
+QuackTA was built by a five-person team during UIUC IEEE's March 28–29, 2026
+Bit-by-Bit Hardware Hackathon. Inspired by rubber-duck debugging, it turned the
+passive act of explaining a problem into an interactive physical teaching
+assistant for ECE coursework and schedule questions.
 
 ## Technical approach
 
-The case study will explain how the physical device, application workflow, grounded model behavior, and scheduling features coordinate without making the AI interaction the entire product story.
+A Raspberry Pi 5 coordinated the application experience, while an Arduino Uno
+R4 Minima drove physical expressions inside a custom 3D-printed duck enclosure.
+The tutoring flow used GPT-4o mini with UIUC ECE course and schedule context to
+guide a student toward an answer instead of immediately revealing it.
+
+The device also borrowed from Tamagotchi-style feedback. Wing movement, eye
+color, and eyebrow position gave the assistant a visible emotional state, so
+the enclosure communicated system behavior rather than serving as decoration.
 
 ## Contributions
 
-Final copy will identify Lakshya's individual hardware, embedded, application, and integration work.
+I contributed as a hardware, AI, and integration team member alongside Raghu
+Datla, Sanjit Kumar, Amogk Mahantesh Patil, and Vikhaash Kanagavel Chithra. The
+public project record does not separate each teammate's exact
+subsystem ownership, so this case study does not claim exclusive authorship of
+the device, model workflow, application, or enclosure.
 
+## Takeaways
+
+The strongest part of QuackTA was the integration of physical expression,
+contextual guidance, and scheduling into one coherent object. The AI model was
+one subsystem; the interaction design depended equally on embedded control,
+mechanical presentation, and the surrounding application.

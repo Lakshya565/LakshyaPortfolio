@@ -1,25 +1,30 @@
-import { compile } from "@mdx-js/mdx";
-import { access, readFile, readdir } from "node:fs/promises";
+import { access, readFile, readdir, stat } from "node:fs/promises";
 import path from "node:path";
 
 import { portfolioContentSchema } from "@/lib/content/content-schema";
+import { analyzeMdxSource } from "@/lib/content/mdx-policy";
+import { getProjectMapPlacementIssues } from "@/lib/map/project-map";
 import type { PortfolioContent, Project } from "@/types/content";
 
 export type ContentValidationMode = "development" | "release";
+
+export function resolveContentValidationMode({
+  commandLineArguments,
+  siteOrigin,
+}: Readonly<{
+  commandLineArguments: readonly string[];
+  siteOrigin: string | null | undefined;
+}>): ContentValidationMode {
+  return commandLineArguments.includes("--release") || siteOrigin?.trim()
+    ? "release"
+    : "development";
+}
 
 type ValidationOptions = Readonly<{
   mode: ContentValidationMode;
   webRoot: string;
   checkFiles?: boolean;
 }>;
-
-type MdxNode = Readonly<{
-  type: string;
-  name?: string | null;
-  children?: readonly MdxNode[];
-}>;
-
-const allowedMdxComponents = new Set(["Callout", "Comparison", "Figure"]);
 
 function findDuplicateValues<T>(
   items: readonly T[],
@@ -41,48 +46,65 @@ function findDuplicateValues<T>(
   return [...duplicates];
 }
 
-function getMdxPolicyPlugin(label: string, issues: string[]) {
-  return () => (tree: MdxNode) => {
-    const visit = (node: MdxNode) => {
-      if (node.type === "mdxjsEsm") {
-        issues.push(`${label}: imports and exports are not allowed`);
-      }
-
-      if (
-        node.type === "mdxFlowExpression" ||
-        node.type === "mdxTextExpression"
-      ) {
-        issues.push(`${label}: arbitrary JavaScript expressions are not allowed`);
-      }
-
-      if (
-        node.type === "mdxJsxFlowElement" ||
-        node.type === "mdxJsxTextElement"
-      ) {
-        if (!node.name || !allowedMdxComponents.has(node.name)) {
-          issues.push(
-            `${label}: MDX component ${node.name ?? "fragment"} is not allowlisted`,
-          );
-        }
-      }
-
-      node.children?.forEach(visit);
-    };
-
-    visit(tree);
-  };
+export async function getMdxValidationIssues(source: string, label: string) {
+  const { issues } = await analyzeMdxSource(source);
+  return [
+    ...issues.map((issue) => `${label}: ${issue}`),
+    ...getFirstPersonVoiceIssues(stripExcludedMdxText(source), label),
+  ];
 }
 
-export async function getMdxValidationIssues(source: string, label: string) {
-  const issues: string[] = [];
+function stripExcludedMdxText(source: string) {
+  return source
+    .replace(/```[\s\S]*?```/g, "")
+    .replace(/`[^`]*`/g, "")
+    .replace(/^>.*$/gm, "")
+    .replace(/\]\([^)]*\)/g, "]");
+}
 
-  try {
-    await compile(source, {
-      remarkPlugins: [getMdxPolicyPlugin(label, issues)],
-    });
-  } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    issues.push(`${label}: failed to compile MDX (${message})`);
+function getFirstPersonVoiceIssues(value: string, label: string) {
+  const narratorTerms = value.match(/\b(?:Lakshya|he|his)\b/gi) ?? [];
+  const uniqueTerms = [...new Set(narratorTerms.map((term) => term.toLowerCase()))];
+
+  return uniqueTerms.map(
+    (term) => `${label}: third-person narrator term "${term}" is not allowed`,
+  );
+}
+
+function getNarrativeVoiceIssues(content: PortfolioContent) {
+  const issues = [
+    ...getFirstPersonVoiceIssues(
+      content.siteProfile.headline,
+      "siteProfile.headline",
+    ),
+    ...getFirstPersonVoiceIssues(
+      content.siteProfile.shortIntro,
+      "siteProfile.shortIntro",
+    ),
+  ];
+
+  for (const project of content.projects) {
+    issues.push(
+      ...getFirstPersonVoiceIssues(
+        project.shortDescription,
+        `projects.${project.slug}.shortDescription`,
+      ),
+    );
+  }
+
+  for (const item of content.aboutItems) {
+    issues.push(
+      ...getFirstPersonVoiceIssues(item.body, `aboutItems.${item.title}.body`),
+    );
+  }
+
+  for (const motif of content.personalMotifs) {
+    issues.push(
+      ...getFirstPersonVoiceIssues(
+        motif.detail,
+        `personalMotifs.${motif.key}.detail`,
+      ),
+    );
   }
 
   return issues;
@@ -130,6 +152,76 @@ function getProjectCrossRecordIssues(projects: readonly Project[]) {
         `projects.${project.slug}: caseStudyKey must match the stable project slug`,
       );
     }
+
+    const assetPaths = findDuplicateValues(project.assets, (asset) => asset.path);
+    for (const assetPath of assetPaths) {
+      issues.push(`projects.${project.slug}: duplicate asset path ${assetPath}`);
+    }
+
+    for (const asset of project.assets) {
+      if (!asset.path.startsWith(`/media/projects/${project.slug}/`)) {
+        issues.push(
+          `projects.${project.slug}: asset must live in its project media directory (${asset.path})`,
+        );
+      }
+    }
+
+    if (project.assets.filter((asset) => asset.kind === "hero").length > 1) {
+      issues.push(`projects.${project.slug}: at most one hero asset is allowed`);
+    }
+
+    if (project.presentation === "case-study") {
+      const duplicateVideoUrls = findDuplicateValues(
+        project.videos,
+        (video) => video.href,
+      );
+      for (const href of duplicateVideoUrls) {
+        issues.push(`projects.${project.slug}: duplicate video URL ${href}`);
+      }
+
+      const referencedThumbnailPaths = project.videos.flatMap((video) =>
+        video.thumbnailPath ? [video.thumbnailPath] : [],
+      );
+      for (const thumbnailPath of findDuplicateValues(
+        referencedThumbnailPaths,
+        (value) => value,
+      )) {
+        issues.push(
+          `projects.${project.slug}: video thumbnail ${thumbnailPath} is referenced more than once`,
+        );
+      }
+
+      for (const video of project.videos) {
+        if (!video.thumbnailPath) {
+          continue;
+        }
+
+        const thumbnail = project.assets.find(
+          (asset) => asset.path === video.thumbnailPath,
+        );
+        if (!thumbnail) {
+          issues.push(
+            `projects.${project.slug}: video thumbnail is missing from assets (${video.thumbnailPath})`,
+          );
+        } else if (thumbnail.kind !== "video-thumbnail") {
+          issues.push(
+            `projects.${project.slug}: video thumbnail asset must use kind video-thumbnail (${video.thumbnailPath})`,
+          );
+        }
+      }
+
+      const referencedThumbnailSet = new Set(referencedThumbnailPaths);
+      for (const asset of project.assets) {
+        if (
+          asset.kind === "video-thumbnail" &&
+          !referencedThumbnailSet.has(asset.path)
+        ) {
+          issues.push(
+            `projects.${project.slug}: video-thumbnail asset is not assigned to a video (${asset.path})`,
+          );
+        }
+      }
+    }
   }
 
   return issues;
@@ -158,6 +250,10 @@ function getReleaseIssues(content: PortfolioContent) {
         issues.push(
           `projects.${project.slug}: placeholder asset ${asset.path} is not release-ready`,
         );
+      } else if (asset.path.toLowerCase().includes("placeholder")) {
+        issues.push(
+          `projects.${project.slug}: placeholder-named asset ${asset.path} is not release-ready`,
+        );
       }
     }
   }
@@ -178,8 +274,14 @@ async function getFileIssues(content: PortfolioContent, webRoot: string) {
 
       if (!assetPath.startsWith(`${publicRoot}${path.sep}`)) {
         issues.push(`projects.${project.slug}: asset escapes the public directory`);
-      } else if (!(await pathExists(assetPath))) {
-        issues.push(`projects.${project.slug}: missing asset ${asset.path}`);
+      } else {
+        try {
+          if (!(await stat(assetPath)).isFile()) {
+            issues.push(`projects.${project.slug}: asset is not a file ${asset.path}`);
+          }
+        } catch {
+          issues.push(`projects.${project.slug}: missing asset ${asset.path}`);
+        }
       }
     }
 
@@ -231,9 +333,18 @@ export async function getPortfolioContentValidationIssues(
   const parsedContent = result.data as PortfolioContent;
   const issues = [
     ...getProjectCrossRecordIssues(parsedContent.projects),
+    ...getProjectMapPlacementIssues(parsedContent.projects),
+    ...getNarrativeVoiceIssues(parsedContent),
     ...findDuplicateValues(parsedContent.socialLinks, (link) => link.kind).map(
       (kind) => `socialLinks: duplicate kind ${kind}`,
     ),
+    ...findDuplicateValues(parsedContent.personalMotifs, (motif) => motif.key).map(
+      (key) => `personalMotifs: duplicate key ${key}`,
+    ),
+    ...findDuplicateValues(
+      parsedContent.personalMotifs,
+      (motif) => motif.displayOrder,
+    ).map((order) => `personalMotifs: duplicate displayOrder ${order}`),
   ];
 
   if (options.mode === "release") {

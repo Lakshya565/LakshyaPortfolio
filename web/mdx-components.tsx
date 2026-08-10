@@ -1,44 +1,67 @@
-import type { ComponentPropsWithoutRef, ReactNode } from "react";
 import type { MDXComponents } from "mdx/types";
+import { Children, type ComponentPropsWithoutRef, type ReactNode } from "react";
+
+import { isSafeEditorialHref } from "@/lib/content/editorial-links";
+import { createHeadingAnchor } from "@/lib/content/heading-anchors";
 
 function Callout({ children }: Readonly<{ children: ReactNode }>) {
-  return <aside>{children}</aside>;
+  return <aside className="case-study-callout">{children}</aside>;
 }
 
-function Figure({
+function getHeadingText(children: ReactNode): string {
+  return Children.toArray(children)
+    .map((child) =>
+      typeof child === "string" || typeof child === "number" ? String(child) : "",
+    )
+    .join("")
+    .trim();
+}
+
+function Heading({
+  as: Element,
   children,
-  caption,
-}: Readonly<{ children: ReactNode; caption?: string }>) {
+  ...props
+}: Readonly<
+  ComponentPropsWithoutRef<"h2"> & {
+    as: "h2" | "h3";
+  }
+>) {
   return (
-    <figure>
+    <Element {...props} id={createHeadingAnchor(getHeadingText(children))}>
       {children}
-      {caption ? <figcaption>{caption}</figcaption> : null}
-    </figure>
+    </Element>
   );
 }
 
-function Comparison({ children }: Readonly<{ children: ReactNode }>) {
-  return <section aria-label="Comparison">{children}</section>;
-}
-
 const components = {
+  h2: (props: ComponentPropsWithoutRef<"h2">) => <Heading {...props} as="h2" />,
+  h3: (props: ComponentPropsWithoutRef<"h3">) => <Heading {...props} as="h3" />,
   a: (props: ComponentPropsWithoutRef<"a">) => {
-    const isExternal = props.href?.startsWith("https://") ?? false;
+    const href = props.href;
+
+    if (!href || !isSafeEditorialHref(href)) {
+      return <span>{props.children}</span>;
+    }
+
+    const isExternal = href.startsWith("https://");
 
     return (
       <a
         {...props}
+        href={href}
         rel={isExternal ? "noreferrer noopener" : props.rel}
         target={isExternal ? "_blank" : props.target}
-      />
+      >
+        {props.children}
+        {isExternal ? (
+          <span className="sr-only"> (opens in a new tab)</span>
+        ) : null}
+      </a>
     );
   },
   Callout,
-  Figure,
-  Comparison,
 } satisfies MDXComponents;
 
 export function useMDXComponents(): MDXComponents {
   return components;
 }
-

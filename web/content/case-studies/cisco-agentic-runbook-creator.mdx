@@ -1,20 +1,50 @@
 ## Overview
 
-The Agentic Runbook Creator explores how an industrial-network troubleshooting workflow can assemble situation-specific runbooks instead of relying only on static procedures. This draft establishes the case-study structure; Lakshya will make the final omission decisions before publication.
+The Agentic Runbook Creator, or ARC, automates troubleshooting for industrial
+network faults. During my Cisco internship on the Industrial IoT team, I worked
+on the reasoning, generation, privacy, integration, and evaluation paths that
+turned a fault context into a testable runbook instead of selecting only from a
+fixed procedure catalog.
 
 ## Problem
 
-Industrial troubleshooting requires useful hypotheses, ordered diagnostic actions, and careful handling of data that may not be appropriate to send directly to cloud models.
+The existing workflow covered 13 predefined procedures. Faults outside that
+catalog still required engineers to assemble hypotheses and diagnostic steps
+manually, while sensitive topology details could not simply be forwarded to a
+cloud model. ARC needed to generate situation-specific guidance without losing
+the privacy boundary of the client network.
 
-## Technical approach
+## Local reasoning and staged generation
 
-The representative architecture combines local small-language-model hypothesis generation, staged runbook assembly, a controlled handoff to cloud capabilities, and a Flask integration layer.
+I contributed to local small-language-model reasoning and a multi-stage runbook
+generation flow. Local processing established the initial fault context and
+hypotheses. Before cloud analysis, the handoff obfuscated sensitive topology
+information so later reasoning could use the structure of the problem without
+exposing the original network details.
+
+A Flask integration layer connected those stages and kept the boundary between
+local and cloud work explicit. The goal was not an unrestricted model call; it
+was a repeatable workflow whose inputs and transitions could be controlled.
 
 ## Evaluation loop
 
-A digital-twin evaluator can inject faults, run generated steps, and feed validation results back into the workflow. Final diagrams, customer context, and metrics remain subject to Lakshya's publication review.
+I also built a digital-twin evaluator that injected faults into Cisco IOS XE network
+simulations and exercised the generated runbooks. This made evaluation part of
+the system rather than a manual review performed only after generation.
 
-## Contributions
+The evaluator provided a path toward closed-loop troubleshooting inside the
+client network: generate a candidate runbook, test it against a simulated fault,
+and use the observed behavior to decide whether the procedure was useful.
 
-The final version will distinguish Lakshya's implementation and design ownership from the broader team result.
+## Results and boundaries
 
+The project expanded troubleshooting beyond the 13 predefined procedures and
+reported reducing triage time from hours to under 25 minutes. Those are
+project-level results; my individual contribution was the local reasoning,
+multi-stage generation, privacy-preserving handoff, Flask integration, and
+digital-twin evaluation work described above.
+
+This case study intentionally omits customer identifiers, proprietary source,
+credentials, logs, and unapproved topology details. A final architecture image
+will be added only after the labels and data shown in it receive the same
+confidentiality review as the prose.

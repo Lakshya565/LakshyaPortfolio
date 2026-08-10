@@ -1,6 +1,9 @@
 ## Overview
 
-RepoFrame is a repository-analysis system designed to turn source evidence into grounded project profiles for resumes, portfolios, READMEs, and interview preparation.
+I designed and built RepoFrame, a full-stack repository-analysis platform that
+turns GitHub projects into evidence-backed writeups. One structured project
+profile supports four core outputs—resume bullets, README copy, portfolio copy,
+and a LinkedIn description—plus a separate interview-preparation workflow.
 
 <Callout>
   The core product constraint is evidence discipline: generated claims should remain traceable to bounded repository material rather than plausible-sounding inference.
@@ -8,21 +11,62 @@ RepoFrame is a repository-analysis system designed to turn source evidence into 
 
 ## Problem
 
-Repository content is noisy. Large dependency trees, generated files, incomplete documentation, and framework conventions make it difficult to identify the files that best explain what a project actually does.
+Repository content is noisy. Dependency trees, generated files, incomplete
+documentation, and framework conventions can overwhelm the small set of files
+that actually explain a system. Source code also cannot prove a person's role,
+intent, team boundary, or measured impact, while user recollection alone can
+overstate what the repository supports.
 
 ## Technical approach
 
-The representative pipeline combines GitHub ingestion, deterministic file ranking, multi-signal stack detection, bounded evidence retrieval, and an allowlisted audit workflow.
+RepoFrame first collects repository metadata, structure, languages, and selected
+text content through the GitHub API. Deterministic filtering, file ranking, and
+multi-signal stack detection narrow the evidence before any model request. User
+context is kept separate for facts that code cannot establish, such as purpose,
+ownership, and outcome.
+
+The backend then fits the rendered request into a bounded prompt budget and
+validates structured output before it reaches the interface. Generation happens
+only after an explicit user action, with credentials and paid operations kept on
+the backend.
 
 ## Architecture
 
-The final diagram will show the separation between ingestion, deterministic analysis, evidence retrieval, audit tools, and output-specific profile generation.
+The Next.js and TypeScript frontend presents progressive analysis, context
+collection, generated outputs, revisions, saved projects, and audit results. A
+FastAPI and Python backend owns GitHub access, deterministic analysis, generation,
+verification, rate limits, and persistence. Supabase provides authentication and
+project storage, while a read-only GitHub App supplies fine-grained repository
+access.
+
+Core analysis streams independent stages as they finish. Bounded caches,
+stale-while-revalidate behavior, request deduplication, GitHub ETags, deferred
+commit statistics, and isolated card errors prevent one slow or failed stage
+from collapsing the entire route.
+
+## Evidence Investigator
+
+The optional Agentic Audit does not receive unrestricted repository access. Its
+Evidence Investigator can search authorized paths and read additional safe text
+files when the initial evidence is insufficient. The verifier then labels claims
+by support level and retains the evidence behind each verdict.
+
+This is deliberately different from asking a model to judge its own answer in a
+single ungrounded pass: deterministic boundaries decide what can be inspected,
+and the tool-using verifier must operate inside that evidence space.
 
 ## Results
 
-The final case study will report only verified product behavior and measured outcomes. Current metrics and screenshots are layout fixtures, not release-ready evidence.
+The public repository verifies the four written-output contracts, separate
+interview preparation, revision flows, saved history, GitHub App authorization,
+and the bounded verification path. The portfolio does not publish a speed,
+quality, or user-impact number because no release-quality measurement has been
+approved yet.
 
 ## Takeaways
 
-RepoFrame is an example of using deterministic systems and model-driven reasoning as complements: code narrows and validates the evidence space, while the model helps synthesize explanations within those bounds.
-
+RepoFrame treats deterministic systems and model-driven reasoning as
+complements. Code narrows, budgets, and validates the evidence space; the model
+synthesizes within it. That division makes the generated story more useful
+because a developer can trace and defend it instead of trusting fluent output at
+face value.

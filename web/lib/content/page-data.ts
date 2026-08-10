@@ -1,3 +1,4 @@
+import { formatProjectDateRange } from "@/lib/content/case-study-normalization";
 import {
   getPublishedArchiveProjects,
   getPublishedCaseStudyProjects,
@@ -5,10 +6,15 @@ import {
 } from "@/lib/content/project-queries";
 import type {
   AboutItem,
+  ArchiveProject,
+  CaseStudyProject,
+  PersonalMotif,
   PortfolioContent,
   Project,
-  ProjectAccentToken,
   ProjectCategory,
+  ProjectLinkKind,
+  ProjectSlug,
+  ProjectWorkMode,
   SkillGroup,
   SocialLinkKind,
 } from "@/types/content";
@@ -19,32 +25,64 @@ export type SocialLinkData = Readonly<{
   href: string;
 }>;
 
-export type ProjectSummaryData = Readonly<{
-  slug: string;
+type ProjectSummaryBase = Readonly<{
+  slug: ProjectSlug;
   title: string;
   category: ProjectCategory;
   description: string;
   role: string;
   technologies: readonly string[];
-  accent: ProjectAccentToken;
-  href: string | null;
+  workMode: ProjectWorkMode;
 }>;
+
+export type RoutedProjectSummaryData = ProjectSummaryBase &
+  Readonly<{
+    presentation: "case-study";
+    href: string;
+  }>;
+
+type ArchiveProjectLinkData = Readonly<{
+  kind: ProjectLinkKind;
+  label: string;
+  href: string;
+}>;
+
+type ArchiveProjectMetricData = Readonly<{
+  label: string;
+  value: string | number;
+  context: string | null;
+}>;
+
+export type ArchiveProjectSummaryData = ProjectSummaryBase &
+  Readonly<{
+    presentation: "archive-card";
+    href: null;
+    anchorId: string;
+    dateLabel: string | null;
+    links: readonly ArchiveProjectLinkData[];
+    metrics: readonly ArchiveProjectMetricData[];
+  }>;
+
+export type ProjectMapSummaryData =
+  | RoutedProjectSummaryData
+  | ArchiveProjectSummaryData;
 
 export type SiteShellData = Readonly<{
   name: string;
   socialLinks: readonly SocialLinkData[];
 }>;
 
-export type HomePageData = Readonly<{
+type HomePageData = Readonly<{
   profile: PortfolioContent["siteProfile"];
-  featuredProjects: readonly ProjectSummaryData[];
-  supportingProjects: readonly ProjectSummaryData[];
-  archiveProjects: readonly ProjectSummaryData[];
-  aboutPreview: readonly AboutItem[];
+  featuredProjects: readonly RoutedProjectSummaryData[];
+  supportingProjects: readonly RoutedProjectSummaryData[];
+  archiveProjects: readonly ArchiveProjectSummaryData[];
+  mapProjects: readonly ProjectMapSummaryData[];
+  personalMotifs: readonly PersonalMotif[];
   socialLinks: readonly SocialLinkData[];
 }>;
 
-export type AboutPageData = Readonly<{
+type AboutPageData = Readonly<{
   profile: PortfolioContent["siteProfile"];
   items: readonly AboutItem[];
   skillGroups: readonly SkillGroup[];
@@ -68,7 +106,7 @@ function toSocialLinkData(
   }));
 }
 
-function toProjectSummary(project: Project): ProjectSummaryData {
+function toProjectSummaryBase(project: Project): ProjectSummaryBase {
   return {
     slug: project.slug,
     title: project.title.trim(),
@@ -78,11 +116,39 @@ function toProjectSummary(project: Project): ProjectSummaryData {
     technologies: project.technologies
       .map((technology) => technology.trim())
       .filter(Boolean),
-    accent: project.accent,
-    href:
-      project.presentation === "case-study"
-        ? `/projects/${project.slug}`
-        : null,
+    workMode: project.workMode,
+  };
+}
+
+function toRoutedProjectSummary(
+  project: CaseStudyProject,
+): RoutedProjectSummaryData {
+  return {
+    ...toProjectSummaryBase(project),
+    presentation: "case-study",
+    href: `/projects/${project.slug}`,
+  };
+}
+
+function toArchiveProjectSummary(
+  project: ArchiveProject,
+): ArchiveProjectSummaryData {
+  return {
+    ...toProjectSummaryBase(project),
+    presentation: "archive-card",
+    href: null,
+    anchorId: `project-${project.slug}`,
+    dateLabel: formatProjectDateRange(project.startDate, project.endDate),
+    links: project.links.map(({ kind, label, href }) => ({
+      kind,
+      label: label.trim(),
+      href: href.trim(),
+    })),
+    metrics: project.metrics.map(({ label, value, context }) => ({
+      label: label.trim(),
+      value: typeof value === "string" ? value.trim() : value,
+      context: context?.trim() || null,
+    })),
   };
 }
 
@@ -95,19 +161,27 @@ export function buildSiteShellData(content: PortfolioContent): SiteShellData {
 
 export function buildHomePageData(content: PortfolioContent): HomePageData {
   const caseStudies = getPublishedCaseStudyProjects(content);
+  const archiveProjects = getPublishedArchiveProjects(content);
+  const mapProjects = [
+    ...caseStudies
+      .filter((project) => project.displayInMap)
+      .map(toRoutedProjectSummary),
+    ...archiveProjects
+      .filter((project) => project.displayInMap)
+      .map(toArchiveProjectSummary),
+  ];
 
   return {
     profile: content.siteProfile,
     featuredProjects: caseStudies
       .filter((project) => project.priority === "featured")
-      .map(toProjectSummary),
+      .map(toRoutedProjectSummary),
     supportingProjects: caseStudies
       .filter((project) => project.priority === "supporting")
-      .map(toProjectSummary),
-    archiveProjects: getPublishedArchiveProjects(content).map(toProjectSummary),
-    aboutPreview: content.aboutItems
-      .toSorted(compareDisplayOrder)
-      .slice(0, 2),
+      .map(toRoutedProjectSummary),
+    archiveProjects: archiveProjects.map(toArchiveProjectSummary),
+    mapProjects,
+    personalMotifs: content.personalMotifs.toSorted(compareDisplayOrder),
     socialLinks: toSocialLinkData(content),
   };
 }

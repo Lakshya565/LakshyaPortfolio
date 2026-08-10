@@ -1,4 +1,4 @@
-import { aboutItems, experiences, skillGroups } from "@/content/about";
+import { aboutItems, personalMotifs, skillGroups } from "@/content/about";
 import { projects } from "@/content/projects";
 import { siteProfile, socialLinks } from "@/content/site";
 import type { PortfolioContent } from "@/types/content";
@@ -9,5 +9,5 @@ export const portfolioContent = {
   projects,
   skillGroups,
   aboutItems,
-  experiences,
+  personalMotifs,
 } as const satisfies PortfolioContent;

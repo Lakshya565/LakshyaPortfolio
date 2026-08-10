@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
 
+import { SocialAnchor } from "@/components/site/social-anchor";
 import type { SocialLinkData } from "@/lib/content/page-data";
 import {
   isNavigationItemActive,
@@ -38,19 +39,8 @@ function SocialNavigationLink({
   link,
   onClick,
 }: Readonly<{ link: SocialLinkData; onClick?: () => void }>) {
-  const isExternal = link.kind !== "email";
-
   return (
-    <a
-      className="nav-link"
-      href={link.href}
-      onClick={onClick}
-      rel={isExternal ? "noreferrer noopener" : undefined}
-      target={isExternal ? "_blank" : undefined}
-    >
-      {link.label}
-      {isExternal ? <span className="sr-only"> (opens in a new tab)</span> : null}
-    </a>
+    <SocialAnchor className="nav-link" link={link} onClick={onClick} />
   );
 }
 

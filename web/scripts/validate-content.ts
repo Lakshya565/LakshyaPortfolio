@@ -1,12 +1,13 @@
 import { portfolioContent } from "@/content/portfolio";
 import {
   assertValidPortfolioContent,
-  type ContentValidationMode,
+  resolveContentValidationMode,
 } from "@/lib/content/validate-portfolio-content";
 
-const mode: ContentValidationMode = process.argv.includes("--release")
-  ? "release"
-  : "development";
+const mode = resolveContentValidationMode({
+  commandLineArguments: process.argv,
+  siteOrigin: process.env.NEXT_PUBLIC_SITE_URL,
+});
 
 async function main() {
   try {

@@ -1,12 +1,43 @@
 ## Overview
 
-The NuCurrent inventory system is a full-stack operational tool built through CUBE Consulting at UIUC using React, FastAPI, and SQL.
+Through CUBE Consulting at UIUC, I helped build a full-stack inventory platform
+for NuCurrent, a Chicago-based wireless-technology company. The React, FastAPI,
+and SQL system replaced spreadsheet-based part tracking with a central workflow
+for finding, moving, and maintaining inventory.
 
-## Contributions
+## Operational problem
 
-The final case study will identify Lakshya's owned workflows, integration decisions, and collaboration boundaries rather than presenting the complete team output as individual work.
+Part data and stock changes were distributed across spreadsheets, making it
+harder for engineers and technicians to search parts, retrieve an item, update
+its quantity, and understand maintenance status through one consistent source.
+The platform needed to support daily inventory operations while remaining
+straightforward for NuCurrent to maintain after the consulting engagement.
 
-## Results
+## Frontend workflows
 
-Screenshots, user context, and verified outcomes will be added during the final content phase.
+I led the frontend work for part search, check-in and check-out, barcode
+scanning, and label generation. These were related but distinct workflows: a
+technician needed quick lookup and scanning, while inventory updates still
+needed clear state and enough metadata to avoid changing the wrong part.
 
+I also added low-stock alerts so inventory state could prompt action instead of
+serving only as a passive record.
+
+## Data and API design
+
+Beyond the interface, I designed the SQL database schema and REST APIs that
+supported part metadata and real-time inventory queries. FastAPI provided a
+typed boundary between the React workflows and the inventory records, keeping
+search and stock operations behind reusable endpoints rather than embedding
+data assumptions throughout the UI.
+
+## Delivery
+
+The resulting platform centralized search, stock updates, item retrieval, and
+maintenance management. I also supported documentation and the client handoff
+so NuCurrent could maintain and extend the system after delivery.
+
+No repository, production URL, usage count, or performance metric is published
+because none is available as durable public evidence. Screenshots can be added
+later if NuCurrent-facing content is cleared for publication; the case study is
+designed to remain complete without them.

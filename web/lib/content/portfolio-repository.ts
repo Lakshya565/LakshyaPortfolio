@@ -7,17 +7,27 @@ import {
   buildSiteShellData,
 } from "@/lib/content/page-data";
 import {
+  toCaseStudyNavigationItem,
+  toCaseStudyPageData,
+} from "@/lib/content/case-study-normalization";
+import {
+  getAdjacentPublishedCaseStudies,
   getPublishedCaseStudyBySlug,
   getPublishedCaseStudyParams,
-  toProjectPageData,
 } from "@/lib/content/project-queries";
+import { buildProjectMapData } from "@/lib/map/project-map";
 
 export function getSiteShellData() {
   return buildSiteShellData(portfolioContent);
 }
 
 export function getHomePageData() {
-  return buildHomePageData(portfolioContent);
+  const { mapProjects, ...pageData } = buildHomePageData(portfolioContent);
+
+  return {
+    ...pageData,
+    projectMap: buildProjectMapData(mapProjects),
+  };
 }
 
 export function getAboutPageData() {
@@ -35,8 +45,16 @@ export function getProjectRouteData(slug: string) {
     return null;
   }
 
+  const adjacent = getAdjacentPublishedCaseStudies(portfolioContent, slug);
+
   return {
-    pageData: toProjectPageData(project),
+    pageData: toCaseStudyPageData(project),
     caseStudyKey: project.caseStudyKey,
+    navigation: {
+      previous: adjacent.previous
+        ? toCaseStudyNavigationItem(adjacent.previous)
+        : null,
+      next: adjacent.next ? toCaseStudyNavigationItem(adjacent.next) : null,
+    },
   } as const;
 }

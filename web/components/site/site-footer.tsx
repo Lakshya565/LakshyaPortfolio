@@ -3,7 +3,7 @@ import type { SiteShellData } from "@/lib/content/page-data";
 
 export function SiteFooter({ data }: Readonly<{ data: SiteShellData }>) {
   return (
-    <footer className="border-t border-line py-8">
+    <footer className="border-t border-line py-6">
       <div className="site-container flex flex-col gap-5 text-sm text-muted sm:flex-row sm:items-center sm:justify-between">
         <p>Designed and built by {data.name}.</p>
         <SocialLinks

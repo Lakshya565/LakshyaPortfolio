@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { portfolioContent } from "../content/portfolio";
+import { toCaseStudyPageData } from "../lib/content/case-study-normalization";
 import {
   getAdjacentPublishedCaseStudies,
   getPublishedArchiveProjects,
@@ -8,8 +9,6 @@ import {
   getPublishedCaseStudyParams,
   getPublishedCaseStudyProjects,
   getPublishedProjectBySlug,
-  getRelatedPublishedProjects,
-  toProjectPageData,
 } from "../lib/content/project-queries";
 import {
   buildProjectMetadata,
@@ -59,33 +58,17 @@ describe("project route queries", () => {
     expect(getPublishedCaseStudyBySlug(portfolioContent, "missing")).toBeNull();
   });
 
-  it("provides deterministic adjacent and related work", () => {
+  it("provides deterministic adjacent case studies", () => {
     const adjacent = getAdjacentPublishedCaseStudies(portfolioContent, "repoframe");
-    const related = getRelatedPublishedProjects(portfolioContent, "quackta", 2);
 
     expect(adjacent.previous?.slug).toBe("cisco-agentic-runbook-creator");
     expect(adjacent.next?.slug).toBe("nucurrent-inventory-system");
-    expect(related.map(({ slug }) => slug)).toEqual([
-      "lucky-arduino",
-      "agrisense",
-    ]);
-    expect(getRelatedPublishedProjects(portfolioContent, "missing")).toEqual([]);
+    expect(getAdjacentPublishedCaseStudies(portfolioContent, "missing")).toEqual({
+      previous: null,
+      next: null,
+    });
   });
 
-  it("normalizes route data without exposing editorial control fields", () => {
-    const project = getPublishedCaseStudyBySlug(portfolioContent, "repoframe");
-    expect(project).not.toBeNull();
-
-    const pageData = toProjectPageData(project!);
-
-    expect(pageData.title).toBe("RepoFrame");
-    expect(pageData.startDate).toBeNull();
-    expect(pageData.technologies).toContain("Next.js");
-    expect(pageData).not.toHaveProperty("publication");
-    expect(pageData).not.toHaveProperty("contentStatus");
-    expect(pageData).not.toHaveProperty("caseStudyKey");
-    expect(pageData).not.toHaveProperty("metrics");
-  });
 });
 
 describe("project metadata", () => {
@@ -93,7 +76,7 @@ describe("project metadata", () => {
     const project = getPublishedCaseStudyBySlug(portfolioContent, "repoframe");
     expect(project).not.toBeNull();
 
-    const pageData = toProjectPageData(project!);
+    const pageData = toCaseStudyPageData(project!);
     const metadata = buildProjectMetadata(pageData);
 
     expect(metadata.title).toBe("RepoFrame");

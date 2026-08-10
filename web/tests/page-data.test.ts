@@ -22,10 +22,20 @@ describe("page data projections", () => {
     ]);
     expect(data.supportingProjects).toHaveLength(3);
     expect(data.archiveProjects).toHaveLength(5);
+    expect(data.mapProjects).toHaveLength(10);
+    expect(data.personalMotifs).toHaveLength(8);
     expect(data.archiveProjects.every(({ href }) => href === null)).toBe(true);
+    expect(data.archiveProjects[0].links).toHaveLength(4);
+    expect(data.archiveProjects[0].metrics[0]).toEqual({
+      label: "Video views",
+      value: "50K+",
+      context: "Reported across the Lucky Arduino channel.",
+    });
+    expect(data.archiveProjects[1].dateLabel).toBe("Jan 2025 – May 2025");
     expect(data.featuredProjects[0]).not.toHaveProperty("publication");
     expect(data.featuredProjects[0]).not.toHaveProperty("contentStatus");
     expect(data.featuredProjects[0]).not.toHaveProperty("metrics");
+    expect(data.archiveProjects[0].metrics[0]).not.toHaveProperty("sourceNote");
   });
 
   it("projects the supplied public contact links", () => {
@@ -57,6 +67,7 @@ describe("page data projections", () => {
       projects: [],
       skillGroups: [],
       aboutItems: [],
+      personalMotifs: [],
     } satisfies PortfolioContent;
 
     const home = buildHomePageData(emptyContent);
@@ -65,7 +76,7 @@ describe("page data projections", () => {
     expect(home.featuredProjects).toEqual([]);
     expect(home.supportingProjects).toEqual([]);
     expect(home.archiveProjects).toEqual([]);
-    expect(home.aboutPreview).toEqual([]);
+    expect(home.personalMotifs).toEqual([]);
     expect(home.socialLinks).toEqual([]);
     expect(about.items).toEqual([]);
     expect(about.skillGroups).toEqual([]);

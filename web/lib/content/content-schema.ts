@@ -2,10 +2,11 @@ import { z } from "zod";
 
 import {
   caseStudyKeys,
-  projectAccentTokens,
+  personalMotifKeys,
   projectAssetKinds,
   projectCategories,
   projectLinkKinds,
+  projectWorkModes,
   socialLinkKinds,
 } from "@/types/content";
 
@@ -19,7 +20,7 @@ const projectDate = z
   .regex(/^\d{4}(?:-(?:0[1-9]|1[0-2]))?$/, "must use YYYY or YYYY-MM")
   .nullable();
 
-export const siteProfileSchema = z.object({
+const siteProfileSchema = z.object({
   name: nonEmptyText,
   headline: nonEmptyText,
   shortIntro: nonEmptyText,
@@ -65,7 +66,7 @@ const publishedSocialLinkSchema = z
     }
   });
 
-export const socialLinkSchema = z.discriminatedUnion("status", [
+const socialLinkSchema = z.discriminatedUnion("status", [
   pendingSocialLinkSchema,
   publishedSocialLinkSchema,
 ]);
@@ -78,25 +79,35 @@ const projectLinkSchema = z.object({
 
 const projectMetricSchema = z.object({
   label: nonEmptyText,
-  value: nonEmptyText,
+  value: z.union([nonEmptyText, z.number().finite()]),
   context: nonEmptyText.optional(),
-  sourceNote: nonEmptyText.optional(),
 });
 
 const projectAssetSchema = z.object({
   kind: z.enum(projectAssetKinds),
   path: z
     .string()
-    .regex(/^\/media\/[a-z0-9][a-z0-9/_-]*\.[a-z0-9]+$/, {
-      message: "must be a lowercase /media/... public path",
-    })
+    .regex(
+      /^\/media\/projects\/[a-z0-9][a-z0-9/_-]*\.(?:avif|jpe?g|png|svg|webp)$/,
+      {
+        message:
+          "must be a lowercase /media/projects/... path with a supported image extension",
+      },
+    )
+    .refine((value) => !value.includes("//"), "must not contain empty segments")
     .refine((value) => !value.includes(".."), "must not traverse directories")
     .refine((value) => !value.includes("\\"), "must use forward slashes"),
   alt: nonEmptyText,
   caption: nonEmptyText.optional(),
-  width: z.number().int().positive().optional(),
-  height: z.number().int().positive().optional(),
+  width: z.number().int().positive(),
+  height: z.number().int().positive(),
   placeholder: z.boolean(),
+});
+
+const projectVideoSchema = z.object({
+  label: nonEmptyText,
+  href: webUrl,
+  thumbnailPath: projectAssetSchema.shape.path.optional(),
 });
 
 const projectBaseSchema = z.object({
@@ -108,10 +119,9 @@ const projectBaseSchema = z.object({
   startDate: projectDate,
   endDate: projectDate,
   technologies: z.array(nonEmptyText).min(1),
-  accent: z.enum(projectAccentTokens),
+  workMode: z.enum(projectWorkModes),
   publication: z.enum(["draft", "published"]),
   contentStatus: z.enum(["placeholder", "reviewed"]),
-  launchTarget: z.literal("initial"),
   displayOrder: z.number().int().nonnegative(),
   displayInMap: z.boolean(),
   links: z.array(projectLinkSchema),
@@ -123,16 +133,16 @@ const caseStudyProjectSchema = projectBaseSchema.extend({
   presentation: z.literal("case-study"),
   priority: z.enum(["featured", "supporting"]),
   caseStudyKey: z.enum(caseStudyKeys),
+  videos: z.array(projectVideoSchema),
 });
 
 const archiveProjectSchema = projectBaseSchema.extend({
   presentation: z.literal("archive-card"),
   priority: z.literal("archive"),
   caseStudyKey: z.null(),
-  displayInMap: z.literal(false),
 });
 
-export const projectSchema = z.discriminatedUnion("presentation", [
+const projectSchema = z.discriminatedUnion("presentation", [
   caseStudyProjectSchema,
   archiveProjectSchema,
 ]);
@@ -150,10 +160,11 @@ const aboutItemSchema = z.object({
   displayOrder: z.number().int().nonnegative(),
 });
 
-const experienceSchema = z.object({
-  organization: nonEmptyText,
-  role: nonEmptyText,
-  summary: z.string().trim().min(40),
+const personalMotifSchema = z.object({
+  key: z.enum(personalMotifKeys),
+  label: nonEmptyText,
+  detail: z.string().trim().min(20),
+  group: z.enum(["engineering", "life"]),
   displayOrder: z.number().int().nonnegative(),
 });
 
@@ -163,5 +174,5 @@ export const portfolioContentSchema = z.object({
   projects: z.array(projectSchema).min(1),
   skillGroups: z.array(skillGroupSchema),
   aboutItems: z.array(aboutItemSchema),
-  experiences: z.array(experienceSchema),
+  personalMotifs: z.array(personalMotifSchema),
 });

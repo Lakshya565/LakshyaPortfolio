@@ -114,7 +114,7 @@ The UI must define what happens when the API is slow, content is empty, an image
 ### Included
 
 - Animated homepage hero with a two-dimensional project scene.
-- Featured work, experience, archive, About, and contact presentation.
+- Featured work, archive, About, and contact presentation.
 - Stable project case-study routes.
 - Structured, build-time validated local content with no runtime data service.
 - Version-controlled images, diagrams, and project media.
@@ -142,8 +142,8 @@ Adding an excluded feature later should trigger a fresh architecture and securit
 
 | Route | Responsibility | Data behavior |
 |---|---|---|
-| `/` | Hero, featured work, experience, archive preview, About preview, contact | Generated at build time from the local content manifest. |
-| `/projects/[slug]` | Complete project or experience case study | Prerendered by stable slug; unknown and unpublished slugs resolve to 404. |
+| `/` | Hero, featured work, archive preview, About preview, contact | Generated at build time from the local content manifest. |
+| `/projects/[slug]` | Complete project case study | Prerendered by stable slug; unknown and unpublished slugs resolve to 404. |
 | `/about` | Personal background, education, skills, activities, and interests | Renders structured groups in an intentional narrative order. |
 | `/404` | Branded not-found state | Offers routes back to work, About, and home. |
 
@@ -236,7 +236,7 @@ The site may still use client-side JavaScript for navigation enhancement, the ci
 
 Use two complementary local formats:
 
-- A typed TypeScript manifest for identity, social links, project metadata, skills, experience, About items, publication state, ordering, metrics, asset descriptors, and cross-project relationships.
+- A typed TypeScript manifest for identity, social links, project metadata, skills, About items, publication state, ordering, metrics, asset descriptors, and cross-project relationships.
 - One local MDX file per project for long-form case-study narrative. MDX is constrained to an allowlist of shared editorial components; project files should not import arbitrary application components.
 
 This approach keeps metadata easy to validate and query while avoiding enormous TypeScript string literals for case studies. `generateStaticParams` enumerates every published slug at build time, and unknown slugs return 404 rather than invoking runtime rendering.
@@ -344,8 +344,8 @@ Exact folders may change in Phase 0. Keep the repository single-application unle
 
 - `slug`, title, category/type, short description, role, dates, technologies, and accent token.
 - Priority flags such as featured, archive, and visible-in-map.
-- Optional repository, live demo, and video links.
-- Optional hero asset, metrics, gallery/diagram assets, and captions.
+- Optional repository and live-demo links plus a repeatable case-study video list.
+- Optional hero asset, metrics, gallery/diagram assets, captions, and per-video thumbnail references.
 - Publication state and deterministic display order.
 - The corresponding MDX module key.
 
@@ -353,17 +353,20 @@ Featured and archive are mutually exclusive. Every listed project is planned for
 
 ### Project MDX
 
-Each project has a dedicated MDX file containing its narrative sections. Use a consistent heading vocabulary—overview, problem, approach, contributions, architecture, results, media context, and takeaways—while allowing omissions.
+Each case-study project has a dedicated MDX file containing its narrative sections. Archive-only projects remain substantial manifest-backed cards and intentionally have no detail route or MDX file. Use a consistent heading vocabulary—overview, problem, approach, contributions, architecture, results, media context, and takeaways—while allowing omissions.
 
-MDX files may use only approved editorial components such as a callout, figure, comparison, or architecture diagram wrapper. They should not import navigation, map, layout, data-fetching, or arbitrary interactive components. This keeps content portable and prevents case studies from becoming bespoke applications.
+MDX files may use only the approved `Callout` editorial component. Images, diagrams, and video thumbnails come from the validated project asset manifest instead of ad hoc MDX components. MDX must not import navigation, map, layout, data-fetching, or arbitrary interactive components. This keeps content portable and prevents case studies from becoming bespoke applications.
 
-### Experience, skills, and About
+### Skills and About
 
-Experience and skills remain structured TypeScript data because they are short, repeated, and order-sensitive. `about.mdx` holds the longer personal narrative and may consume structured education/leadership items through the page composition rather than duplicating them.
+Skills and short education, leadership, community, and interest records remain
+structured TypeScript data because they are repeated and order-sensitive.
+`about.mdx` holds the longer personal narrative. Employment context belongs in
+the relevant project case study rather than a duplicate experience collection.
 
 ### Metrics and assets
 
-Metrics contain label, display value, optional context, and internal source note. Internal review notes are excluded from rendered output. Assets contain type, `/media/...` path, alt text, optional caption, and dimensions when useful. Remote media is excluded initially except explicit outbound video/demo links.
+Metrics contain label, display value, optional context, and internal source note. Internal review notes are excluded from rendered output. Assets contain type, a project-namespaced `/media/projects/<slug>/...` path, alt text, optional caption, and required intrinsic width and height. Case studies accept arbitrary-length image and video collections; each video has its own HTTPS destination and optional validated thumbnail reference. Remote media is excluded initially except explicit outbound video/demo links.
 
 ### Circuit-scene placement
 
@@ -388,7 +391,7 @@ Validation runs before or as part of `next build`; invalid public content fails 
 ### Static route generation
 
 - `/`, `/about`, and not-found content are prerendered.
-- `generateStaticParams` returns every published project slug.
+- `generateStaticParams` returns every published case-study slug; archive-only projects have no detail route.
 - Dynamic project parameters outside that list resolve to 404.
 - Metadata and social images derive from the same manifest used by the page.
 - Content changes require a new deployment, which is acceptable for this portfolio and makes publication reviewable through git history.
@@ -420,11 +423,11 @@ All known pages and project slugs are prerendered at build time. No page should 
 
 ### Component boundaries
 
-- Shell: `SiteShell`, `SiteNav`, `SiteFooter`, skip link, and route-error UI.
-- Home: `HeroContent`, `FeaturedProjectRow`, `ExperienceHighlight`, `ProjectArchive`, `AboutPreview`, and calls to action.
-- Map: `InteractiveMapHero`, `MapScene`, `MapNode`, ambient layers, and fallback.
-- Case study: `ProjectHeader`, `CaseStudyLayout`, `CaseStudySection`, `MetricsPanel`, `AssetGallery`, and `ProjectLinks`.
-- About/contact: `AboutContent`, `SkillsGrid`, and `SocialLinks`.
+- Shell: shared navigation, social links, skip link, route-arrival focus, and global layout.
+- Home: static introduction and project rows surrounding the progressive circuit scene.
+- Map: one scene boundary, server-rendered native project links, decorative traces, and typed placement data.
+- Case study: one renderer composed from header facts, normalized media, MDX narrative, optional outline, and adjacent navigation.
+- About/contact: static narrative and reusable education, leadership, and social-link primitives.
 
 Components accept typed data and semantic variants. Project type must not produce a sprawling collection of project-specific layouts.
 

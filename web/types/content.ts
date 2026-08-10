@@ -1,7 +1,7 @@
 export const socialLinkKinds = ["github", "linkedin", "email"] as const;
 export type SocialLinkKind = (typeof socialLinkKinds)[number];
 
-export type PendingSocialLink = Readonly<{
+type PendingSocialLink = Readonly<{
   kind: SocialLinkKind;
   label: string;
   status: "pending";
@@ -34,8 +34,8 @@ export const projectCategories = [
 ] as const;
 export type ProjectCategory = (typeof projectCategories)[number];
 
-export const projectAccentTokens = ["green", "purple", "mixed"] as const;
-export type ProjectAccentToken = (typeof projectAccentTokens)[number];
+export const projectWorkModes = ["systems", "physical", "hybrid"] as const;
+export type ProjectWorkMode = (typeof projectWorkModes)[number];
 
 export const projectLinkKinds = ["repository", "live", "video"] as const;
 export type ProjectLinkKind = (typeof projectLinkKinds)[number];
@@ -59,31 +59,56 @@ export const caseStudyKeys = [
 ] as const;
 export type CaseStudyKey = (typeof caseStudyKeys)[number];
 
-export type ProjectLink = Readonly<{
+export type ProjectSlug =
+  | CaseStudyKey
+  | "lucky-arduino"
+  | "backbuddy"
+  | "neurify"
+  | "agrisense"
+  | "risenrun-wifi-alarm-clock";
+
+export const personalMotifKeys = [
+  "maker-origin",
+  "quackta",
+  "taekwondo",
+  "scouting",
+  "shared-food",
+  "food-favorites",
+  "movement",
+  "anime",
+] as const;
+export type PersonalMotifKey = (typeof personalMotifKeys)[number];
+
+type ProjectLink = Readonly<{
   kind: ProjectLinkKind;
   label: string;
   href: string;
 }>;
 
-export type ProjectMetric = Readonly<{
+type ProjectMetric = Readonly<{
   label: string;
-  value: string;
+  value: string | number;
   context?: string;
-  sourceNote?: string;
 }>;
 
-export type ProjectAsset = Readonly<{
+type ProjectAsset = Readonly<{
   kind: ProjectAssetKind;
   path: string;
   alt: string;
   caption?: string;
-  width?: number;
-  height?: number;
+  width: number;
+  height: number;
   placeholder: boolean;
 }>;
 
+type ProjectVideo = Readonly<{
+  label: string;
+  href: string;
+  thumbnailPath?: string;
+}>;
+
 type ProjectBase = Readonly<{
-  slug: string;
+  slug: ProjectSlug;
   title: string;
   category: ProjectCategory;
   shortDescription: string;
@@ -91,10 +116,9 @@ type ProjectBase = Readonly<{
   startDate: string | null;
   endDate: string | null;
   technologies: readonly string[];
-  accent: ProjectAccentToken;
+  workMode: ProjectWorkMode;
   publication: "draft" | "published";
   contentStatus: "placeholder" | "reviewed";
-  launchTarget: "initial";
   displayOrder: number;
   displayInMap: boolean;
   links: readonly ProjectLink[];
@@ -107,6 +131,7 @@ export type CaseStudyProject = ProjectBase &
     presentation: "case-study";
     priority: "featured" | "supporting";
     caseStudyKey: CaseStudyKey;
+    videos: readonly ProjectVideo[];
   }>;
 
 export type ArchiveProject = ProjectBase &
@@ -114,7 +139,6 @@ export type ArchiveProject = ProjectBase &
     presentation: "archive-card";
     priority: "archive";
     caseStudyKey: null;
-    displayInMap: false;
   }>;
 
 export type Project = CaseStudyProject | ArchiveProject;
@@ -132,10 +156,11 @@ export type AboutItem = Readonly<{
   displayOrder: number;
 }>;
 
-export type Experience = Readonly<{
-  organization: string;
-  role: string;
-  summary: string;
+export type PersonalMotif = Readonly<{
+  key: PersonalMotifKey;
+  label: string;
+  detail: string;
+  group: "engineering" | "life";
   displayOrder: number;
 }>;
 
@@ -145,5 +170,5 @@ export type PortfolioContent = Readonly<{
   projects: readonly Project[];
   skillGroups: readonly SkillGroup[];
   aboutItems: readonly AboutItem[];
-  experiences: readonly Experience[];
+  personalMotifs: readonly PersonalMotif[];
 }>;
