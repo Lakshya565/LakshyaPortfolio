@@ -12,7 +12,7 @@ export function SiteHeader({ data }: Readonly<{ data: SiteShellData }>) {
           className="font-mono text-sm font-semibold tracking-[-0.02em] text-primary"
           href="/"
         >
-          LA<span className="text-accent-green">/</span>01
+          LA<span className="site-mark-accent">/</span>01
         </Link>
         <SiteNavigation socialLinks={data.socialLinks} />
       </div>

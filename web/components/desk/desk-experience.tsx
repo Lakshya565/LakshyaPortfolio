@@ -167,10 +167,10 @@ function hasModifiedNavigation(event: MouseEvent<HTMLAnchorElement>) {
 
 export function DeskExperience({
   hotspots,
-  projectSystem,
+  projectTree,
 }: Readonly<{
   hotspots: readonly DeskHotspotData[];
-  projectSystem: ReactNode;
+  projectTree: ReactNode;
 }>) {
   const [activeHotspot, setActiveHotspot] = useState<DeskHotspotKey | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -230,7 +230,7 @@ export function DeskExperience({
     return () => window.removeEventListener("keydown", cancelPendingOpen, true);
   }, [dialogOpen, zoomed]);
 
-  const openProjectSystem = () => {
+  const openProjectTree = () => {
     const destination = new URL(window.location.href);
     destination.hash = "project-system";
     if (window.location.hash !== destination.hash) {
@@ -251,7 +251,7 @@ export function DeskExperience({
       window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     if (shouldOpenImmediately) {
-      openProjectSystem();
+      openProjectTree();
       return;
     }
 
@@ -261,7 +261,7 @@ export function DeskExperience({
     setZoomed(true);
     openTimerRef.current = window.setTimeout(() => {
       openTimerRef.current = null;
-      openProjectSystem();
+      openProjectTree();
     }, 600);
   };
 
@@ -307,13 +307,13 @@ export function DeskExperience({
             ) : null}
 
             <Link
-              aria-label="Enter the project system"
+              aria-label="Explore the project tree"
               className="desk-monitor-trigger"
               href="/work"
               onClick={handleMonitorClick}
               ref={monitorRef}
             >
-              <span>Enter project system</span>
+              <span>Explore project tree</span>
             </Link>
           </div>
         </div>
@@ -374,13 +374,13 @@ export function DeskExperience({
         >
           <DialogHeader>
             <DialogTitle ref={dialogTitleRef} tabIndex={-1}>
-              Project system
+              Project tree
             </DialogTitle>
             <DialogDescription id="project-system-dialog-description">
-              Explore ten projects across software, AI, embedded systems, and hardware.
+              Open a node for context, or follow it to the complete project story.
             </DialogDescription>
           </DialogHeader>
-          <div className="project-system-dialog-scroll">{projectSystem}</div>
+          <div className="project-system-dialog-scroll">{projectTree}</div>
         </DialogContent>
       </Dialog>
     </>

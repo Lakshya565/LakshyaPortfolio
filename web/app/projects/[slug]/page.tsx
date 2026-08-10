@@ -42,7 +42,7 @@ export default async function ProjectPage({
     notFound();
   }
 
-  const document = await loadCaseStudyDocument(project.caseStudyKey);
+  const document = await loadCaseStudyDocument(project.documentKey);
 
   return (
     <CaseStudyRenderer

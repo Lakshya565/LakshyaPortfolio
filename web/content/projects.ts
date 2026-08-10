@@ -20,13 +20,10 @@ export const projects = [
       "Digital Twins",
       "Cisco IOS XE",
     ],
-    workMode: "systems",
+    workMode: "software",
     publication: "published",
     contentStatus: "reviewed",
     displayOrder: 10,
-    presentation: "case-study",
-    priority: "featured",
-    caseStudyKey: "cisco-agentic-runbook-creator",
     links: [],
     metrics: [
       {
@@ -61,13 +58,10 @@ export const projects = [
       "GitHub API",
       "OpenAI",
     ],
-    workMode: "systems",
+    workMode: "software",
     publication: "published",
     contentStatus: "reviewed",
     displayOrder: 20,
-    presentation: "case-study",
-    priority: "featured",
-    caseStudyKey: "repoframe",
     links: [
       {
         kind: "repository",
@@ -105,13 +99,10 @@ export const projects = [
     startDate: "2026-01",
     endDate: "2026-05",
     technologies: ["React", "FastAPI", "SQL", "REST APIs", "Barcode Scanning"],
-    workMode: "systems",
+    workMode: "software",
     publication: "published",
     contentStatus: "reviewed",
     displayOrder: 30,
-    presentation: "case-study",
-    priority: "supporting",
-    caseStudyKey: "nucurrent-inventory-system",
     links: [
       {
         kind: "live",
@@ -144,13 +135,10 @@ export const projects = [
       "Sensors",
       "Seven-Segment Displays",
     ],
-    workMode: "physical",
+    workMode: "hardware",
     publication: "published",
     contentStatus: "reviewed",
     displayOrder: 40,
-    presentation: "case-study",
-    priority: "supporting",
-    caseStudyKey: "smartlift-sleeve",
     links: [
       {
         kind: "live",
@@ -187,9 +175,6 @@ export const projects = [
     publication: "published",
     contentStatus: "reviewed",
     displayOrder: 50,
-    presentation: "case-study",
-    priority: "supporting",
-    caseStudyKey: "quackta",
     links: [],
     metrics: [],
     videos: [],
@@ -214,13 +199,10 @@ export const projects = [
       "Serial Communication",
       "HTML/CSS",
     ],
-    workMode: "physical",
+    workMode: "hybrid",
     publication: "published",
     contentStatus: "reviewed",
     displayOrder: 100,
-    presentation: "archive-card",
-    priority: "archive",
-    caseStudyKey: null,
     links: [
       {
         kind: "repository",
@@ -266,6 +248,7 @@ export const projects = [
       },
     ],
     assets: [],
+    videos: [],
   },
   {
     slug: "backbuddy",
@@ -277,13 +260,10 @@ export const projects = [
     startDate: "2025-01",
     endDate: "2025-05",
     technologies: ["PCB Design", "Basic Circuitry", "Hardware Prototyping"],
-    workMode: "physical",
+    workMode: "hardware",
     publication: "published",
     contentStatus: "reviewed",
     displayOrder: 110,
-    presentation: "archive-card",
-    priority: "archive",
-    caseStudyKey: null,
     links: [],
     metrics: [
       {
@@ -293,6 +273,7 @@ export const projects = [
       },
     ],
     assets: [],
+    videos: [],
   },
   {
     slug: "neurify",
@@ -308,12 +289,10 @@ export const projects = [
     publication: "published",
     contentStatus: "reviewed",
     displayOrder: 120,
-    presentation: "archive-card",
-    priority: "archive",
-    caseStudyKey: null,
     links: [],
     metrics: [],
     assets: [],
+    videos: [],
   },
   {
     slug: "agrisense",
@@ -329,9 +308,6 @@ export const projects = [
     publication: "published",
     contentStatus: "reviewed",
     displayOrder: 130,
-    presentation: "archive-card",
-    priority: "archive",
-    caseStudyKey: null,
     links: [
       {
         kind: "repository",
@@ -341,6 +317,7 @@ export const projects = [
     ],
     metrics: [],
     assets: [],
+    videos: [],
   },
   {
     slug: "risenrun-wifi-alarm-clock",
@@ -352,13 +329,10 @@ export const projects = [
     startDate: "2024-07",
     endDate: "2024-08",
     technologies: ["C/C++", "ESP32", "MQTT", "Wi-Fi", "Motors", "Hardware Controls"],
-    workMode: "physical",
+    workMode: "hardware",
     publication: "published",
     contentStatus: "reviewed",
     displayOrder: 140,
-    presentation: "archive-card",
-    priority: "archive",
-    caseStudyKey: null,
     links: [
       {
         kind: "repository",
@@ -374,5 +348,6 @@ export const projects = [
       },
     ],
     assets: [],
+    videos: [],
   },
 ] as const satisfies readonly Project[];

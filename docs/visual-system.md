@@ -3,12 +3,12 @@
 ## Direction and invariants
 
 The portfolio is permanently dark and uses a restrained atmospheric
-computer-system language. Green identifies systems-led work, purple identifies
-physical and human-facing work, and a balanced treatment identifies hybrid
-projects. Warm amber belongs only to personal motifs. None of these colors
-encode quality or completion.
+computer-system language. Green identifies Software work, electric blue
+identifies Hybrid work, and purple identifies Hardware work. A tri-color
+treatment represents Lakshya's combined identity; warm amber belongs only to
+personal motifs. None of these colors encode quality or completion.
 The desk artwork is replaceable. Semantic headings, the shared server-rendered
-project system, case studies, `/work`, and content projections are the lasting
+project tree, case studies, `/work`, and content projections are the lasting
 architecture.
 
 Later visual iterations may change composition, typography, illustration, glow,
@@ -26,7 +26,7 @@ utility class is useful.
 | Recessed/raised surfaces | `--surface`, `--surface-raised` | Cards, controls, menus |
 | Text hierarchy | `--primary`, `--secondary`, `--muted` | Headings, body, metadata |
 | Boundaries | `--line`, `--line-strong` | Dividers and control edges |
-| Project modes | `--accent-green`, `--accent-purple` | Systems, physical, and hybrid project identity |
+| Project modes | `--accent-green`, `--accent-blue`, `--accent-purple` | Software, Hybrid, and Hardware project identity |
 | Personal detail | `--accent-personal` | Hobbies and biographical workbench motifs only |
 | Keyboard focus | `--focus` | The only focus-ring source |
 | Motion | `--duration-interaction`, `--duration-route`, `--ease-out` | Press/hover and route arrival |
@@ -48,10 +48,11 @@ the 3:1 non-text threshold.
 | Secondary / canvas | 13.27:1 |
 | Muted / canvas | 7.32:1 |
 | Green / canvas | 11.12:1 |
-| Purple / canvas | 9.03:1 |
+| Blue / canvas | 10.72:1 |
+| Purple / canvas | 9.70:1 |
 | Border / canvas | 3.16:1 |
 | Strong border / canvas | 4.72:1 |
-| Focus / canvas | 13.20:1 |
+| Focus / canvas | 15.07:1 |
 
 ## Typography and layout
 
@@ -79,7 +80,8 @@ decorative, passive local image hidden from assistive technology; its monitor is
 a separate semantic `/work` link enhanced into a dialog trigger. Placeholder
 artwork is layout evidence only and is blocked by release validation.
 
-Grid texture identifies a routed case study; dot texture identifies a compact
-archive record. Both are static local SVG patterns. Every texture and work-mode
-color is paired with a visible label, so neither is required to understand or
-navigate the content.
+The project tree uses one static grid texture across every routed story. Visible
+Hybrid, Software, and Hardware branch headings pair with the blue, green, and
+purple connectors, so color is never required to understand the hierarchy.
+Native disclosure reflows the static branch connectors without measured geometry
+or animation.

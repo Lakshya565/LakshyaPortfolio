@@ -9,12 +9,12 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "border-transparent bg-accent-green text-canvas",
+        default: "border-transparent bg-primary text-canvas",
         outline: "border-line bg-surface text-secondary",
         secondary: "border-line bg-surface-raised text-foreground",
         ghost: "border-transparent bg-transparent text-secondary",
         link:
-          "h-auto border-transparent bg-transparent p-0 text-accent-green underline decoration-accent-green/50 underline-offset-4",
+          "h-auto border-transparent bg-transparent p-0 text-primary underline decoration-line-strong underline-offset-4",
       },
       size: {
         sm: "min-h-9 px-3 py-2 text-xs",

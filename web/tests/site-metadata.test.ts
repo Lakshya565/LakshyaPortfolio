@@ -74,7 +74,7 @@ describe("indexing metadata", () => {
     });
   });
 
-  it("lists only routable public pages and published case studies", () => {
+  it("lists static pages and every published project story", () => {
     const origin = new URL("https://portfolio.example.com");
     const sitemap = buildSitemap(origin, portfolioContent);
     const urls = sitemap.map(({ url }) => url);
@@ -88,8 +88,12 @@ describe("indexing metadata", () => {
       "https://portfolio.example.com/projects/nucurrent-inventory-system",
       "https://portfolio.example.com/projects/smartlift-sleeve",
       "https://portfolio.example.com/projects/quackta",
+      "https://portfolio.example.com/projects/lucky-arduino",
+      "https://portfolio.example.com/projects/backbuddy",
+      "https://portfolio.example.com/projects/neurify",
+      "https://portfolio.example.com/projects/agrisense",
+      "https://portfolio.example.com/projects/risenrun-wifi-alarm-clock",
     ]);
-    expect(urls).not.toContain("https://portfolio.example.com/projects/backbuddy");
     expect(new Set(urls).size).toBe(urls.length);
   });
 });

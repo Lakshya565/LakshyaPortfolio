@@ -1,5 +1,4 @@
 import type {
-  ArchiveProject,
   CaseStudyProject,
   PortfolioContent,
   Project,
@@ -23,19 +22,7 @@ export function getPublishedProjects(
 export function getPublishedCaseStudyProjects(
   content: Pick<PortfolioContent, "projects">,
 ): readonly CaseStudyProject[] {
-  return getPublishedProjects(content).filter(
-    (project): project is CaseStudyProject =>
-      project.presentation === "case-study",
-  );
-}
-
-export function getPublishedArchiveProjects(
-  content: Pick<PortfolioContent, "projects">,
-): readonly ArchiveProject[] {
-  return getPublishedProjects(content).filter(
-    (project): project is ArchiveProject =>
-      project.presentation === "archive-card",
-  );
+  return getPublishedProjects(content);
 }
 
 export function getPublishedProjectBySlug(
@@ -54,8 +41,7 @@ export function getPublishedCaseStudyBySlug(
   content: Pick<PortfolioContent, "projects">,
   slug: string,
 ): CaseStudyProject | null {
-  const project = getPublishedProjectBySlug(content, slug);
-  return project?.presentation === "case-study" ? project : null;
+  return getPublishedProjectBySlug(content, slug);
 }
 
 export function getPublishedCaseStudyParams(

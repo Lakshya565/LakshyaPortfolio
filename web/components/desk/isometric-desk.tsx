@@ -1,20 +1,17 @@
 import { DeskExperience } from "@/components/desk/desk-experience";
-import { ProjectSystem } from "@/components/project-system/project-system";
+import { ProjectTree } from "@/components/project-tree/project-tree";
 import type { HomePageData } from "@/lib/content/page-data";
 
 export function IsometricDesk({
   data,
 }: Readonly<{
-  data: Pick<HomePageData, "personalHotspots" | "projectSystem">;
+  data: Pick<HomePageData, "personalHotspots" | "projectTree">;
 }>) {
   return (
     <DeskExperience
       hotspots={data.personalHotspots}
-      projectSystem={
-        <ProjectSystem
-          data={data.projectSystem}
-          headingId="dialog-project-system-heading"
-        />
+      projectTree={
+        <ProjectTree branchHeadingLevel="h3" data={data.projectTree} />
       }
     />
   );

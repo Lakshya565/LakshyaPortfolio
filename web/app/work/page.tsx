@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-import { ProjectSystem } from "@/components/project-system/project-system";
+import { ProjectTree } from "@/components/project-tree/project-tree";
 import { getWorkPageData } from "@/lib/content/portfolio-repository";
 import { buildStaticPageMetadata } from "@/lib/metadata/site-metadata";
 
@@ -16,11 +16,12 @@ export default function WorkPage() {
 
   return (
     <main className="work-page site-container" id="main-content" tabIndex={-1}>
-      <ProjectSystem
-        data={data.projectSystem}
-        headingId="work-project-system-heading"
-        headingLevel="h1"
-      />
+      <header className="project-tree-page-header">
+        <p className="eyebrow">Work · {data.projectTree.projectCount} projects</p>
+        <h1>Project tree</h1>
+        <p>Open a node for context, or follow it to the complete project story.</p>
+      </header>
+      <ProjectTree data={data.projectTree} />
     </main>
   );
 }

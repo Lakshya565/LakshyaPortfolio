@@ -48,7 +48,7 @@ export function getProjectRouteData(slug: string) {
 
   return {
     pageData: toCaseStudyPageData(project),
-    caseStudyKey: project.caseStudyKey,
+    documentKey: project.slug,
     navigation: {
       previous: adjacent.previous
         ? toCaseStudyNavigationItem(adjacent.previous)

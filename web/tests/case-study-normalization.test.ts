@@ -9,11 +9,10 @@ import type { CaseStudyProject } from "../types/content";
 
 function getCaseStudy(slug: string) {
   const project = portfolioContent.projects.find(
-    (candidate) =>
-      candidate.slug === slug && candidate.presentation === "case-study",
+    (candidate) => candidate.slug === slug,
   );
 
-  if (!project || project.presentation !== "case-study") {
+  if (!project) {
     throw new Error(`Missing test case study: ${slug}`);
   }
 

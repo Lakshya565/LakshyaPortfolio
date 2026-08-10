@@ -1,18 +1,14 @@
 import { formatProjectDateRange } from "@/lib/content/case-study-normalization";
 import {
-  getPublishedArchiveProjects,
-  getPublishedCaseStudyProjects,
+  getPublishedProjects,
   getPublishedSocialLinks,
 } from "@/lib/content/project-queries";
 import { buildDeskHotspots, type DeskHotspotData } from "@/lib/desk/hotspots";
 import type {
   AboutItem,
-  ArchiveProject,
-  CaseStudyProject,
   PortfolioContent,
   Project,
   ProjectCategory,
-  ProjectLinkKind,
   ProjectSlug,
   ProjectWorkMode,
   SkillGroup,
@@ -25,52 +21,32 @@ export type SocialLinkData = Readonly<{
   href: string;
 }>;
 
-type ProjectSystemBaseData = Readonly<{
+export type ProjectTreeProjectData = Readonly<{
   slug: ProjectSlug;
   title: string;
   category: ProjectCategory;
-  description: string;
+  summary: string;
   role: string;
   technologies: readonly string[];
   workMode: ProjectWorkMode;
   dateLabel: string | null;
+  routeHref: string;
 }>;
 
-export type ProjectSystemCaseStudyData = ProjectSystemBaseData &
-  Readonly<{
-    presentation: "case-study";
-    priority: "featured" | "supporting";
-    routeHref: string;
-  }>;
-
-type ArchiveProjectLinkData = Readonly<{
-  kind: ProjectLinkKind;
+export type ProjectTreeBranchData = Readonly<{
+  workMode: ProjectWorkMode;
   label: string;
-  href: string;
+  projects: readonly ProjectTreeProjectData[];
 }>;
 
-type ArchiveProjectMetricData = Readonly<{
-  label: string;
-  value: string | number;
-  context: string | null;
-}>;
-
-export type ProjectSystemArchiveData = ProjectSystemBaseData &
-  Readonly<{
-    presentation: "archive";
-    priority: "archive";
-    anchorId: string;
-    permalinkHref: string;
-    links: readonly ArchiveProjectLinkData[];
-    metrics: readonly ArchiveProjectMetricData[];
+export type ProjectTreeData = Readonly<{
+  root: Readonly<{
+    name: string;
+    oneLiner: string;
+    routeHref: "/about";
   }>;
-
-export type ProjectSystemProjectData =
-  | ProjectSystemCaseStudyData
-  | ProjectSystemArchiveData;
-
-export type ProjectSystemData = Readonly<{
-  projects: readonly ProjectSystemProjectData[];
+  branches: readonly ProjectTreeBranchData[];
+  projectCount: number;
 }>;
 
 export type SiteShellData = Readonly<{
@@ -81,12 +57,12 @@ export type SiteShellData = Readonly<{
 export type HomePageData = Readonly<{
   profile: PortfolioContent["siteProfile"];
   personalHotspots: readonly DeskHotspotData[];
-  projectSystem: ProjectSystemData;
+  projectTree: ProjectTreeData;
   socialLinks: readonly SocialLinkData[];
 }>;
 
 export type WorkPageData = Readonly<{
-  projectSystem: ProjectSystemData;
+  projectTree: ProjectTreeData;
 }>;
 
 type AboutPageData = Readonly<{
@@ -113,69 +89,50 @@ function toSocialLinkData(
   }));
 }
 
-function toProjectSystemBase(project: Project): ProjectSystemBaseData {
+const projectTreeBranchDefinitions = [
+  { workMode: "hybrid", label: "Hybrid" },
+  { workMode: "software", label: "Software" },
+  { workMode: "hardware", label: "Hardware" },
+] as const satisfies readonly Readonly<{
+  workMode: ProjectWorkMode;
+  label: string;
+}>[];
+
+function toProjectTreeProject(project: Project): ProjectTreeProjectData {
   return {
     slug: project.slug,
     title: project.title.trim(),
     category: project.category,
-    description: project.shortDescription.trim(),
+    summary: project.shortDescription.trim(),
     role: project.role.trim(),
     technologies: project.technologies
       .map((technology) => technology.trim())
       .filter(Boolean),
     workMode: project.workMode,
     dateLabel: formatProjectDateRange(project.startDate, project.endDate),
-  };
-}
-
-function toProjectSystemCaseStudy(
-  project: CaseStudyProject,
-): ProjectSystemCaseStudyData {
-  return {
-    ...toProjectSystemBase(project),
-    presentation: "case-study",
-    priority: project.priority,
     routeHref: `/projects/${project.slug}`,
   };
 }
 
-function toProjectSystemArchive(
-  project: ArchiveProject,
-): ProjectSystemArchiveData {
-  const anchorId = `project-${project.slug}`;
+export function buildProjectTreeData(
+  content: Pick<PortfolioContent, "siteProfile" | "projects">,
+): ProjectTreeData {
+  const projects = getPublishedProjects(content).map(toProjectTreeProject);
+  const branches = projectTreeBranchDefinitions.map(({ workMode, label }) => ({
+    workMode,
+    label,
+    projects: projects.filter((project) => project.workMode === workMode),
+  }));
 
   return {
-    ...toProjectSystemBase(project),
-    presentation: "archive",
-    priority: "archive",
-    anchorId,
-    permalinkHref: `/work#${anchorId}`,
-    links: project.links.map(({ kind, label, href }) => ({
-      kind,
-      label: label.trim(),
-      href: href.trim(),
-    })),
-    metrics: project.metrics.map(({ label, value, context }) => ({
-      label: label.trim(),
-      value: typeof value === "string" ? value.trim() : value,
-      context: context?.trim() || null,
-    })),
+    root: {
+      name: content.siteProfile.name.trim(),
+      oneLiner: content.siteProfile.headline.trim(),
+      routeHref: "/about",
+    },
+    branches,
+    projectCount: projects.length,
   };
-}
-
-export function buildProjectSystemData(
-  content: Pick<PortfolioContent, "projects">,
-): ProjectSystemData {
-  const projects = [
-    ...getPublishedCaseStudyProjects(content).map(toProjectSystemCaseStudy),
-    ...getPublishedArchiveProjects(content).map(toProjectSystemArchive),
-  ].toSorted((left, right) => {
-    const leftProject = content.projects.find(({ slug }) => slug === left.slug);
-    const rightProject = content.projects.find(({ slug }) => slug === right.slug);
-    return (leftProject?.displayOrder ?? 0) - (rightProject?.displayOrder ?? 0);
-  });
-
-  return { projects };
 }
 
 export function buildSiteShellData(content: PortfolioContent): SiteShellData {
@@ -191,13 +148,13 @@ export function buildHomePageData(content: PortfolioContent): HomePageData {
     personalHotspots: buildDeskHotspots(
       content.personalMotifs.toSorted(compareDisplayOrder),
     ),
-    projectSystem: buildProjectSystemData(content),
+    projectTree: buildProjectTreeData(content),
     socialLinks: toSocialLinkData(content),
   };
 }
 
 export function buildWorkPageData(content: PortfolioContent): WorkPageData {
-  return { projectSystem: buildProjectSystemData(content) };
+  return { projectTree: buildProjectTreeData(content) };
 }
 
 export function buildAboutPageData(content: PortfolioContent): AboutPageData {

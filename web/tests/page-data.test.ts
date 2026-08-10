@@ -13,71 +13,73 @@ import {
 } from "../lib/navigation/site-navigation";
 import type { PortfolioContent } from "../types/content";
 
-const expectedProjectOrder = [
-  "cisco-agentic-runbook-creator",
-  "repoframe",
-  "nucurrent-inventory-system",
-  "smartlift-sleeve",
-  "quackta",
-  "lucky-arduino",
-  "backbuddy",
-  "neurify",
-  "agrisense",
-  "risenrun-wifi-alarm-clock",
+const expectedBranches = [
+  {
+    workMode: "hybrid",
+    slugs: ["quackta", "lucky-arduino", "neurify", "agrisense"],
+  },
+  {
+    workMode: "software",
+    slugs: [
+      "cisco-agentic-runbook-creator",
+      "repoframe",
+      "nucurrent-inventory-system",
+    ],
+  },
+  {
+    workMode: "hardware",
+    slugs: ["smartlift-sleeve", "backbuddy", "risenrun-wifi-alarm-clock"],
+  },
 ];
 
 describe("page data projections", () => {
-  it("builds one ordered project system for the homepage and /work", () => {
+  it("builds one ordered project tree for the homepage and /work", () => {
     const home = buildHomePageData(portfolioContent);
     const work = buildWorkPageData(portfolioContent);
 
-    expect(home.projectSystem).toEqual(work.projectSystem);
-    expect(home.projectSystem.projects.map(({ slug }) => slug)).toEqual(
-      expectedProjectOrder,
-    );
+    expect(home.projectTree).toEqual(work.projectTree);
+    expect(home.projectTree.root).toEqual({
+      name: "Lakshya Agarwal",
+      oneLiner: "I make computers do useful things in the real world.",
+      routeHref: "/about",
+    });
     expect(
-      home.projectSystem.projects.filter(
-        ({ presentation }) => presentation === "case-study",
-      ),
-    ).toHaveLength(5);
+      home.projectTree.branches.map(({ workMode, projects }) => ({
+        workMode,
+        slugs: projects.map(({ slug }) => slug),
+      })),
+    ).toEqual(expectedBranches);
+    expect(home.projectTree.projectCount).toBe(10);
     expect(
-      home.projectSystem.projects.filter(
-        ({ presentation }) => presentation === "archive",
-      ),
-    ).toHaveLength(5);
+      home.projectTree.branches
+        .flatMap(({ projects }) => projects)
+        .every(({ routeHref }) => routeHref.startsWith("/projects/")),
+    ).toBe(true);
   });
 
-  it("projects archive evidence and stable /work permalinks without editorial fields", () => {
-    const { projects } = buildWorkPageData(portfolioContent).projectSystem;
-    const cisco = projects[0];
+  it("projects routed display data without editorial control fields", () => {
+    const projects = buildWorkPageData(portfolioContent).projectTree.branches.flatMap(
+      (branch) => branch.projects,
+    );
+    const cisco = projects.find(
+      ({ slug }) => slug === "cisco-agentic-runbook-creator",
+    );
     const luckyArduino = projects.find(
       ({ slug }) => slug === "lucky-arduino",
     );
 
     expect(cisco).toMatchObject({
-      presentation: "case-study",
-      priority: "featured",
+      workMode: "software",
       routeHref: "/projects/cisco-agentic-runbook-creator",
     });
     expect(luckyArduino).toMatchObject({
-      presentation: "archive",
-      anchorId: "project-lucky-arduino",
-      permalinkHref: "/work#project-lucky-arduino",
-    });
-
-    if (luckyArduino?.presentation !== "archive") {
-      throw new Error("Expected Lucky Arduino to remain an archive project");
-    }
-
-    expect(luckyArduino.links).toHaveLength(4);
-    expect(luckyArduino.metrics[0]).toEqual({
-      label: "Video views",
-      value: "50K+",
-      context: "Reported across the Lucky Arduino channel.",
+      workMode: "hybrid",
+      routeHref: "/projects/lucky-arduino",
     });
     expect(luckyArduino).not.toHaveProperty("publication");
     expect(luckyArduino).not.toHaveProperty("contentStatus");
-    expect(luckyArduino.metrics[0]).not.toHaveProperty("sourceNote");
+    expect(luckyArduino).not.toHaveProperty("links");
+    expect(luckyArduino).not.toHaveProperty("metrics");
   });
 
   it("builds eight desk hotspot groups that cover all nine motifs", () => {
@@ -132,8 +134,11 @@ describe("page data projections", () => {
     const work = buildWorkPageData(emptyContent);
     const about = buildAboutPageData(emptyContent);
 
-    expect(home.projectSystem.projects).toEqual([]);
-    expect(work.projectSystem.projects).toEqual([]);
+    expect(home.projectTree.projectCount).toBe(0);
+    expect(work.projectTree.projectCount).toBe(0);
+    expect(
+      home.projectTree.branches.every(({ projects }) => projects.length === 0),
+    ).toBe(true);
     expect(home.personalHotspots.every(({ motifs }) => motifs.length === 0)).toBe(
       true,
     );

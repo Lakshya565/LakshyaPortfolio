@@ -109,7 +109,7 @@ Invoke-WebRequest -UseBasicParsing "$ProductionOrigin/social-card"
 
 Then verify:
 
-- Every five case-study routes returns 200; an unknown and archive-only slug
+- All ten published project routes return 200; an unknown or unpublished slug
   returns 404.
 - Canonicals, Open Graph, Twitter image, robots sitemap reference, and every
   sitemap URL use exactly the production origin.

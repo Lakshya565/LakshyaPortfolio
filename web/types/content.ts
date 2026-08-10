@@ -34,7 +34,7 @@ export const projectCategories = [
 ] as const;
 export type ProjectCategory = (typeof projectCategories)[number];
 
-export const projectWorkModes = ["systems", "physical", "hybrid"] as const;
+export const projectWorkModes = ["software", "hardware", "hybrid"] as const;
 export type ProjectWorkMode = (typeof projectWorkModes)[number];
 
 export const projectLinkKinds = ["repository", "live", "video"] as const;
@@ -50,22 +50,20 @@ export const projectAssetKinds = [
 ] as const;
 export type ProjectAssetKind = (typeof projectAssetKinds)[number];
 
-export const caseStudyKeys = [
+export const projectSlugs = [
   "cisco-agentic-runbook-creator",
   "repoframe",
   "nucurrent-inventory-system",
   "smartlift-sleeve",
   "quackta",
+  "lucky-arduino",
+  "backbuddy",
+  "neurify",
+  "agrisense",
+  "risenrun-wifi-alarm-clock",
 ] as const;
-export type CaseStudyKey = (typeof caseStudyKeys)[number];
-
-export type ProjectSlug =
-  | CaseStudyKey
-  | "lucky-arduino"
-  | "backbuddy"
-  | "neurify"
-  | "agrisense"
-  | "risenrun-wifi-alarm-clock";
+export type ProjectSlug = (typeof projectSlugs)[number];
+export type CaseStudyKey = ProjectSlug;
 
 export const personalMotifKeys = [
   "maker-origin",
@@ -124,24 +122,11 @@ type ProjectBase = Readonly<{
   links: readonly ProjectLink[];
   metrics: readonly ProjectMetric[];
   assets: readonly ProjectAsset[];
+  videos: readonly ProjectVideo[];
 }>;
 
-export type CaseStudyProject = ProjectBase &
-  Readonly<{
-    presentation: "case-study";
-    priority: "featured" | "supporting";
-    caseStudyKey: CaseStudyKey;
-    videos: readonly ProjectVideo[];
-  }>;
-
-export type ArchiveProject = ProjectBase &
-  Readonly<{
-    presentation: "archive-card";
-    priority: "archive";
-    caseStudyKey: null;
-  }>;
-
-export type Project = CaseStudyProject | ArchiveProject;
+export type Project = ProjectBase;
+export type CaseStudyProject = Project;
 
 export type SkillGroup = Readonly<{
   name: string;

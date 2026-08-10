@@ -6,6 +6,11 @@ This document translates [`portfolio-overview.md`](./portfolio-overview.md) into
 
 This plan is not implementation authorization. Begin only the phase Lakshya explicitly approves. Do not silently continue, deploy hosted resources, connect a domain, incur cost, add analytics, or publish content without separate permission.
 
+> **Current redesign authority:** The desk and project-system work originally
+> described in Phase 5 and its downstream visual assumptions are superseded by
+> [`desk-project-tree-redesign-phases.md`](./desk-project-tree-redesign-phases.md).
+> This master roadmap will be reconciled after the redesign passes its final audit.
+
 ## Delivery rules
 
 ### One approved phase at a time

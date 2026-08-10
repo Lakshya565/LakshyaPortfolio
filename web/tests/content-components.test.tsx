@@ -1,55 +1,60 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 
-import { ProjectSystem } from "../components/project-system/project-system";
+import { ProjectTree } from "../components/project-tree/project-tree";
 import { SocialLinks } from "../components/site/social-links";
 import { portfolioContent } from "../content/portfolio";
 import {
   buildHomePageData,
-  buildProjectSystemData,
+  buildProjectTreeData,
 } from "../lib/content/page-data";
 
-describe("project system", () => {
-  const data = buildProjectSystemData(portfolioContent);
+describe("project tree", () => {
+  const data = buildProjectTreeData(portfolioContent);
 
-  it("server-renders all case studies and archives through one component", () => {
-    const html = renderToStaticMarkup(
-      <ProjectSystem data={data} headingId="project-system-test-heading" />,
-    );
+  it("server-renders the root, three labeled branches, and all ten projects", () => {
+    const html = renderToStaticMarkup(<ProjectTree data={data} />);
 
-    expect(html.match(/class="project-system-node"/g)).toHaveLength(10);
-    expect(html.match(/data-presentation="case-study"/g)).toHaveLength(5);
-    expect(html.match(/data-presentation="archive"/g)).toHaveLength(5);
+    expect(html.match(/class="project-tree-node"/g)).toHaveLength(10);
+    expect(html.match(/<details>/g)).toHaveLength(10);
+    expect(html).toContain('href="/about"');
+    expect(html).toContain("Lakshya Agarwal");
     expect(html).toContain('href="/projects/cisco-agentic-runbook-creator"');
     expect(html).toContain("Cisco Agentic Runbook Creator");
     expect(html).toContain("Lucky Arduino Collection");
+    expect(html).toContain(">Hybrid</h2>");
+    expect(html).toContain(">Software</h2>");
+    expect(html).toContain(">Hardware</h2>");
   });
 
-  it("keeps archive evidence at /work permalinks without inventing detail routes", () => {
-    const html = renderToStaticMarkup(
-      <ProjectSystem data={data} headingId="project-system-test-heading" />,
-    );
+  it("keeps mobile DOM order and project depth inside native disclosure", () => {
+    const html = renderToStaticMarkup(<ProjectTree data={data} />);
+    const hybridBranchIndex = html.indexOf('data-work-mode="hybrid"');
+    const softwareBranchIndex = html.indexOf('data-work-mode="software"');
+    const hardwareBranchIndex = html.indexOf('data-work-mode="hardware"');
 
-    expect(html).toContain('id="project-lucky-arduino"');
-    expect(html).toContain('href="/work#project-lucky-arduino"');
-    expect(html).toContain(
-      'href="https://github.com/Lakshya565/Basic-Electronics-Projects"',
-    );
-    expect(html).toContain('target="_blank"');
-    expect(html).toContain('rel="noreferrer noopener"');
-    expect(html).not.toContain('href="/projects/lucky-arduino"');
+    expect(hybridBranchIndex).toBeGreaterThan(-1);
+    expect(softwareBranchIndex).toBeGreaterThan(hybridBranchIndex);
+    expect(hardwareBranchIndex).toBeGreaterThan(softwareBranchIndex);
+    expect(html).toContain('href="/projects/lucky-arduino"');
+    expect(html).toContain('href="/projects/backbuddy"');
+    expect(html.match(/Open project/g)).toHaveLength(10);
+    expect(html).toContain("Technologies");
+    expect(html).toContain('aria-label="5 more technologies"');
+    expect(html.match(/<pattern/g)).toHaveLength(11);
   });
 
   it("renders an intentional empty state without empty project nodes", () => {
-    const html = renderToStaticMarkup(
-      <ProjectSystem
-        data={{ projects: [] }}
-        headingId="empty-project-system-heading"
-      />,
-    );
+    const emptyData = {
+      ...data,
+      branches: data.branches.map((branch) => ({ ...branch, projects: [] })),
+      projectCount: 0,
+    };
+    const html = renderToStaticMarkup(<ProjectTree data={emptyData} />);
 
     expect(html).toContain("No public projects are available yet.");
-    expect(html).not.toContain('class="project-system-node"');
+    expect(html).toContain('href="/about"');
+    expect(html).not.toContain('class="project-tree-node"');
   });
 });
 

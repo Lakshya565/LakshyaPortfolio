@@ -60,12 +60,12 @@ describe("desk hotspot configuration", () => {
     const html = renderToStaticMarkup(
       createElement(DeskExperience, {
         hotspots: buildDeskHotspots(portfolioContent.personalMotifs),
-        projectSystem: createElement("p", null, "Project system"),
+        projectTree: createElement("p", null, "Project tree"),
       }),
     );
 
     expect(html).toContain('href="/work"');
-    expect(html).toContain('aria-label="Enter the project system"');
+    expect(html).toContain('aria-label="Explore the project tree"');
     expect(html).toContain('src="/media/site/lakshya-desk.svg"');
     expect(html).not.toContain('aria-label="Objects on my desk"');
   });

@@ -5,12 +5,12 @@
 Portfolio content is version-controlled under `web/content/`:
 
 - `site.ts` contains identity and reviewed public social/contact links.
-- `projects.ts` contains every project and archive-card record.
+- `projects.ts` contains every routed project record.
 - `about.ts` contains structured skills and About items.
 - `about.ts` also contains the editable labels and descriptions for the nine
   personal desk motifs used by eight typed hotspot groups.
 - `about.mdx` contains the longer personal narrative.
-- `case-studies/*.mdx` contains long-form case-study drafts.
+- `case-studies/*.mdx` contains project stories whose depth follows the available evidence.
 - `portfolio.ts` assembles the complete validated content object.
 
 The shared contract is in `web/types/content.ts`. Runtime schemas and cross-file checks live under `web/lib/content/`.
@@ -43,14 +43,10 @@ substitute for the Cisco omission review, client approvals, or rendered review.
 
 ## Static project routes
 
-Published `case-study` records prerender at `/projects/<slug>`. The route gets its
+Every published project prerenders at `/projects/<slug>`. The route gets its
 parameters from the manifest, resolves MDX through the explicit loader registry,
-and sets `dynamicParams = false`; unknown, unpublished, and archive-only slugs
+and sets `dynamicParams = false`; unknown and unpublished slugs
 therefore return the shared 404 page instead of invoking runtime generation.
-
-Published `archive-card` records intentionally have no detail route. They render
-as substantial entries in the shared project system on `/work` and in the
-homepage monitor dialog.
 
 Project slugs are permanent public identifiers. Changing a published slug also
 requires an explicit redirect, which is deferred until there is a real rename.
@@ -69,29 +65,20 @@ The application uses ordinary Next.js prerendering rather than
 but this preserves normal Vercel capabilities without creating a runtime content
 dependency.
 
-## Adding a case-study project
+## Adding a project
 
-1. Add a stable slug to `caseStudyKeys` in `web/types/content.ts`.
-2. Add a `presentation: "case-study"` record to `web/content/projects.ts`.
+1. Add a stable slug to `projectSlugs` in `web/types/content.ts`.
+2. Add the project record to `web/content/projects.ts`.
 3. Create `web/content/case-studies/<slug>.mdx`.
 4. Add the explicit loader to `web/content/case-studies/registry.ts`.
 5. Add referenced media under `web/public/media/projects/<slug>/`.
 6. Run content validation, tests, and the production build. Confirm the new slug
    appears in the static route list.
 
-The `caseStudyKey`, manifest slug, MDX filename, and registry key must match. Dynamic user-controlled MDX imports are not permitted.
-
-## Adding an archive card
-
-Archive items use:
-
-- `presentation: "archive-card"`
-- `priority: "archive"`
-- `caseStudyKey: null`
-
-They need a substantial summary, role, technologies, and any available verified
-links or media, but they do not require an MDX case-study route. Every published
-archive item receives the stable `/work#project-<slug>` permalink automatically.
+The manifest slug, MDX filename, and registry key must match. Dynamic
+user-controlled MDX imports are not permitted. A project with limited evidence
+should use a concise, honest story rather than filler; route availability does
+not require every story to have the same length.
 
 ## Voice and ownership
 
@@ -171,9 +158,9 @@ Release validation rejects pending entries.
 
 The Vercel URL is requested separately during deployment for canonical metadata.
 
-## Desk hotspots and project-system membership
+## Desk hotspots and project-tree membership
 
-Every published project appears in the shared project system. Do not add a
+Every published project appears in the shared project tree. Do not add a
 second scene-eligibility flag: `publication` and `displayOrder` are the canonical
 membership and ordering controls for both `/work` and the homepage dialog.
 
@@ -186,13 +173,15 @@ references, or project facts embedded in the artwork.
 
 `workMode` is editorial meaning, not a color picker:
 
-- `systems` means software, infrastructure, or computation-led work and renders green.
-- `physical` means physical or human-facing work and renders purple.
-- `hybrid` means neither half explains the project alone and renders both.
+- `software` means software, infrastructure, or computation-led work and renders green.
+- `hardware` means physical circuitry, devices, or human-facing hardware and renders purple.
+- `hybrid` means neither software nor hardware explains the project alone and renders blue.
 
-Presentation determines project-system texture automatically: case studies use
-a grid and archive records use dots. Size and order communicate prominence;
-color does not.
+The tree groups projects into Hybrid, Software, and Hardware branches, in that
+visible order. Within each branch, `displayOrder` communicates editorial ordering;
+work-mode color communicates technical character, never quality. The typed tree
+adapter owns that presentation grouping so authored project records remain free
+of layout coordinates.
 
 ## Editing and removal
 

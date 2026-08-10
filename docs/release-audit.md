@@ -10,6 +10,10 @@ deferred while the frontend is overhauled on localhost. Re-run this audit agains
 the eventual final committed content and deployed URL; do not treat these
 localhost measurements as field data.
 
+The route counts and visual measurements below predate the active desk and
+project-tree redesign. They remain historical evidence, not claims about the
+current ten-route Phase 1 foundation.
+
 ## Audit identity
 
 | Item | Value |

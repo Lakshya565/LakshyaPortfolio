@@ -6,6 +6,11 @@ This document defines the product, content strategy, architecture, contracts, qu
 
 This document is not authorization to implement or deploy the site. Work begins only after the open questions are resolved and a specific phase is explicitly approved.
 
+> **Current redesign authority:** The desk, project-system presentation, work-mode
+> naming, and case-study/archive split described here are superseded during the
+> active redesign by [`desk-project-tree-redesign-phases.md`](./desk-project-tree-redesign-phases.md).
+> This overview will be reconciled after that redesign passes its final audit.
+
 ## Product summary
 
 Build a public, recruiting-focused portfolio for a UIUC Computer Engineering student whose work spans software, AI systems, embedded systems, and hardware design.

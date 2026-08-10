@@ -4,7 +4,6 @@ import { portfolioContent } from "../content/portfolio";
 import { toCaseStudyPageData } from "../lib/content/case-study-normalization";
 import {
   getAdjacentPublishedCaseStudies,
-  getPublishedArchiveProjects,
   getPublishedCaseStudyBySlug,
   getPublishedCaseStudyParams,
   getPublishedCaseStudyProjects,
@@ -29,15 +28,24 @@ describe("project route queries", () => {
       "nucurrent-inventory-system",
       "smartlift-sleeve",
       "quackta",
+      "lucky-arduino",
+      "backbuddy",
+      "neurify",
+      "agrisense",
+      "risenrun-wifi-alarm-clock",
     ]);
   });
 
-  it("keeps published archive cards out of case-study routes", () => {
-    expect(getPublishedArchiveProjects(portfolioContent)).toHaveLength(5);
+  it("routes projects that previously appeared only in the archive", () => {
     expect(getPublishedProjectBySlug(portfolioContent, "backbuddy")?.title).toBe(
       "BackBuddy",
     );
-    expect(getPublishedCaseStudyBySlug(portfolioContent, "backbuddy")).toBeNull();
+    expect(getPublishedCaseStudyBySlug(portfolioContent, "backbuddy")?.slug).toBe(
+      "backbuddy",
+    );
+    expect(getPublishedCaseStudyParams(portfolioContent)).toContainEqual({
+      slug: "backbuddy",
+    });
   });
 
   it("returns null and no static param for an unpublished project", () => {

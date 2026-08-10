@@ -37,6 +37,26 @@ const caseStudyRegistry = {
     fileName: "quackta.mdx",
     load: () => import("./quackta.mdx"),
   },
+  "lucky-arduino": {
+    fileName: "lucky-arduino.mdx",
+    load: () => import("./lucky-arduino.mdx"),
+  },
+  backbuddy: {
+    fileName: "backbuddy.mdx",
+    load: () => import("./backbuddy.mdx"),
+  },
+  neurify: {
+    fileName: "neurify.mdx",
+    load: () => import("./neurify.mdx"),
+  },
+  agrisense: {
+    fileName: "agrisense.mdx",
+    load: () => import("./agrisense.mdx"),
+  },
+  "risenrun-wifi-alarm-clock": {
+    fileName: "risenrun-wifi-alarm-clock.mdx",
+    load: () => import("./risenrun-wifi-alarm-clock.mdx"),
+  },
 } satisfies Record<CaseStudyKey, CaseStudyRegistryEntry>;
 
 export async function loadCaseStudyDocument(key: CaseStudyKey) {

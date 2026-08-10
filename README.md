@@ -4,7 +4,7 @@ A static-first personal portfolio showcasing software, AI, embedded, and hardwar
 projects through detailed case studies and an atmospheric sci-fi isometric desk.
 
 Phases 0 through 7 establish the repository, validated content architecture,
-five static case-study routes, responsive shell, resilient sparse/rich renderer,
+ten static project routes, responsive shell, resilient sparse/rich renderer,
 isometric desk experience, route continuity, and visual system. Phase 8 now has
 an explicit input inventory; Phase 9 has a measured local audit and safe
 discovery foundation; Phase 10 has an operating runbook. Final public content,
@@ -16,14 +16,15 @@ final-content/native-device verification, and production deployment remain gated
 - Version-controlled local content with build-time validation.
 - Server Components by default; narrowly scoped Client Components only when interaction requires them.
 - No runtime API, database, authentication, analytics, or secrets.
-- Published case studies prerender at `/projects/<slug>` from explicit local MDX imports; unknown and archive-only slugs return 404.
+- Every published project prerenders at `/projects/<slug>` from explicit local MDX imports; unknown and unpublished slugs return 404.
 - Manifest media, metrics, links, section outlines, and adjacent navigation are normalized into renderer-only data that excludes editorial control fields.
 - The same restrictive MDX policy runs during validation and compilation. Development and production builds use Next's supported Webpack mode because Turbopack cannot serialize the local policy plugin without duplicating it.
-- The homepage uses a hand-authored local isometric desk SVG with eight typed personal hotspot groups. Its monitor progressively opens the server-rendered project system in a full-screen dialog, while the same system remains directly available at `/work` without requiring the interaction.
+- The homepage uses a hand-authored local isometric desk SVG with eight typed personal hotspot groups. Its monitor progressively opens the server-rendered project tree in a full-screen dialog, while the same tree remains directly available at `/work` without requiring the interaction.
 - Route changes begin immediately; an interruptible 220ms transform/opacity entry runs only for pointer navigation, while keyboard and reduced-motion navigation remain instant. Focus moves to the arriving heading or fragment target.
 - Vercel is a possible eventual host, but deployment is explicitly deferred while the frontend is reviewed and overhauled on localhost.
 
 The decision and tradeoffs are recorded in [`docs/decisions/0001-static-content-architecture.md`](docs/decisions/0001-static-content-architecture.md). Product requirements and phase gates live in [`docs/portfolio-overview.md`](docs/portfolio-overview.md) and [`docs/portfolio-implementation-phases.md`](docs/portfolio-implementation-phases.md).
+The active desk and project-tree redesign is governed by [`docs/desk-project-tree-redesign-phases.md`](docs/desk-project-tree-redesign-phases.md).
 
 Content conventions and publication checks are documented in [`docs/content-authoring.md`](docs/content-authoring.md).
 The remaining media, direct-URL, and publication-approval inputs are tracked in

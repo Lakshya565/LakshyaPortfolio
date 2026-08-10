@@ -19,7 +19,7 @@ repository.
 - [x] Displayed roles and technologies reconciled with the PDF, public project entries, repositories, and current RepoFrame source.
 - [x] Initial local-review candidate intentionally contains no local image or diagram assets; future media requires a fresh ownership/licensing check before publication.
 - [ ] Confirm ownership/permission for the linked repositories, SmartLift demo, and SmartLift report before public deployment.
-- [x] Keep every substantial archive card in the initial launch.
+- [x] Give every substantial project a routed story in the initial launch.
 - [ ] Final confidentiality and personal-data review after all content is rendered.
 
 The two private resumes may be used only as editorial source material. They must
@@ -73,11 +73,12 @@ metadata/sitemap output.
 - [x] Published tutoring and scheduling behavior captured without inventing an outcome metric.
 - [x] Launch without media or external links; add optional evidence later if supplied.
 
-## Archive cards
+## Concise project stories
 
-Archive cards do not require detail routes. Each still needs a verified substantial
-summary, role, technology list, and at least one concrete contribution or lesson.
-Links/media are optional only when the card remains useful without them.
+These five projects now have routed stories built only from the verified inventory
+below. Their pages remain intentionally shorter than the flagship case studies.
+Links and media are optional when the verified prose still explains the project;
+future detail should deepen the evidence rather than pad the page.
 
 | Project | LinkedIn resolution | Unresolved or optional follow-up |
 | --- | --- | --- |

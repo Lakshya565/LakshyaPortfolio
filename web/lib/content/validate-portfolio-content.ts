@@ -147,15 +147,6 @@ function getProjectCrossRecordIssues(projects: readonly Project[]) {
   }
 
   for (const project of projects) {
-    if (
-      project.presentation === "case-study" &&
-      project.caseStudyKey !== project.slug
-    ) {
-      issues.push(
-        `projects.${project.slug}: caseStudyKey must match the stable project slug`,
-      );
-    }
-
     const assetPaths = findDuplicateValues(project.assets, (asset) => asset.path);
     for (const assetPath of assetPaths) {
       issues.push(`projects.${project.slug}: duplicate asset path ${assetPath}`);
@@ -173,56 +164,54 @@ function getProjectCrossRecordIssues(projects: readonly Project[]) {
       issues.push(`projects.${project.slug}: at most one hero asset is allowed`);
     }
 
-    if (project.presentation === "case-study") {
-      const duplicateVideoUrls = findDuplicateValues(
-        project.videos,
-        (video) => video.href,
+    const duplicateVideoUrls = findDuplicateValues(
+      project.videos,
+      (video) => video.href,
+    );
+    for (const href of duplicateVideoUrls) {
+      issues.push(`projects.${project.slug}: duplicate video URL ${href}`);
+    }
+
+    const referencedThumbnailPaths = project.videos.flatMap((video) =>
+      video.thumbnailPath ? [video.thumbnailPath] : [],
+    );
+    for (const thumbnailPath of findDuplicateValues(
+      referencedThumbnailPaths,
+      (value) => value,
+    )) {
+      issues.push(
+        `projects.${project.slug}: video thumbnail ${thumbnailPath} is referenced more than once`,
       );
-      for (const href of duplicateVideoUrls) {
-        issues.push(`projects.${project.slug}: duplicate video URL ${href}`);
+    }
+
+    for (const video of project.videos) {
+      if (!video.thumbnailPath) {
+        continue;
       }
 
-      const referencedThumbnailPaths = project.videos.flatMap((video) =>
-        video.thumbnailPath ? [video.thumbnailPath] : [],
+      const thumbnail = project.assets.find(
+        (asset) => asset.path === video.thumbnailPath,
       );
-      for (const thumbnailPath of findDuplicateValues(
-        referencedThumbnailPaths,
-        (value) => value,
-      )) {
+      if (!thumbnail) {
         issues.push(
-          `projects.${project.slug}: video thumbnail ${thumbnailPath} is referenced more than once`,
+          `projects.${project.slug}: video thumbnail is missing from assets (${video.thumbnailPath})`,
+        );
+      } else if (thumbnail.kind !== "video-thumbnail") {
+        issues.push(
+          `projects.${project.slug}: video thumbnail asset must use kind video-thumbnail (${video.thumbnailPath})`,
         );
       }
+    }
 
-      for (const video of project.videos) {
-        if (!video.thumbnailPath) {
-          continue;
-        }
-
-        const thumbnail = project.assets.find(
-          (asset) => asset.path === video.thumbnailPath,
+    const referencedThumbnailSet = new Set(referencedThumbnailPaths);
+    for (const asset of project.assets) {
+      if (
+        asset.kind === "video-thumbnail" &&
+        !referencedThumbnailSet.has(asset.path)
+      ) {
+        issues.push(
+          `projects.${project.slug}: video-thumbnail asset is not assigned to a video (${asset.path})`,
         );
-        if (!thumbnail) {
-          issues.push(
-            `projects.${project.slug}: video thumbnail is missing from assets (${video.thumbnailPath})`,
-          );
-        } else if (thumbnail.kind !== "video-thumbnail") {
-          issues.push(
-            `projects.${project.slug}: video thumbnail asset must use kind video-thumbnail (${video.thumbnailPath})`,
-          );
-        }
-      }
-
-      const referencedThumbnailSet = new Set(referencedThumbnailPaths);
-      for (const asset of project.assets) {
-        if (
-          asset.kind === "video-thumbnail" &&
-          !referencedThumbnailSet.has(asset.path)
-        ) {
-          issues.push(
-            `projects.${project.slug}: video-thumbnail asset is not assigned to a video (${asset.path})`,
-          );
-        }
       }
     }
   }
@@ -345,16 +334,14 @@ async function getFileIssues(content: PortfolioContent, webRoot: string) {
       }
     }
 
-    if (project.presentation === "case-study") {
-      const fileName = `${project.caseStudyKey}.mdx`;
-      const filePath = path.join(caseStudyRoot, fileName);
-      referencedCaseStudies.add(fileName);
+    const fileName = `${project.slug}.mdx`;
+    const filePath = path.join(caseStudyRoot, fileName);
+    referencedCaseStudies.add(fileName);
 
-      if (!(await pathExists(filePath))) {
-        issues.push(`projects.${project.slug}: missing case study ${fileName}`);
-      } else {
-        issues.push(...(await validateMdxFile(filePath, `projects.${project.slug}`)));
-      }
+    if (!(await pathExists(filePath))) {
+      issues.push(`projects.${project.slug}: missing case study ${fileName}`);
+    } else {
+      issues.push(...(await validateMdxFile(filePath, `projects.${project.slug}`)));
     }
   }
 

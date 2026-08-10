@@ -1,11 +1,11 @@
 import { z } from "zod";
 
 import {
-  caseStudyKeys,
   personalMotifKeys,
   projectAssetKinds,
   projectCategories,
   projectLinkKinds,
+  projectSlugs,
   projectWorkModes,
   socialLinkKinds,
 } from "@/types/content";
@@ -111,7 +111,7 @@ const projectVideoSchema = z.object({
 });
 
 const projectBaseSchema = z.object({
-  slug: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
+  slug: z.enum(projectSlugs),
   title: nonEmptyText,
   category: z.enum(projectCategories),
   shortDescription: z.string().trim().min(40),
@@ -126,25 +126,8 @@ const projectBaseSchema = z.object({
   links: z.array(projectLinkSchema),
   metrics: z.array(projectMetricSchema),
   assets: z.array(projectAssetSchema),
-});
-
-const caseStudyProjectSchema = projectBaseSchema.extend({
-  presentation: z.literal("case-study"),
-  priority: z.enum(["featured", "supporting"]),
-  caseStudyKey: z.enum(caseStudyKeys),
   videos: z.array(projectVideoSchema),
 });
-
-const archiveProjectSchema = projectBaseSchema.extend({
-  presentation: z.literal("archive-card"),
-  priority: z.literal("archive"),
-  caseStudyKey: z.null(),
-});
-
-const projectSchema = z.discriminatedUnion("presentation", [
-  caseStudyProjectSchema,
-  archiveProjectSchema,
-]);
 
 const skillGroupSchema = z.object({
   name: nonEmptyText,
@@ -170,7 +153,7 @@ const personalMotifSchema = z.object({
 export const portfolioContentSchema = z.object({
   siteProfile: siteProfileSchema,
   socialLinks: z.array(socialLinkSchema),
-  projects: z.array(projectSchema).min(1),
+  projects: z.array(projectBaseSchema).min(1),
   skillGroups: z.array(skillGroupSchema),
   aboutItems: z.array(aboutItemSchema),
   personalMotifs: z.array(personalMotifSchema),

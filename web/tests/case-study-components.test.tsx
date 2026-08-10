@@ -22,7 +22,7 @@ const minimalProject: CaseStudyPageData = {
   role: null,
   dateLabel: null,
   technologies: [],
-  workMode: "systems",
+  workMode: "software",
   links: [],
   metrics: [],
   hero: null,
@@ -38,7 +38,7 @@ const richProject: CaseStudyPageData = {
   role: "Lead systems engineer",
   dateLabel: "Jan 2025 – Mar 2025",
   technologies: Array.from({ length: 14 }, (_, index) => `Technology ${index + 1}`),
-  workMode: "physical",
+  workMode: "hardware",
   links: [
     { kind: "repository", label: "Source", href: "https://example.com/source" },
   ],
