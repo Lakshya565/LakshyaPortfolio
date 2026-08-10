@@ -74,7 +74,8 @@ export const personalMotifKeys = [
   "scouting",
   "shared-food",
   "food-favorites",
-  "movement",
+  "climbing",
+  "gym",
   "anime",
 ] as const;
 export type PersonalMotifKey = (typeof personalMotifKeys)[number];
@@ -120,7 +121,6 @@ type ProjectBase = Readonly<{
   publication: "draft" | "published";
   contentStatus: "placeholder" | "reviewed";
   displayOrder: number;
-  displayInMap: boolean;
   links: readonly ProjectLink[];
   metrics: readonly ProjectMetric[];
   assets: readonly ProjectAsset[];

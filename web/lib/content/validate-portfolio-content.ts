@@ -3,7 +3,10 @@ import path from "node:path";
 
 import { portfolioContentSchema } from "@/lib/content/content-schema";
 import { analyzeMdxSource } from "@/lib/content/mdx-policy";
-import { getProjectMapPlacementIssues } from "@/lib/map/project-map";
+import {
+  deskHotspotDefinitions,
+  getDeskHotspotIssues,
+} from "@/lib/desk/hotspots";
 import type { PortfolioContent, Project } from "@/types/content";
 
 export type ContentValidationMode = "development" | "release";
@@ -266,6 +269,63 @@ async function getFileIssues(content: PortfolioContent, webRoot: string) {
   const publicRoot = path.resolve(webRoot, "public");
   const caseStudyRoot = path.resolve(webRoot, "content", "case-studies");
   const referencedCaseStudies = new Set<string>();
+  const deskSvgPath = path.resolve(
+    publicRoot,
+    "media",
+    "site",
+    "lakshya-desk.svg",
+  );
+
+  try {
+    const [deskSvg, deskSvgStats] = await Promise.all([
+      readFile(deskSvgPath, "utf8"),
+      stat(deskSvgPath),
+    ]);
+    const requiredDeskIds = [
+      "desk-monitor",
+      ...deskHotspotDefinitions.map(({ key }) => `desk-${key}`),
+    ];
+    const deskIds = [...deskSvg.matchAll(/\sid="([^"]+)"/g)].map(
+      (match) => match[1],
+    );
+
+    if (!deskSvgStats.isFile()) {
+      issues.push("desk: public desk SVG is not a file");
+    }
+    if (deskSvgStats.size > 250_000) {
+      issues.push("desk: public desk SVG exceeds 250 KB");
+    }
+    if (!/\bviewBox="0 0 1440 900"/.test(deskSvg)) {
+      issues.push("desk: public desk SVG must use viewBox 0 0 1440 900");
+    }
+    for (const requiredId of requiredDeskIds) {
+      if (!deskIds.includes(requiredId)) {
+        issues.push(`desk: public desk SVG is missing id ${requiredId}`);
+      }
+    }
+    for (const duplicateId of findDuplicateValues(deskIds, (value) => value)) {
+      issues.push(`desk: public desk SVG has duplicate id ${duplicateId}`);
+    }
+    if (
+      /<(?:script|foreignObject|filter|animate|animateMotion|animateTransform)\b/i.test(
+        deskSvg,
+      )
+    ) {
+      issues.push("desk: public desk SVG contains active or unsupported elements");
+    }
+    if (/\son[a-z]+\s*=/i.test(deskSvg)) {
+      issues.push("desk: public desk SVG contains an event handler");
+    }
+    if (
+      /(?:href|xlink:href)\s*=\s*["'](?:https?:|\/\/|data:|javascript:)/i.test(
+        deskSvg,
+      )
+    ) {
+      issues.push("desk: public desk SVG contains an external or executable reference");
+    }
+  } catch {
+    issues.push("desk: missing public desk SVG /media/site/lakshya-desk.svg");
+  }
 
   for (const project of content.projects) {
     for (const asset of project.assets) {
@@ -333,7 +393,7 @@ export async function getPortfolioContentValidationIssues(
   const parsedContent = result.data as PortfolioContent;
   const issues = [
     ...getProjectCrossRecordIssues(parsedContent.projects),
-    ...getProjectMapPlacementIssues(parsedContent.projects),
+    ...getDeskHotspotIssues(parsedContent.personalMotifs),
     ...getNarrativeVoiceIssues(parsedContent),
     ...findDuplicateValues(parsedContent.socialLinks, (link) => link.kind).map(
       (kind) => `socialLinks: duplicate kind ${kind}`,

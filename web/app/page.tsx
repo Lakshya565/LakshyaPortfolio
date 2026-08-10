@@ -1,18 +1,12 @@
 import Link from "next/link";
 
-import { CircuitScene } from "@/components/project-map/circuit-scene";
-import { ArchiveCard } from "@/components/projects/archive-card";
-import { ProjectBentoGrid } from "@/components/projects/project-bento-grid";
+import { IsometricDesk } from "@/components/desk/isometric-desk";
 import { SocialLinks } from "@/components/site/social-links";
 import { Button } from "@/components/ui/button";
 import { getHomePageData } from "@/lib/content/portfolio-repository";
 
 export default function Home() {
   const data = getHomePageData();
-  const caseStudies = [
-    ...data.featuredProjects,
-    ...data.supportingProjects,
-  ];
 
   return (
     <main id="main-content" tabIndex={-1}>
@@ -27,49 +21,8 @@ export default function Home() {
           />
         </div>
 
-        {data.projectMap.length > 0 ? (
-          <CircuitScene
-            identity={{ name: data.profile.name }}
-            personalMotifs={data.personalMotifs}
-            projects={data.projectMap}
-          />
-        ) : null}
+        <IsometricDesk data={data} />
       </header>
-
-      <section
-        aria-labelledby="work-title"
-        className="border-t border-line"
-        id="work"
-      >
-        <div className="section-shell site-container">
-          <h2 className="home-section-title" id="work-title">
-            Case studies
-          </h2>
-          {caseStudies.length > 0 ? (
-            <ProjectBentoGrid
-              featuredProjects={data.featuredProjects}
-              supportingProjects={data.supportingProjects}
-            />
-          ) : (
-            <p className="empty-state">No public case studies are available yet.</p>
-          )}
-        </div>
-      </section>
-
-      {data.archiveProjects.length > 0 ? (
-        <section aria-labelledby="archive-title" className="border-t border-line">
-          <div className="section-shell section-shell-compact site-container">
-            <h2 className="home-section-title" id="archive-title">
-              Archive
-            </h2>
-            <div className="archive-grid">
-              {data.archiveProjects.map((project) => (
-                <ArchiveCard key={project.slug} project={project} />
-              ))}
-            </div>
-          </div>
-        </section>
-      ) : null}
 
       <section
         aria-labelledby="about-title"
@@ -87,7 +40,11 @@ export default function Home() {
               anime nights, and finding good food—from boba and froyo to sushi,
               Thai food, and Indian food—with people I care about.
             </p>
-            <Button asChild className="mt-4" variant="link">
+            <Button
+              asChild
+              className="mt-4 whitespace-normal text-left"
+              variant="link"
+            >
               <Link href="/about">A little more about me →</Link>
             </Button>
           </div>

@@ -85,7 +85,7 @@ export function SiteNavigation({
         </summary>
         <nav
           aria-label="Mobile navigation"
-          className="absolute right-0 top-[calc(100%+0.75rem)] z-50 w-48 rounded-xl border border-line bg-surface-raised p-2 shadow-2xl"
+          className="absolute right-0 top-[calc(100%+0.75rem)] z-50 w-[min(12rem,calc(100vw-2rem))] rounded-xl border border-line bg-surface-raised p-2 shadow-2xl"
         >
           <ul className="grid gap-1">
             {siteNavigationItems.map((item) => (

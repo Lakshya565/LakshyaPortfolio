@@ -7,8 +7,8 @@ Portfolio content is version-controlled under `web/content/`:
 - `site.ts` contains identity and reviewed public social/contact links.
 - `projects.ts` contains every project and archive-card record.
 - `about.ts` contains structured skills and About items.
-- `about.ts` also contains the editable labels and descriptions for the personal
-  workbench motifs.
+- `about.ts` also contains the editable labels and descriptions for the nine
+  personal desk motifs used by eight typed hotspot groups.
 - `about.mdx` contains the longer personal narrative.
 - `case-studies/*.mdx` contains long-form case-study drafts.
 - `portfolio.ts` assembles the complete validated content object.
@@ -49,7 +49,8 @@ and sets `dynamicParams = false`; unknown, unpublished, and archive-only slugs
 therefore return the shared 404 page instead of invoking runtime generation.
 
 Published `archive-card` records intentionally have no detail route. They render
-as substantial cards in the main portfolio hierarchy.
+as substantial entries in the shared project system on `/work` and in the
+homepage monitor dialog.
 
 Project slugs are permanent public identifiers. Changing a published slug also
 requires an explicit redirect, which is deferred until there is a real rename.
@@ -87,11 +88,10 @@ Archive items use:
 - `presentation: "archive-card"`
 - `priority: "archive"`
 - `caseStudyKey: null`
-- `displayInMap: true` when the item should appear in the workbench map
 
 They need a substantial summary, role, technologies, and any available verified
-links or media, but they do not require an MDX case-study route. A visible
-archive item receives the stable homepage anchor `project-<slug>` automatically.
+links or media, but they do not require an MDX case-study route. Every published
+archive item receives the stable `/work#project-<slug>` permalink automatically.
 
 ## Voice and ownership
 
@@ -171,17 +171,18 @@ Release validation rejects pending entries.
 
 The Vercel URL is requested separately during deployment for canonical metadata.
 
-## Project-map placement
+## Desk hotspots and project-system membership
 
-`displayInMap` in `projects.ts` controls workbench eligibility. Placement remains
-separate in `web/lib/map/placements.ts`, keyed by a stable project slug. Each
-visible project needs a desktop column, visual tier, and unique mobile order.
-Content validation rejects missing, duplicate, stale, or invalid placements.
+Every published project appears in the shared project system. Do not add a
+second scene-eligibility flag: `publication` and `displayOrder` are the canonical
+membership and ordering controls for both `/work` and the homepage dialog.
 
-The renderer supplies a deterministic fallback if a placement is temporarily
-missing. That fallback is resilience only: development validation still fails
-until the typed placement is added. Mobile order is also DOM/focus order; do not
-use CSS to make visual order contradict keyboard order.
+Personal hotspot geometry is presentation data in `web/lib/desk/hotspots.ts`.
+The eight definitions must assign all nine `personalMotifs` exactly once and
+stay within the desk's normalized percentage bounds. The local desk SVG keeps
+matching groups named `desk-<hotspot-key>` plus `desk-monitor`; it must remain a
+passive, self-contained image with no scripts, event attributes, external
+references, or project facts embedded in the artwork.
 
 `workMode` is editorial meaning, not a color picker:
 
@@ -189,8 +190,9 @@ use CSS to make visual order contradict keyboard order.
 - `physical` means physical or human-facing work and renders purple.
 - `hybrid` means neither half explains the project alone and renders both.
 
-Presentation determines texture automatically: case studies use a grid and
-archive records use dots. Size and order communicate prominence; color does not.
+Presentation determines project-system texture automatically: case studies use
+a grid and archive records use dots. Size and order communicate prominence;
+color does not.
 
 ## Editing and removal
 

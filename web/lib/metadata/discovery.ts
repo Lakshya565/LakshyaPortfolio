@@ -32,6 +32,11 @@ export function buildSitemap(
       priority: 1,
     },
     {
+      url: new URL("/work", origin).href,
+      changeFrequency: "monthly",
+      priority: 0.9,
+    },
+    {
       url: new URL("/about", origin).href,
       changeFrequency: "monthly",
       priority: 0.7,

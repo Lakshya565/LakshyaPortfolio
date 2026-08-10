@@ -93,6 +93,23 @@ describe("portfolio content validation", () => {
     );
   });
 
+  it("fails build-time validation when a desk motif is missing", async () => {
+    const content = {
+      ...portfolioContent,
+      personalMotifs: portfolioContent.personalMotifs.filter(
+        ({ key }) => key !== "anime",
+      ),
+    } satisfies PortfolioContent;
+
+    const issues = await getPortfolioContentValidationIssues(content, {
+      mode: "development",
+      webRoot: process.cwd(),
+      checkFiles: false,
+    });
+
+    expect(issues).toContain("deskHotspots.anime: missing motif anime");
+  });
+
   it("accepts the repository content in release mode", async () => {
     const issues = await getPortfolioContentValidationIssues(portfolioContent, {
       mode: "release",

@@ -123,7 +123,6 @@ const projectBaseSchema = z.object({
   publication: z.enum(["draft", "published"]),
   contentStatus: z.enum(["placeholder", "reviewed"]),
   displayOrder: z.number().int().nonnegative(),
-  displayInMap: z.boolean(),
   links: z.array(projectLinkSchema),
   metrics: z.array(projectMetricSchema),
   assets: z.array(projectAssetSchema),

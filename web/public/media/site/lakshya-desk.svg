@@ -1,0 +1,198 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="900" viewBox="0 0 1440 900" role="img" aria-labelledby="desk-title desk-description">
+  <title id="desk-title">Lakshya's sci-fi engineering desk</title>
+  <desc id="desk-description">A floating isometric workstation surrounded by engineering projects, leadership objects, food, climbing, fitness, and entertainment keepsakes.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#070a0f"/>
+      <stop offset="0.55" stop-color="#0d1118"/>
+      <stop offset="1" stop-color="#07090d"/>
+    </linearGradient>
+    <linearGradient id="desk-top" x1="0" y1="0" x2="0.9" y2="1">
+      <stop offset="0" stop-color="#252d35"/>
+      <stop offset="0.5" stop-color="#181e25"/>
+      <stop offset="1" stop-color="#11161c"/>
+    </linearGradient>
+    <linearGradient id="screen" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#173a32"/>
+      <stop offset="0.5" stop-color="#0e2622"/>
+      <stop offset="1" stop-color="#081613"/>
+    </linearGradient>
+    <linearGradient id="purple-edge" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#543a74"/>
+      <stop offset="0.5" stop-color="#9a71c4"/>
+      <stop offset="1" stop-color="#432f60"/>
+    </linearGradient>
+    <linearGradient id="amber" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f1c46d"/>
+      <stop offset="1" stop-color="#9d5b2e"/>
+    </linearGradient>
+  </defs>
+
+  <path fill="url(#bg)" d="M0 0h1440v900H0z"/>
+  <path fill="#121821" stroke="#27313a" stroke-width="2" d="m154 698 462 164 686-173-443-137z" opacity=".7"/>
+  <path fill="none" stroke="#29363a" stroke-width="2" d="m85 790 550 97M1372 761 764 891M72 713l568 101M1354 677 762 826" opacity=".45"/>
+  <path fill="none" stroke="#304538" stroke-width="2" d="M182 606 57 648M1264 575l120 35M242 748l-104 52M1190 747l105 47" opacity=".55"/>
+
+  <!-- Stepped left shelf -->
+  <g stroke="#38434d" stroke-linejoin="round" stroke-width="2">
+    <path fill="#1b222a" d="m92 224 258-65 98 35-260 69z"/>
+    <path fill="#11171d" d="m188 263 260-69v55l-260 72z"/>
+    <path fill="#0b1015" d="m92 224 96 39v58l-96-42z"/>
+    <path fill="#202832" d="m130 354 260-69 91 36-259 72z"/>
+    <path fill="#11171d" d="m222 393 259-72v53l-259 75z"/>
+    <path fill="#0b1015" d="m130 354 92 39v56l-92-42z"/>
+    <path fill="#2b3540" d="m113 214 225-56 78 27-225 60z" opacity=".35"/>
+  </g>
+
+  <!-- Stepped right shelf -->
+  <g stroke="#38434d" stroke-linejoin="round" stroke-width="2">
+    <path fill="#1d232c" d="m1070 157 246 55-92 42-248-58z"/>
+    <path fill="#11171d" d="m976 196 248 58v55l-248-61z"/>
+    <path fill="#0b1015" d="m1224 254 92-42v57l-92 40z"/>
+    <path fill="#202832" d="m1037 289 255 61-91 42-258-65z"/>
+    <path fill="#11171d" d="m943 327 258 65v54l-258-68z"/>
+    <path fill="#0b1015" d="m1201 392 91-42v57l-91 39z"/>
+    <path fill="#5f4580" d="m1095 169 190 42-57 27-193-45z" opacity=".22"/>
+  </g>
+
+  <!-- Main floating desk -->
+  <g stroke-linejoin="round">
+    <path fill="url(#desk-top)" stroke="#46535e" stroke-width="3" d="m235 365 855-151 184 347-879 185z"/>
+    <path fill="#0b1015" stroke="#303a44" stroke-width="3" d="m395 746 879-185-2 58-877 190z"/>
+    <path fill="#11171d" stroke="#303a44" stroke-width="3" d="m235 365 160 381v63L234 424z"/>
+    <path fill="none" stroke="#56c98b" stroke-width="3" d="m396 746 878-185" opacity=".5"/>
+    <path fill="none" stroke="#9a71c4" stroke-width="2" d="m251 399 830-146 155 292-839 176" opacity=".35"/>
+    <path fill="#0b1015" stroke="#2f3943" stroke-width="3" d="m426 807 72-15-31 97-46 10z"/>
+    <path fill="#0b1015" stroke="#2f3943" stroke-width="3" d="m1165 650 66-14 22 94-43 11z"/>
+  </g>
+
+  <!-- Central monitor -->
+  <g id="desk-monitor" stroke-linejoin="round">
+    <path fill="#0a0f14" stroke="#56636e" stroke-width="4" d="m434 191 480-73 93 264-489 91z"/>
+    <path fill="#111922" stroke="url(#purple-edge)" stroke-width="5" d="m458 209 431-64 78 218-438 80z"/>
+    <path fill="url(#screen)" stroke="#4ec78b" stroke-width="3" d="m478 225 394-57 65 176-398 71z"/>
+    <path fill="#5ade99" d="m509 254 120-17 4 11-120 18z" opacity=".75"/>
+    <path fill="#2e7358" d="m510 278 245-37 3 9-245 39zm10 31 337-52 3 8-337 54zm10 30 207-33 3 8-207 35zm10 30 304-50 3 8-304 52z" opacity=".7"/>
+    <path fill="#8760ad" d="m776 221 75-11 3 9-75 12zm6 24 81-13 3 8-81 14z" opacity=".9"/>
+    <path fill="#141b22" stroke="#48545f" stroke-width="3" d="m660 446 130-24 31 83-132 27z"/>
+    <path fill="#0b1015" stroke="#3b4650" stroke-width="3" d="m606 553 269-56 49 31-277 60z"/>
+    <path fill="#1c252d" stroke="#4d5964" stroke-width="2" d="m628 559 224-46 32 18-229 49z"/>
+    <circle cx="729" cy="451" r="6" fill="#56d294"/>
+  </g>
+
+  <!-- Keyboard and mouse -->
+  <g stroke-linejoin="round">
+    <path fill="#11171d" stroke="#495661" stroke-width="3" d="m541 588 359-75 94 91-373 82z"/>
+    <path fill="#202a32" stroke="#64717b" stroke-width="2" d="m570 592 317-66 73 68-326 71z"/>
+    <g fill="#35414b" stroke="#141a20" stroke-width="1.5">
+      <path d="m596 593 30-6 12 10-31 7zm40-8 30-6 12 10-31 7zm40-9 30-6 13 10-32 7zm41-8 30-7 13 10-32 7zm42-9 30-6 13 10-32 7zm42-9 30-6 14 10-33 7zm43-9 30-6 14 10-33 7z"/>
+      <path d="m613 615 33-7 13 11-34 7zm44-9 33-7 14 11-34 7zm44-10 33-6 14 10-34 8zm44-9 33-7 15 11-35 7zm45-10 33-7 15 11-35 7zm45-9 34-7 15 11-35 7z"/>
+      <path d="m634 641 39-8 15 11-40 9zm50-11 39-8 16 11-41 9zm51-10 39-8 16 11-41 9zm51-11 39-8 17 12-42 9zm52-11 39-8 18 12-43 9z"/>
+    </g>
+    <path fill="#202930" stroke="#56636d" stroke-width="3" d="m1026 514c35-8 67 12 75 43 7 28-11 53-43 60-34 7-64-10-72-39-8-30 9-56 40-64Z"/>
+    <path fill="none" stroke="#8863ad" stroke-width="3" d="m1044 516 12 99"/>
+    <path fill="#8d69b5" d="m1040 530 20-4 4 26-21 4z"/>
+  </g>
+
+  <!-- Breadboard and microcontroller -->
+  <g id="desk-maker" stroke-linejoin="round">
+    <path fill="#d9ded9" stroke="#687279" stroke-width="3" d="m305 429 206-40 63 95-211 44z"/>
+    <path fill="#b8c1bd" d="m326 440 163-32 42 62-167 34z"/>
+    <g fill="#59636a">
+      <circle cx="349" cy="449" r="3"/><circle cx="372" cy="444" r="3"/><circle cx="395" cy="440" r="3"/><circle cx="418" cy="435" r="3"/><circle cx="441" cy="431" r="3"/><circle cx="464" cy="426" r="3"/>
+      <circle cx="361" cy="473" r="3"/><circle cx="385" cy="468" r="3"/><circle cx="409" cy="463" r="3"/><circle cx="433" cy="458" r="3"/><circle cx="457" cy="454" r="3"/><circle cx="481" cy="449" r="3"/>
+    </g>
+    <path fill="#135344" stroke="#53c68b" stroke-width="3" d="m380 402 115-22 38 58-118 24z"/>
+    <path fill="#18242a" stroke="#8c66af" stroke-width="2" d="m414 404 52-10 18 27-54 11z"/>
+    <g fill="#e7c866"><circle cx="400" cy="420" r="4"/><circle cx="505" cy="399" r="4"/><circle cx="518" cy="419" r="4"/></g>
+    <path fill="none" stroke="#ecad59" stroke-width="4" d="M353 426c2-37 30-50 68-33m73 34c34-4 50 10 58 42"/>
+  </g>
+
+  <!-- Duck build -->
+  <g id="desk-quackta" stroke-linejoin="round">
+    <path fill="#1a2229" stroke="#4b5862" stroke-width="3" d="m1011 359 159-33 71 106-164 37z"/>
+    <path fill="url(#amber)" stroke="#f0c56b" stroke-width="3" d="M1083 391c-8-42 27-73 67-59 25 8 36 30 31 52 35 7 57 27 63 55-42 33-112 43-166 22-19-17-22-47 5-70Z"/>
+    <path fill="#d07b34" stroke="#f2aa50" stroke-width="2" d="m1168 359 53 8-43 27z"/>
+    <circle cx="1147" cy="356" r="6" fill="#10151a"/>
+    <circle cx="1149" cy="354" r="2" fill="#effff6"/>
+    <path fill="#213139" stroke="#56c990" stroke-width="2" d="m1089 419 57-12 26 30-60 14z"/>
+    <path fill="none" stroke="#9367b7" stroke-width="3" d="m1097 416 15-21m49 12 21-25"/>
+  </g>
+
+  <!-- Belt and compass -->
+  <g id="desk-leadership" stroke-linejoin="round">
+    <path fill="#151a20" stroke="#535e67" stroke-width="3" d="m225 551 208-45 76 104-215 49z"/>
+    <path fill="#20262c" stroke="#7d8790" stroke-width="3" d="M271 575c36-48 96-59 138-27 31 24 38 59 14 82l-36 8c24-24 15-54-10-67-29-16-67-6-83 21z"/>
+    <path fill="none" stroke="#e0d9b7" stroke-width="8" d="m279 580 122-27"/>
+    <path fill="none" stroke="#1b1b1b" stroke-width="4" d="m310 573 4 8m23-14 4 9m24-15 4 9m22-14 4 8"/>
+    <circle cx="437" cy="553" r="39" fill="#b27835" stroke="#edc577" stroke-width="4"/>
+    <circle cx="437" cy="553" r="28" fill="#26313a" stroke="#d9b168" stroke-width="2"/>
+    <path fill="#e4c475" d="m437 526 8 23 19 4-19 7-8 22-8-19-20-5 19-8z"/>
+  </g>
+
+  <!-- Two drink cups -->
+  <g id="desk-shared-food" stroke-linejoin="round">
+    <path fill="#171d23" stroke="#3e4953" stroke-width="3" d="m1106 504 139-30 73 95-145 34z"/>
+    <path fill="#c79568" stroke="#f0c995" stroke-width="3" d="m1133 477 55-11 14 93-44 10z"/>
+    <path fill="#805378" stroke="#ba82b3" stroke-width="3" d="m1210 459 53-11 13 92-43 10z"/>
+    <path fill="none" stroke="#d7f3e2" stroke-width="4" d="m1157 471-9-43m88 26 14-48"/>
+    <g fill="#3c2921"><circle cx="1162" cy="543" r="5"/><circle cx="1177" cy="538" r="5"/><circle cx="1238" cy="524" r="5"/><circle cx="1253" cy="520" r="5"/></g>
+    <path fill="#ecb859" d="m1121 555 29-6 12 15-30 7z"/>
+  </g>
+
+  <!-- Sushi, froyo, curls, bowl and chopsticks -->
+  <g id="desk-food-favorites" stroke-linejoin="round">
+    <path fill="#161c22" stroke="#46525d" stroke-width="3" d="m822 621 276-59 93 103-284 66z"/>
+    <ellipse cx="974" cy="640" rx="74" ry="34" fill="#d9d2c3" stroke="#717c83" stroke-width="3" transform="rotate(-12 974 640)"/>
+    <path fill="#2b343d" stroke="#69747c" stroke-width="3" d="M913 626c47-31 112-30 147-2-9 52-40 80-86 88-39 6-62-23-61-86Z"/>
+    <path fill="#e9d6a7" d="m943 638 36-8 15 22-38 9zm42-9 36-8 15 22-38 9z"/>
+    <path fill="#df7f60" d="m947 632 28-6 9 12-29 7zm42-9 28-6 9 12-29 7z"/>
+    <path fill="#edf0e9" stroke="#789087" stroke-width="3" d="m842 579 65-14 24 63-60 14z"/>
+    <path fill="#f7cbd5" d="m854 584c12-21 36-27 51-10 13 14 5 34-4 44l-26 6c-13-8-26-23-21-40Z"/>
+    <path fill="none" stroke="#f19c38" stroke-linecap="round" stroke-width="9" d="m1081 605c19-22 38 2 20 14s5 28 24 8m-45 25c18-22 37 1 20 13"/>
+    <path fill="none" stroke="#d6a55a" stroke-width="4" d="m1024 572 111 73m-99-85 111 72"/>
+  </g>
+
+  <!-- Climbing hold and chalk bag -->
+  <g id="desk-climbing" stroke-linejoin="round">
+    <path fill="#161c22" stroke="#47535e" stroke-width="3" d="m122 175 199-49 76 33-199 53z"/>
+    <path fill="#8e5db0" stroke="#c394df" stroke-width="3" d="m156 155c35-27 79-26 102 1 9 11 3 28-14 34l-57 15c-35 5-55-25-31-50Z"/>
+    <circle cx="192" cy="169" r="5" fill="#171d23"/>
+    <path fill="#a26d3e" stroke="#e2b06e" stroke-width="3" d="m282 138 71-18 20 70-67 18z"/>
+    <path fill="#262f37" stroke="#6c7881" stroke-width="3" d="m288 148 57-15 9 42-54 15z"/>
+    <path fill="none" stroke="#dfc195" stroke-width="4" d="M296 142c9-20 39-26 51-4"/>
+  </g>
+
+  <!-- Dumbbell and plate -->
+  <g id="desk-gym" stroke-linejoin="round">
+    <path fill="#161c22" stroke="#46535e" stroke-width="3" d="m1087 83 192 44-75 35-194-46z"/>
+    <circle cx="1179" cy="122" r="42" fill="#252d35" stroke="#966abb" stroke-width="5"/>
+    <circle cx="1179" cy="122" r="13" fill="#0c1116" stroke="#66727c" stroke-width="3"/>
+    <path fill="#67727b" stroke="#aeb7bd" stroke-width="3" d="m1091 92 116 28-7 25-116-28z"/>
+    <path fill="#20272e" stroke="#8c66af" stroke-width="3" d="m1070 81 32 8-12 42-32-8zm139 34 31 7-12 42-31-7z"/>
+  </g>
+
+  <!-- Three abstract entertainment panels -->
+  <g id="desk-anime" stroke-linejoin="round">
+    <path fill="#11171d" stroke="#4b5761" stroke-width="3" d="m879 39 112 25-8 141-114-27z"/>
+    <path fill="#1a2630" stroke="#5e6c76" stroke-width="2" d="m894 59 80 18-6 101-82-19z"/>
+    <path fill="#273e38" d="m905 85 55 12-5 13-54-12zm-2 25 39 9-5 13-38-9zm-2 25 60 13-5 13-59-14z"/>
+    <path fill="#11171d" stroke="#4b5761" stroke-width="3" d="m1007 68 104 24-8 137-106-25z"/>
+    <path fill="#251f32" stroke="#735695" stroke-width="2" d="m1021 88 73 17-5 98-75-18z"/>
+    <path fill="none" stroke="#bc8bd7" stroke-width="5" d="m1032 166 19-35 16 15 20-31"/>
+    <circle cx="1040" cy="116" r="8" fill="#d4a4e7"/>
+    <path fill="#11171d" stroke="#4b5761" stroke-width="3" d="m1125 101 100 23-8 132-102-24z"/>
+    <path fill="#28231d" stroke="#876532" stroke-width="2" d="m1139 121 69 16-5 92-71-17z"/>
+    <path fill="none" stroke="#e2b366" stroke-width="4" d="m1144 191 56-39m-49-5 41 52"/>
+    <path fill="#b57439" d="m1164 160 18 4 8 18-14 14-18-4-8-18z"/>
+  </g>
+
+  <!-- Small surface details -->
+  <g fill="#56c98b" opacity=".55">
+    <circle cx="294" cy="690" r="4"/><circle cx="321" cy="685" r="4"/><circle cx="348" cy="679" r="4"/>
+    <circle cx="1128" cy="641" r="4"/><circle cx="1156" cy="635" r="4"/><circle cx="1184" cy="629" r="4"/>
+  </g>
+  <g fill="none" stroke="#825da5" stroke-width="3" opacity=".5">
+    <path d="m442 712 84-18m-74 33 84-18M995 692l101-22m-90 39 101-22"/>
+  </g>
+</svg>

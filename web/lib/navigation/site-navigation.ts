@@ -1,5 +1,5 @@
 export const siteNavigationItems = [
-  { key: "work", label: "Work", href: "/#work" },
+  { key: "work", label: "Work", href: "/work" },
   { key: "about", label: "About", href: "/about" },
 ] as const;
 
@@ -10,6 +10,6 @@ export function isNavigationItemActive(
   item: SiteNavigationItem,
 ) {
   return item.key === "work"
-    ? pathname === "/" || pathname.startsWith("/projects/")
+    ? pathname === "/work" || pathname.startsWith("/projects/")
     : pathname === "/about";
 }

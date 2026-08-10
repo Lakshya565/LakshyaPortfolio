@@ -5,6 +5,7 @@ import {
   buildAboutPageData,
   buildHomePageData,
   buildSiteShellData,
+  buildWorkPageData,
 } from "../lib/content/page-data";
 import {
   isNavigationItemActive,
@@ -12,30 +13,87 @@ import {
 } from "../lib/navigation/site-navigation";
 import type { PortfolioContent } from "../types/content";
 
-describe("page data projections", () => {
-  it("builds the intended homepage hierarchy without editorial fields", () => {
-    const data = buildHomePageData(portfolioContent);
+const expectedProjectOrder = [
+  "cisco-agentic-runbook-creator",
+  "repoframe",
+  "nucurrent-inventory-system",
+  "smartlift-sleeve",
+  "quackta",
+  "lucky-arduino",
+  "backbuddy",
+  "neurify",
+  "agrisense",
+  "risenrun-wifi-alarm-clock",
+];
 
-    expect(data.featuredProjects.map(({ slug }) => slug)).toEqual([
-      "cisco-agentic-runbook-creator",
-      "repoframe",
-    ]);
-    expect(data.supportingProjects).toHaveLength(3);
-    expect(data.archiveProjects).toHaveLength(5);
-    expect(data.mapProjects).toHaveLength(10);
-    expect(data.personalMotifs).toHaveLength(8);
-    expect(data.archiveProjects.every(({ href }) => href === null)).toBe(true);
-    expect(data.archiveProjects[0].links).toHaveLength(4);
-    expect(data.archiveProjects[0].metrics[0]).toEqual({
+describe("page data projections", () => {
+  it("builds one ordered project system for the homepage and /work", () => {
+    const home = buildHomePageData(portfolioContent);
+    const work = buildWorkPageData(portfolioContent);
+
+    expect(home.projectSystem).toEqual(work.projectSystem);
+    expect(home.projectSystem.projects.map(({ slug }) => slug)).toEqual(
+      expectedProjectOrder,
+    );
+    expect(
+      home.projectSystem.projects.filter(
+        ({ presentation }) => presentation === "case-study",
+      ),
+    ).toHaveLength(5);
+    expect(
+      home.projectSystem.projects.filter(
+        ({ presentation }) => presentation === "archive",
+      ),
+    ).toHaveLength(5);
+  });
+
+  it("projects archive evidence and stable /work permalinks without editorial fields", () => {
+    const { projects } = buildWorkPageData(portfolioContent).projectSystem;
+    const cisco = projects[0];
+    const luckyArduino = projects.find(
+      ({ slug }) => slug === "lucky-arduino",
+    );
+
+    expect(cisco).toMatchObject({
+      presentation: "case-study",
+      priority: "featured",
+      routeHref: "/projects/cisco-agentic-runbook-creator",
+    });
+    expect(luckyArduino).toMatchObject({
+      presentation: "archive",
+      anchorId: "project-lucky-arduino",
+      permalinkHref: "/work#project-lucky-arduino",
+    });
+
+    if (luckyArduino?.presentation !== "archive") {
+      throw new Error("Expected Lucky Arduino to remain an archive project");
+    }
+
+    expect(luckyArduino.links).toHaveLength(4);
+    expect(luckyArduino.metrics[0]).toEqual({
       label: "Video views",
       value: "50K+",
       context: "Reported across the Lucky Arduino channel.",
     });
-    expect(data.archiveProjects[1].dateLabel).toBe("Jan 2025 – May 2025");
-    expect(data.featuredProjects[0]).not.toHaveProperty("publication");
-    expect(data.featuredProjects[0]).not.toHaveProperty("contentStatus");
-    expect(data.featuredProjects[0]).not.toHaveProperty("metrics");
-    expect(data.archiveProjects[0].metrics[0]).not.toHaveProperty("sourceNote");
+    expect(luckyArduino).not.toHaveProperty("publication");
+    expect(luckyArduino).not.toHaveProperty("contentStatus");
+    expect(luckyArduino.metrics[0]).not.toHaveProperty("sourceNote");
+  });
+
+  it("builds eight desk hotspot groups that cover all nine motifs", () => {
+    const home = buildHomePageData(portfolioContent);
+    const projectedMotifKeys = home.personalHotspots.flatMap((hotspot) =>
+      hotspot.motifs.map(({ key }) => key),
+    );
+
+    expect(home.personalHotspots).toHaveLength(8);
+    expect(projectedMotifKeys).toHaveLength(9);
+    expect(new Set(projectedMotifKeys)).toEqual(
+      new Set(portfolioContent.personalMotifs.map(({ key }) => key)),
+    );
+    expect(
+      home.personalHotspots.find(({ key }) => key === "leadership")?.motifs,
+    ).toHaveLength(2);
   });
 
   it("projects the supplied public contact links", () => {
@@ -71,12 +129,14 @@ describe("page data projections", () => {
     } satisfies PortfolioContent;
 
     const home = buildHomePageData(emptyContent);
+    const work = buildWorkPageData(emptyContent);
     const about = buildAboutPageData(emptyContent);
 
-    expect(home.featuredProjects).toEqual([]);
-    expect(home.supportingProjects).toEqual([]);
-    expect(home.archiveProjects).toEqual([]);
-    expect(home.personalMotifs).toEqual([]);
+    expect(home.projectSystem.projects).toEqual([]);
+    expect(work.projectSystem.projects).toEqual([]);
+    expect(home.personalHotspots.every(({ motifs }) => motifs.length === 0)).toBe(
+      true,
+    );
     expect(home.socialLinks).toEqual([]);
     expect(about.items).toEqual([]);
     expect(about.skillGroups).toEqual([]);
@@ -86,8 +146,10 @@ describe("page data projections", () => {
 describe("site navigation state", () => {
   const [work, about] = siteNavigationItems;
 
-  it("marks one conventional route family active", () => {
-    expect(isNavigationItemActive("/", work)).toBe(true);
+  it("uses /work as the conventional project destination", () => {
+    expect(work.href).toBe("/work");
+    expect(isNavigationItemActive("/", work)).toBe(false);
+    expect(isNavigationItemActive("/work", work)).toBe(true);
     expect(isNavigationItemActive("/projects/repoframe", work)).toBe(true);
     expect(isNavigationItemActive("/about", about)).toBe(true);
     expect(isNavigationItemActive("/about", work)).toBe(false);

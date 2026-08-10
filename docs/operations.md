@@ -119,9 +119,10 @@ Then verify:
 - GitHub, LinkedIn, email, repository, demo, and video links work signed out.
 - Final media returns the expected content type, dimensions, alt behavior, and
   cache behavior, with no private metadata or broken requests.
-- Desktop/mobile keyboard flows, skip link, map links, direct routes, refresh,
-  browser history, reduced motion, 200% text, 320 px reflow, JavaScript-disabled
-  navigation, Firefox, and Safari/WebKit pass.
+- Desktop/mobile keyboard flows, skip link, all eight desk hotspots, monitor
+  dialog focus/history, the `/work` fallback, direct routes, refresh, reduced
+  motion, 200% text, 320 px reflow, JavaScript-disabled navigation, Firefox,
+  and Safari/WebKit pass.
 - Browser console, network requests, and deployment logs contain no error,
   draft, credential, internal path, or confidential content.
 - A production Lighthouse run and, when available, field Core Web Vitals are

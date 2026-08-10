@@ -81,6 +81,7 @@ describe("indexing metadata", () => {
 
     expect(urls).toEqual([
       "https://portfolio.example.com/",
+      "https://portfolio.example.com/work",
       "https://portfolio.example.com/about",
       "https://portfolio.example.com/projects/cisco-agentic-runbook-creator",
       "https://portfolio.example.com/projects/repoframe",

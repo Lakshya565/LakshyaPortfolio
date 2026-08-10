@@ -1,43 +1,37 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 
-import { ArchiveCard } from "../components/projects/archive-card";
-import { ProjectBentoGrid } from "../components/projects/project-bento-grid";
+import { ProjectSystem } from "../components/project-system/project-system";
 import { SocialLinks } from "../components/site/social-links";
 import { portfolioContent } from "../content/portfolio";
-import { buildHomePageData } from "../lib/content/page-data";
+import {
+  buildHomePageData,
+  buildProjectSystemData,
+} from "../lib/content/page-data";
 
-describe("content components", () => {
-  const data = buildHomePageData(portfolioContent);
+describe("project system", () => {
+  const data = buildProjectSystemData(portfolioContent);
 
-  it("renders routed summaries in the featured-first bento hierarchy", () => {
+  it("server-renders all case studies and archives through one component", () => {
     const html = renderToStaticMarkup(
-      <ProjectBentoGrid
-        featuredProjects={data.featuredProjects}
-        supportingProjects={data.supportingProjects}
-      />,
+      <ProjectSystem data={data} headingId="project-system-test-heading" />,
     );
 
+    expect(html.match(/class="project-system-node"/g)).toHaveLength(10);
+    expect(html.match(/data-presentation="case-study"/g)).toHaveLength(5);
+    expect(html.match(/data-presentation="archive"/g)).toHaveLength(5);
     expect(html).toContain('href="/projects/cisco-agentic-runbook-creator"');
     expect(html).toContain("Cisco Agentic Runbook Creator");
-    expect(html.match(/<article/g)).toHaveLength(5);
-    expect(html.match(/data-prominence="featured"/g)).toHaveLength(2);
-    expect(html.match(/data-prominence="supporting"/g)).toHaveLength(3);
-    expect(html.indexOf('data-prominence="featured"')).toBeLessThan(
-      html.indexOf('data-prominence="supporting"'),
-    );
-    expect(html).toContain("Open case study");
+    expect(html).toContain("Lucky Arduino Collection");
   });
 
-  it("renders substantial archive evidence without inventing a detail route", () => {
+  it("keeps archive evidence at /work permalinks without inventing detail routes", () => {
     const html = renderToStaticMarkup(
-      <ArchiveCard project={data.archiveProjects[0]} />,
+      <ProjectSystem data={data} headingId="project-system-test-heading" />,
     );
 
-    expect(html).toContain("Lucky Arduino Collection");
-    expect(html).toContain("50K+");
     expect(html).toContain('id="project-lucky-arduino"');
-    expect(html).toContain("archive-card-dots");
+    expect(html).toContain('href="/work#project-lucky-arduino"');
     expect(html).toContain(
       'href="https://github.com/Lakshya565/Basic-Electronics-Projects"',
     );
@@ -45,6 +39,22 @@ describe("content components", () => {
     expect(html).toContain('rel="noreferrer noopener"');
     expect(html).not.toContain('href="/projects/lucky-arduino"');
   });
+
+  it("renders an intentional empty state without empty project nodes", () => {
+    const html = renderToStaticMarkup(
+      <ProjectSystem
+        data={{ projects: [] }}
+        headingId="empty-project-system-heading"
+      />,
+    );
+
+    expect(html).toContain("No public projects are available yet.");
+    expect(html).not.toContain('class="project-system-node"');
+  });
+});
+
+describe("social links", () => {
+  const data = buildHomePageData(portfolioContent);
 
   it("uses safe new-tab behavior for external profiles and mailto for email", () => {
     const html = renderToStaticMarkup(<SocialLinks links={data.socialLinks} />);

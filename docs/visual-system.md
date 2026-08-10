@@ -7,12 +7,13 @@ computer-system language. Green identifies systems-led work, purple identifies
 physical and human-facing work, and a balanced treatment identifies hybrid
 projects. Warm amber belongs only to personal motifs. None of these colors
 encode quality or completion.
-The circuit scene is replaceable. Semantic headings, native links, project rows,
-case studies, and content projections are the lasting architecture.
+The desk artwork is replaceable. Semantic headings, the shared server-rendered
+project system, case studies, `/work`, and content projections are the lasting
+architecture.
 
 Later visual iterations may change composition, typography, illustration, glow,
 or density without moving canonical project facts into components or making the
-scene required navigation.
+desk dialog required navigation.
 
 ## Semantic tokens
 
@@ -32,7 +33,7 @@ utility class is useful.
 | Geometry | `--content-wide`, `--content-reading`, radius tokens | Shared layout/readability constraints |
 
 Do not introduce raw component colors. Add a semantic token only when a real
-state needs it. Alpha variants are named tokens so the circuit, header, links,
+state needs it. Alpha variants are named tokens so the desk, header, links,
 and selection treatment cannot silently drift.
 
 ## Contrast record
@@ -73,10 +74,10 @@ high-level headings and remain content-driven everywhere else.
 ## Media and effects
 
 Blur and glow are static, restrained, and never required for legibility. Project
-images retain intrinsic dimensions and their source order. SVG traces are
-decorative and hidden from assistive technology; semantic project links remain
-ordinary DOM anchors. Placeholder artwork is layout evidence only and is blocked
-by release validation.
+images retain intrinsic dimensions and their source order. The desk SVG is a
+decorative, passive local image hidden from assistive technology; its monitor is
+a separate semantic `/work` link enhanced into a dialog trigger. Placeholder
+artwork is layout evidence only and is blocked by release validation.
 
 Grid texture identifies a routed case study; dot texture identifies a compact
 archive record. Both are static local SVG patterns. Every texture and work-mode

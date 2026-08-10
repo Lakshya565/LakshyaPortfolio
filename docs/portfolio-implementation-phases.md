@@ -51,7 +51,8 @@ Every phase completion report states:
                     -> 10 Production deployment and handoff
 ```
 
-The sequence deliberately proves content and static routes before investing in the circuit scene. All primary routes must remain prerenderable throughout.
+The sequence deliberately proves content and static routes before investing in
+the isometric desk. All primary routes must remain prerenderable throughout.
 
 ## Phase 0 — Next.js repository foundation
 
@@ -120,7 +121,7 @@ A persistent dev server or browser session is unnecessary unless explicitly requ
 ### Exclusions
 
 - Content inventory beyond one typed placeholder.
-- Final design, fonts, project routes, map, and motion library.
+- Final design, fonts, project routes, desk interaction, and motion library.
 - Case-study copy/media.
 - Vercel project creation, preview deployment, or remote changes.
 
@@ -150,7 +151,7 @@ Create the typed, version-controlled content system that represents both sparse 
 - Define a singleton site manifest for identity and public social/contact links.
 - Define the project manifest with stable slug, title, category, summary, role, dates, technology array, priority, links, assets, metrics, MDX module key, and display order.
 - Enforce mutually exclusive featured/archive states and deterministic ordering.
-- Keep scene eligibility in content and exact placement out of project records.
+- Keep project-system membership derived from publication and personal hotspot placement out of project records.
 
 #### MDX boundary
 
@@ -172,7 +173,7 @@ Create the typed, version-controlled content system that represents both sparse 
 #### Validation tool
 
 - Validate unique URL-safe slugs, manifest-to-MDX linkage, required fields, legal states, deterministic orders, safe links, local asset existence, alt text, and placeholder publication.
-- Validate that every map-visible project can later be assigned a placement; placement coverage itself becomes mandatory in Phase 5.
+- Validate the personal-motif key set so Phase 5 can assign every motif to one typed desk hotspot.
 - Prevent draft MDX/metadata from being included in public route lists or client bundles unnecessarily.
 - Return nonzero status with project slug and violated rule.
 - Test Windows paths while requiring site URLs to use forward slashes.
@@ -194,7 +195,7 @@ Create the typed, version-controlled content system that represents both sparse 
 
 - Final public copy/media.
 - Full project-page renderer or final styling.
-- Circuit placement/visuals.
+- Desk placement/visuals.
 - Vercel deployment or hosted content system.
 
 ### Exit gate
@@ -270,7 +271,7 @@ Every published content record produces a static, directly reachable project pag
 
 ### Objective
 
-Deliver a complete conventionally navigable portfolio skeleton before custom map or major motion work.
+Deliver a complete conventionally navigable portfolio skeleton before custom desk or major motion work.
 
 ### Decisions before work
 
@@ -289,14 +290,15 @@ Deliver a complete conventionally navigable portfolio skeleton before custom map
 #### Routes and shell
 
 - Build root layout, default metadata, skip link, navigation, footer, and responsive containers.
-- Create/refine `/`, `/about`, `/projects/[slug]`, loading/error boundaries where client behavior needs them, and not-found routes.
+- Create/refine `/`, `/work`, `/about`, `/projects/[slug]`, loading/error boundaries where client behavior needs them, and not-found routes.
 - Make direct routes and refresh independent of homepage state.
 - Add active navigation and accessible mobile menu behavior.
 
 #### Static composition
 
-- Render identity, featured work led by the Cisco and RepoFrame case studies, supporting work, archive preview, About, and contact in the planned hierarchy.
-- Keep semantic project rows as permanent map-independent navigation.
+- Render identity, About, and contact on the homepage; render featured,
+  supporting, and archive work through one semantic project system at `/work`.
+- Keep `/work` as permanent desk-independent navigation.
 - Source canonical content from the validated local registry; leave true UI labels in code.
 - Exercise long titles, missing dates/images, and uneven description length.
 
@@ -320,7 +322,7 @@ Deliver a complete conventionally navigable portfolio skeleton before custom map
 ### Exclusions
 
 - Full section renderer and media gallery.
-- Map, ambient animation, or route transitions.
+- Desk illustration, monitor dialog, ambient animation, or route transitions.
 - Final visual polish and complete public content.
 
 ### Exit gate
@@ -404,93 +406,86 @@ Build one resilient renderer that presents sparse and rich projects intentionall
 
 - Complete public copy/media.
 - Bespoke layouts per project.
-- Map, transitions, and remote media storage.
+- Desk interaction, transitions, and remote media storage.
 
 ### Exit gate
 
 At least one sparse and one rich project look intentional through the same safe renderer.
 
-## Phase 5 — Interactive 2D project environment
+## Phase 5 — Isometric desk and project system
 
-**Implementation note:** The base circuit environment is complete. A disposable
-desktop/mobile prototype validated the identity-core, primary-module, and
-peripheral hierarchy before production code was written. Production uses typed
-placement, server-rendered native links, decorative SVG traces, CSS signal
-motion, offscreen/hidden-tab pausing, reduced-motion suppression, and a distinct
-vertical mobile signal path. Conventional project rows remain unchanged below.
+**Implementation note:** Concept C replaces the earlier circuit-board map. The
+homepage uses a passive hand-authored isometric SVG, eight typed personal hotspot
+groups covering nine motifs, and a semantic monitor link that progressively
+opens a full-screen project-system dialog. The same server-rendered project
+system is prerendered at `/work`.
 
 ### Objective
 
-Add the memorable project scene as progressive navigation without weakening performance, accessibility, or conventional work discovery.
+Add a memorable personal desk without making project discovery, archive
+evidence, or case-study access depend on illustration geometry or client state.
 
 ### Decisions before work
 
-- Refine the accepted circuit/computer-system metaphor rather than reopening unrelated scene concepts.
-- Circuit placement schema and normalized coordinate conventions.
-- Mobile vertical signal-path composition.
-- Motion library only if CSS/Web Animations are insufficient.
-- Performance and reduced-motion budgets.
-
-### Prototype gate
-
-Create a disposable focused circuit-board prototype to test all node labels, desktop/narrow placement, keyboard order, focus visibility, trace animation, ambient-motion tolerance, and SVG/DOM visual quality. Model the identity as the central processor, Cisco and RepoFrame as primary modules, and other projects as connected peripherals. Do not carry prototype structure into production automatically.
+- Keep project facts and project-system ordering in the content layer.
+- Keep personal hotspot geometry in typed frontend configuration.
+- Use one server-rendered project-system component in the dialog and `/work`.
+- Preserve `/work` as the monitor's native-link and JavaScript-disabled fallback.
+- Use a local passive SVG rather than WebGL, canvas, or a client-rendered scene graph.
 
 ### Work
 
 #### Data and placement
 
-- Consume only published map-visible summaries.
-- Join them with typed placement by stable slug.
-- Detect missing/duplicate placements during validation.
-- Use deterministic fallback placement instead of overlaps.
-- Keep labels and destinations sourced from project data.
+- Include every published project in one deterministic project-system projection.
+- Assign all nine personal motif records to eight hotspot groups exactly once.
+- Validate normalized hotspot bounds, duplicate assignments, and missing motifs.
+- Require `desk-monitor` and one `desk-<hotspot-key>` group in the local SVG.
+- Keep canonical project and biography facts out of the SVG and placement module.
 
 #### Semantic interaction
 
-- Back nodes with native links where feasible.
-- Define hover, focus, active, and selected states.
-- Order focus by a meaningful reading path, not arbitrary SVG source order.
-- Support pointer, touch, and keyboard without hover-only information.
-- Give small visual markers adequate hit targets.
+- Overlay real HTML controls rather than making raw SVG groups interactive.
+- Keep the monitor as an ordinary `/work` link before enhancement.
+- Support pointer, touch, focus, Escape, close, back/forward, and focus restoration.
+- Preserve modified-click behavior on the monitor link.
+- Move personal hotspot details into a conventional narrow-screen drawer/list.
 
-#### Scene composition
+#### Shared project system
 
-- Build a stylized system board using traces, vias, pads, subtle grid/waveform motifs, and modular project nodes without copying a real commercial board.
-- Use restrained green/purple signal pulses to suggest information flow.
-- Keep Cisco and RepoFrame on the strongest visual traces without implying a false technical dependency between projects.
-- Isolate decorative SVG/path layers from semantic nodes.
-- Avoid React state updates on every animation frame.
-- Hide decoration from the accessibility tree.
-- Pause offscreen work.
-- Constrain project accents to theme tokens.
+- Render all ten published projects through one Server Component.
+- Route case-study records to `/projects/<slug>`.
+- Keep archive records substantial without inventing detail routes.
+- Give archives stable `/work#project-<slug>` permalinks.
+- Pass the server-rendered project system through the narrow client dialog shell.
 
-#### Responsive fallback and motion reduction
+#### SVG and motion safety
 
-- Design desktop and mobile compositions around content density.
-- Keep the normal featured-work list as guaranteed fallback.
-- Preserve server-rendered links when hydration fails.
-- Do not force orientation or horizontal page overflow.
-- Remove ambient drift/parallax/path animation under reduced motion while preserving interaction feedback.
+- Keep the desk SVG passive, local, decorative, and hidden from assistive technology.
+- Reject scripts, event attributes, `foreignObject`, and remote/data references.
+- Keep zoom/open motion interruptible and suppress it under reduced motion.
+- Prevent layout shift and horizontal overflow at narrow sizes.
 
 ### Verification
 
-- Every map project reaches the correct route.
-- Keyboard and touch users can reveal and activate nodes.
-- Missing placement creates a useful fallback and development validation failure.
-- Reduced-motion mode has no nonessential continuous animation.
-- Scene works at small/medium/wide widths, zoom, and text scaling.
-- Profiling finds no avoidable per-frame React rendering or runaway offscreen work.
-- Ordinary work navigation remains present.
+- Eight hotspot groups cover all nine motifs exactly once.
+- The required monitor/hotspot SVG group IDs exist and the SVG passes passive-asset checks.
+- The project system renders five case studies and five archives in both contexts.
+- Archive permalinks target `/work`; archive detail routes still return 404.
+- Monitor fallback, keyboard/touch interaction, Escape, focus restoration, history, reduced motion, zoom, and reflow pass.
+- Removing or disabling the dialog cannot remove `/work` or any case-study route.
 
 ### Exclusions
 
 - WebGL, 3D physics, audio, autoplay video, and pointer lock.
-- Long route choreography.
+- Separate project renderers for the dialog and `/work`.
+- URL-addressable archive detail pages without enough case-study evidence.
 - Final site-wide polish.
 
 ### Exit gate
 
-The scene is enjoyable but disposable: disabling/replacing it cannot break project discovery, routes, content contracts, or case studies.
+The desk is enjoyable but disposable: replacing it cannot break `/work`, archive
+permalinks, project routes, content contracts, or case studies.
 
 ## Phase 6 — Route and interaction transitions
 
@@ -525,7 +520,7 @@ Connect project selections to case studies with fast coherent motion while prese
 
 ### Verification
 
-- Map nodes and ordinary project rows work with/without transition context.
+- Monitor-dialog links and the ordinary `/work` route work with/without transition context.
 - Direct navigation, reload, deep links, back/forward, and rapid navigation work.
 - Errors cannot leave an opaque overlay or locked page.
 - Reduced motion uses minimal or no transition.
@@ -548,7 +543,7 @@ Motion adds continuity without changing correctness, time-to-content, or access.
 **Implementation note:** Phase 7 establishes an intentionally editable visual
 foundation rather than pretending placeholder content supports a locked final
 art direction. Semantic OKLCH/state tokens, local font stacks, widths, radii,
-layers, and motion timings are centralized and documented. Homepage, circuit,
+layers, and motion timings are centralized and documented. Homepage, desk,
 case-study, About, contact, sparse/dense, hover, focus, active, and reduced-motion
 states use the same system. Final font/art/media choices remain Phase 8 inputs.
 
@@ -573,7 +568,7 @@ Turn the functional site into a distinctive, restrained, developer-tool-focused 
 
 #### Homepage
 
-- Refine hero typography and its relationship to the scene.
+- Refine hero typography and its relationship to the isometric desk.
 - Turn basic cards into large editorial rows with contribution/evidence cues.
 - Prioritize Cisco and RepoFrame through ordering and scale rather than animation overload.
 - Keep archive quieter but discoverable.
@@ -711,7 +706,7 @@ Validate the release candidate against measurable usability, performance, failur
 #### Accessibility
 
 - Audit landmarks, headings, names, roles, labels, and reading order.
-- Complete keyboard flows through navigation, map, rows, galleries, case studies, and contact links.
+- Complete keyboard flows through navigation, desk hotspots, the monitor dialog, `/work`, galleries, case studies, and contact links.
 - Test focus visibility/restoration, menus, and skip navigation.
 - Test OS-level reduced motion, zoom, text enlargement, reflow, touch targets, contrast, and screen-reader announcements.
 - Use automated checks as support, followed by manual testing.
@@ -803,7 +798,7 @@ Confirm account ownership, billing expectations, Vercel project name/URL, and ro
 #### Production verification
 
 - Verify every route, slug, social/contact link, media file, sitemap, robots rule, canonical, and social preview.
-- Recheck desktop/mobile navigation, keyboard, reduced motion, and map fallback.
+- Recheck desktop/mobile navigation, keyboard, reduced motion, desk hotspots, dialog behavior, and the `/work` fallback.
 - Test JavaScript-disabled and client-animation failure behavior where practical.
 - Inspect build/deployment logs for errors or private-content leakage.
 - Confirm no localhost, preview, draft, or placeholder data appears.
@@ -859,7 +854,7 @@ on localhost.
 - During Phase 10, capture the assigned Vercel URL for canonical metadata.
 - Cisco appears only as a case study, not as a duplicate standalone experience feature.
 - Archive projects may launch as substantial public cards without full case-study routes.
-- The circuit prototype should lean atmospheric sci-fi while preserving readable labels and navigation.
+- The isometric desk should remain atmospheric sci-fi while preserving readable labels, hotspot targets, and `/work` navigation.
 
 After resolution, the first implementation instruction should be narrowly scoped:
 

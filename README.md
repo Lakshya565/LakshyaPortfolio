@@ -1,10 +1,11 @@
 # Lakshya Agarwal Portfolio
 
-A static-first personal portfolio showcasing software, AI, embedded, and hardware projects through detailed case studies and an atmospheric sci-fi circuit interface.
+A static-first personal portfolio showcasing software, AI, embedded, and hardware
+projects through detailed case studies and an atmospheric sci-fi isometric desk.
 
 Phases 0 through 7 establish the repository, validated content architecture,
 five static case-study routes, responsive shell, resilient sparse/rich renderer,
-progressive circuit scene, route continuity, and visual system. Phase 8 now has
+isometric desk experience, route continuity, and visual system. Phase 8 now has
 an explicit input inventory; Phase 9 has a measured local audit and safe
 discovery foundation; Phase 10 has an operating runbook. Final public content,
 final-content/native-device verification, and production deployment remain gated.
@@ -18,7 +19,7 @@ final-content/native-device verification, and production deployment remain gated
 - Published case studies prerender at `/projects/<slug>` from explicit local MDX imports; unknown and archive-only slugs return 404.
 - Manifest media, metrics, links, section outlines, and adjacent navigation are normalized into renderer-only data that excludes editorial control fields.
 - The same restrictive MDX policy runs during validation and compilation. Development and production builds use Next's supported Webpack mode because Turbopack cannot serialize the local policy plugin without duplicating it.
-- The homepage circuit scene uses server-rendered native links, typed normalized placement, CSS-only signal motion, a distinct vertical mobile composition, and an IntersectionObserver boundary that pauses offscreen work.
+- The homepage uses a hand-authored local isometric desk SVG with eight typed personal hotspot groups. Its monitor progressively opens the server-rendered project system in a full-screen dialog, while the same system remains directly available at `/work` without requiring the interaction.
 - Route changes begin immediately; an interruptible 220ms transform/opacity entry runs only for pointer navigation, while keyboard and reduced-motion navigation remain instant. Focus moves to the arriving heading or fragment target.
 - Vercel is a possible eventual host, but deployment is explicitly deferred while the frontend is reviewed and overhauled on localhost.
 

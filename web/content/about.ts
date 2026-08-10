@@ -105,17 +105,24 @@ export const personalMotifs = [
     displayOrder: 60,
   },
   {
-    key: "movement",
-    label: "Climb and lift",
-    detail: "I reset by bouldering, figuring out a stubborn route, or getting a workout in at the gym.",
+    key: "climbing",
+    label: "Climbing reset",
+    detail: "I reset by bouldering and spending far too long figuring out one stubborn route.",
     group: "life",
     displayOrder: 70,
+  },
+  {
+    key: "gym",
+    label: "Time under the bar",
+    detail: "The gym gives me a dependable way to clear my head and keep showing up for slow progress.",
+    group: "life",
+    displayOrder: 80,
   },
   {
     key: "anime",
     label: "Anime nights",
     detail: "I like ambitious stories, strategic rivalries, and the kind of competition that makes every choice matter.",
     group: "life",
-    displayOrder: 80,
+    displayOrder: 90,
   },
 ] as const satisfies readonly PersonalMotif[];

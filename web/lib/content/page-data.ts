@@ -4,11 +4,11 @@ import {
   getPublishedCaseStudyProjects,
   getPublishedSocialLinks,
 } from "@/lib/content/project-queries";
+import { buildDeskHotspots, type DeskHotspotData } from "@/lib/desk/hotspots";
 import type {
   AboutItem,
   ArchiveProject,
   CaseStudyProject,
-  PersonalMotif,
   PortfolioContent,
   Project,
   ProjectCategory,
@@ -25,7 +25,7 @@ export type SocialLinkData = Readonly<{
   href: string;
 }>;
 
-type ProjectSummaryBase = Readonly<{
+type ProjectSystemBaseData = Readonly<{
   slug: ProjectSlug;
   title: string;
   category: ProjectCategory;
@@ -33,12 +33,14 @@ type ProjectSummaryBase = Readonly<{
   role: string;
   technologies: readonly string[];
   workMode: ProjectWorkMode;
+  dateLabel: string | null;
 }>;
 
-export type RoutedProjectSummaryData = ProjectSummaryBase &
+export type ProjectSystemCaseStudyData = ProjectSystemBaseData &
   Readonly<{
     presentation: "case-study";
-    href: string;
+    priority: "featured" | "supporting";
+    routeHref: string;
   }>;
 
 type ArchiveProjectLinkData = Readonly<{
@@ -53,33 +55,38 @@ type ArchiveProjectMetricData = Readonly<{
   context: string | null;
 }>;
 
-export type ArchiveProjectSummaryData = ProjectSummaryBase &
+export type ProjectSystemArchiveData = ProjectSystemBaseData &
   Readonly<{
-    presentation: "archive-card";
-    href: null;
+    presentation: "archive";
+    priority: "archive";
     anchorId: string;
-    dateLabel: string | null;
+    permalinkHref: string;
     links: readonly ArchiveProjectLinkData[];
     metrics: readonly ArchiveProjectMetricData[];
   }>;
 
-export type ProjectMapSummaryData =
-  | RoutedProjectSummaryData
-  | ArchiveProjectSummaryData;
+export type ProjectSystemProjectData =
+  | ProjectSystemCaseStudyData
+  | ProjectSystemArchiveData;
+
+export type ProjectSystemData = Readonly<{
+  projects: readonly ProjectSystemProjectData[];
+}>;
 
 export type SiteShellData = Readonly<{
   name: string;
   socialLinks: readonly SocialLinkData[];
 }>;
 
-type HomePageData = Readonly<{
+export type HomePageData = Readonly<{
   profile: PortfolioContent["siteProfile"];
-  featuredProjects: readonly RoutedProjectSummaryData[];
-  supportingProjects: readonly RoutedProjectSummaryData[];
-  archiveProjects: readonly ArchiveProjectSummaryData[];
-  mapProjects: readonly ProjectMapSummaryData[];
-  personalMotifs: readonly PersonalMotif[];
+  personalHotspots: readonly DeskHotspotData[];
+  projectSystem: ProjectSystemData;
   socialLinks: readonly SocialLinkData[];
+}>;
+
+export type WorkPageData = Readonly<{
+  projectSystem: ProjectSystemData;
 }>;
 
 type AboutPageData = Readonly<{
@@ -106,7 +113,7 @@ function toSocialLinkData(
   }));
 }
 
-function toProjectSummaryBase(project: Project): ProjectSummaryBase {
+function toProjectSystemBase(project: Project): ProjectSystemBaseData {
   return {
     slug: project.slug,
     title: project.title.trim(),
@@ -117,28 +124,32 @@ function toProjectSummaryBase(project: Project): ProjectSummaryBase {
       .map((technology) => technology.trim())
       .filter(Boolean),
     workMode: project.workMode,
-  };
-}
-
-function toRoutedProjectSummary(
-  project: CaseStudyProject,
-): RoutedProjectSummaryData {
-  return {
-    ...toProjectSummaryBase(project),
-    presentation: "case-study",
-    href: `/projects/${project.slug}`,
-  };
-}
-
-function toArchiveProjectSummary(
-  project: ArchiveProject,
-): ArchiveProjectSummaryData {
-  return {
-    ...toProjectSummaryBase(project),
-    presentation: "archive-card",
-    href: null,
-    anchorId: `project-${project.slug}`,
     dateLabel: formatProjectDateRange(project.startDate, project.endDate),
+  };
+}
+
+function toProjectSystemCaseStudy(
+  project: CaseStudyProject,
+): ProjectSystemCaseStudyData {
+  return {
+    ...toProjectSystemBase(project),
+    presentation: "case-study",
+    priority: project.priority,
+    routeHref: `/projects/${project.slug}`,
+  };
+}
+
+function toProjectSystemArchive(
+  project: ArchiveProject,
+): ProjectSystemArchiveData {
+  const anchorId = `project-${project.slug}`;
+
+  return {
+    ...toProjectSystemBase(project),
+    presentation: "archive",
+    priority: "archive",
+    anchorId,
+    permalinkHref: `/work#${anchorId}`,
     links: project.links.map(({ kind, label, href }) => ({
       kind,
       label: label.trim(),
@@ -152,6 +163,21 @@ function toArchiveProjectSummary(
   };
 }
 
+export function buildProjectSystemData(
+  content: Pick<PortfolioContent, "projects">,
+): ProjectSystemData {
+  const projects = [
+    ...getPublishedCaseStudyProjects(content).map(toProjectSystemCaseStudy),
+    ...getPublishedArchiveProjects(content).map(toProjectSystemArchive),
+  ].toSorted((left, right) => {
+    const leftProject = content.projects.find(({ slug }) => slug === left.slug);
+    const rightProject = content.projects.find(({ slug }) => slug === right.slug);
+    return (leftProject?.displayOrder ?? 0) - (rightProject?.displayOrder ?? 0);
+  });
+
+  return { projects };
+}
+
 export function buildSiteShellData(content: PortfolioContent): SiteShellData {
   return {
     name: content.siteProfile.name.trim(),
@@ -160,30 +186,18 @@ export function buildSiteShellData(content: PortfolioContent): SiteShellData {
 }
 
 export function buildHomePageData(content: PortfolioContent): HomePageData {
-  const caseStudies = getPublishedCaseStudyProjects(content);
-  const archiveProjects = getPublishedArchiveProjects(content);
-  const mapProjects = [
-    ...caseStudies
-      .filter((project) => project.displayInMap)
-      .map(toRoutedProjectSummary),
-    ...archiveProjects
-      .filter((project) => project.displayInMap)
-      .map(toArchiveProjectSummary),
-  ];
-
   return {
     profile: content.siteProfile,
-    featuredProjects: caseStudies
-      .filter((project) => project.priority === "featured")
-      .map(toRoutedProjectSummary),
-    supportingProjects: caseStudies
-      .filter((project) => project.priority === "supporting")
-      .map(toRoutedProjectSummary),
-    archiveProjects: archiveProjects.map(toArchiveProjectSummary),
-    mapProjects,
-    personalMotifs: content.personalMotifs.toSorted(compareDisplayOrder),
+    personalHotspots: buildDeskHotspots(
+      content.personalMotifs.toSorted(compareDisplayOrder),
+    ),
+    projectSystem: buildProjectSystemData(content),
     socialLinks: toSocialLinkData(content),
   };
+}
+
+export function buildWorkPageData(content: PortfolioContent): WorkPageData {
+  return { projectSystem: buildProjectSystemData(content) };
 }
 
 export function buildAboutPageData(content: PortfolioContent): AboutPageData {

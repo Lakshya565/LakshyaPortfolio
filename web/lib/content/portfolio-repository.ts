@@ -5,6 +5,7 @@ import {
   buildAboutPageData,
   buildHomePageData,
   buildSiteShellData,
+  buildWorkPageData,
 } from "@/lib/content/page-data";
 import {
   toCaseStudyNavigationItem,
@@ -15,19 +16,17 @@ import {
   getPublishedCaseStudyBySlug,
   getPublishedCaseStudyParams,
 } from "@/lib/content/project-queries";
-import { buildProjectMapData } from "@/lib/map/project-map";
 
 export function getSiteShellData() {
   return buildSiteShellData(portfolioContent);
 }
 
 export function getHomePageData() {
-  const { mapProjects, ...pageData } = buildHomePageData(portfolioContent);
+  return buildHomePageData(portfolioContent);
+}
 
-  return {
-    ...pageData,
-    projectMap: buildProjectMapData(mapProjects),
-  };
+export function getWorkPageData() {
+  return buildWorkPageData(portfolioContent);
 }
 
 export function getAboutPageData() {
