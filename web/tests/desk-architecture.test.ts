@@ -12,6 +12,7 @@ import {
   deskHotspotDefinitions,
   getDeskHotspotIssues,
 } from "../lib/desk/hotspots";
+import { deskSceneGeometry } from "../lib/desk/scene-geometry";
 import { personalMotifKeys } from "../types/content";
 
 describe("desk hotspot configuration", () => {
@@ -66,44 +67,73 @@ describe("desk hotspot configuration", () => {
 
     expect(html).toContain('href="/work"');
     expect(html).toContain('aria-label="Explore the project tree"');
-    expect(html).toContain('src="/media/site/lakshya-desk.svg"');
+    expect(html).toContain('src="/media/site/lakshya-desk-v2.svg"');
     expect(html).not.toContain('aria-label="Objects on my desk"');
   });
 });
 
-describe("desk SVG boundary", () => {
-  it("contains the monitor and every required hotspot group", async () => {
-    const svg = await readFile(
-      path.join(process.cwd(), "public", "media", "site", "lakshya-desk.svg"),
-      "utf8",
+describe("desk scene geometry", () => {
+  /**
+   * Replaces the old `desk-<key>` id contract. Overlay placement no longer
+   * depends on matching id strings inside the artwork: it is generated from the
+   * same scene the artwork is drawn from, which is the stronger guarantee.
+   */
+  it("covers every hotspot and the monitor screen", () => {
+    const generatedKeys = Object.keys(deskSceneGeometry.hotspots);
+
+    expect(new Set(generatedKeys)).toEqual(
+      new Set(deskHotspotDefinitions.map(({ key }) => key)),
     );
-    const requiredIds = [
-      "desk-monitor",
-      ...deskHotspotDefinitions.map(({ key }) => `desk-${key}`),
-    ];
+    expect(deskSceneGeometry.monitorScreen).toHaveLength(4);
 
-    for (const id of requiredIds) {
-      expect(svg).toContain(`id="${id}"`);
-    }
-
-    const ids = [...svg.matchAll(/\sid="([^"]+)"/g)].map((match) => match[1]);
-    expect(new Set(ids).size).toBe(ids.length);
+    const { widthPercent, heightPercent } =
+      deskSceneGeometry.monitorScreenBounds;
+    expect(widthPercent).toBeGreaterThan(0);
+    expect(heightPercent).toBeGreaterThan(0);
   });
 
+  it("places every generated hotspot inside the artwork", () => {
+    for (const [key, bounds] of Object.entries(deskSceneGeometry.hotspots)) {
+      expect(bounds.xPercent, key).toBeGreaterThanOrEqual(0);
+      expect(bounds.yPercent, key).toBeGreaterThanOrEqual(0);
+      expect(bounds.xPercent + bounds.widthPercent, key).toBeLessThanOrEqual(100);
+      expect(bounds.yPercent + bounds.heightPercent, key).toBeLessThanOrEqual(100);
+    }
+  });
+});
+
+describe("desk SVG boundary", () => {
   it("keeps the public SVG passive and self-contained", async () => {
     const svg = await readFile(
-      path.join(process.cwd(), "public", "media", "site", "lakshya-desk.svg"),
+      path.join(process.cwd(), "public", "media", "site", "lakshya-desk-v2.svg"),
       "utf8",
     );
 
     expect(svg).toMatch(/^<svg\b/);
-    expect(svg).toMatch(/\bviewBox="0 0 1440 900"/);
     expect(svg).toContain('<title id="desk-title">');
     expect(svg).toContain('<desc id="desk-description">');
     expect(svg).not.toMatch(/<script\b/i);
     expect(svg).not.toMatch(/<foreignObject\b/i);
+    // Soft shadows are stacked polygons, not a blur: the hero must stay cheap.
     expect(svg).not.toMatch(/<filter\b/i);
     expect(svg).not.toMatch(/\son[a-z]+\s*=/i);
     expect(svg).not.toMatch(/(?:href|xlink:href)\s*=\s*["'](?:https?:|\/\/|data:|javascript:)/i);
+  });
+
+  it("declares a square frame matching the generated geometry", async () => {
+    const svg = await readFile(
+      path.join(process.cwd(), "public", "media", "site", "lakshya-desk-v2.svg"),
+      "utf8",
+    );
+    const { viewBox } = deskSceneGeometry;
+
+    expect(svg).toContain(
+      `viewBox="${viewBox.x} ${viewBox.y} ${viewBox.width} ${viewBox.height}"`,
+    );
+    expect(viewBox.width / viewBox.height).toBeCloseTo(
+      deskSceneGeometry.aspectRatio,
+      3,
+    );
+    expect(deskSceneGeometry.aspectRatio).toBeCloseTo(1, 3);
   });
 });

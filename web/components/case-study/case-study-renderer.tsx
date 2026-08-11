@@ -93,15 +93,23 @@ function CaseStudyOutline({
   );
 }
 
+// Not every entry is a measurement: some are stated project facts such as a
+// policy or an opt-in behavior, so the heading must not claim more than it has.
+const projectFactsHeading = {
+  id: "project-facts",
+  label: "Project facts",
+  depth: 2,
+} as const satisfies CaseStudyOutlineItem;
+
 function CaseStudyMetrics({ project }: Readonly<{ project: CaseStudyPageData }>) {
   if (project.metrics.length === 0) {
     return null;
   }
 
   return (
-    <section aria-labelledby="project-evidence-heading" className="case-study-section">
-      <p className="eyebrow">Evidence</p>
-      <h2 id="project-evidence-heading">Measured shape</h2>
+    <section aria-labelledby={projectFactsHeading.id} className="case-study-section">
+      <p className="eyebrow">At a glance</p>
+      <h2 id={projectFactsHeading.id}>{projectFactsHeading.label}</h2>
       <dl className="case-study-metrics">
         {project.metrics.map((metric) => (
           <div key={`${metric.label}:${metric.value}`}>
@@ -142,7 +150,7 @@ export function CaseStudyRenderer({
       tabIndex={-1}
     >
       <Link className="text-link font-mono text-sm" href="/work">
-        ← All selected work
+        ← All work
       </Link>
 
       <article data-work-mode={project.workMode}>
@@ -150,7 +158,13 @@ export function CaseStudyRenderer({
         {project.hero ? <CaseStudyHero media={project.hero} /> : null}
 
         <div className="case-study-reading-layout">
-          <CaseStudyOutline outline={outline} />
+          <CaseStudyOutline
+            outline={
+              project.metrics.length > 0
+                ? [projectFactsHeading, ...outline]
+                : outline
+            }
+          />
           <div className="case-study-main-column">
             <CaseStudyMetrics project={project} />
             <div className="case-study-content">

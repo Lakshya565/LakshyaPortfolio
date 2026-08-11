@@ -22,9 +22,9 @@ export default function AboutPage() {
       id="main-content"
       tabIndex={-1}
     >
-      <header className="max-w-4xl border-b border-line pb-10 sm:pb-12">
+      <header className="border-b border-line pb-10 sm:pb-12">
         <p className="eyebrow">About {data.profile.name}</p>
-        <h1 className="page-title mt-4">
+        <h1 className="page-title mt-4 max-w-4xl">
           Building across boundaries.
         </h1>
         <p className="mt-5 max-w-2xl text-base leading-7 text-secondary sm:text-lg">
@@ -41,7 +41,10 @@ export default function AboutPage() {
         </article>
 
         {data.skillGroups.length > 0 ? (
-          <aside aria-labelledby="skills-title" className="rounded-xl border border-line bg-surface p-5">
+          <aside
+            aria-labelledby="skills-title"
+            className="self-start rounded-xl border border-line bg-surface p-5"
+          >
             <p className="eyebrow">Toolbox</p>
             <h2 className="mt-3 text-2xl font-semibold text-primary" id="skills-title">
               Skills by system layer

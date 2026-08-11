@@ -18,15 +18,26 @@ export default function NotFound() {
           This route is not connected.
         </h1>
         <p className="mt-6 max-w-xl text-lg leading-8 text-secondary">
-          The project may be unpublished, may not have a case study, or the URL
-          may be incorrect.
+          This page does not exist, or the URL may be incorrect. Every published
+          project has a permanent home in the project tree.
         </p>
-        <Link
-          className="button-primary mt-8 inline-flex"
-          href="/"
-        >
-          Return to the portfolio
-        </Link>
+        <ul className="mt-8 flex flex-wrap gap-3" role="list">
+          <li>
+            <Link className="button-primary inline-flex" href="/work">
+              Browse the project tree
+            </Link>
+          </li>
+          <li>
+            <Link className="button-secondary inline-flex" href="/about">
+              About me
+            </Link>
+          </li>
+          <li>
+            <Link className="button-secondary inline-flex" href="/">
+              Return home
+            </Link>
+          </li>
+        </ul>
       </section>
     </main>
   );

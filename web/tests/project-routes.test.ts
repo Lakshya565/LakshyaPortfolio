@@ -77,6 +77,27 @@ describe("project route queries", () => {
     });
   });
 
+  it("keeps adjacent case studies inside the project's own branch", () => {
+    const neurify = getAdjacentPublishedCaseStudies(portfolioContent, "neurify");
+
+    // Global display order would give backbuddy (Hardware) and agrisense.
+    expect(neurify.previous?.slug).toBe("lucky-arduino");
+    expect(neurify.previous?.workMode).toBe("hybrid");
+    expect(neurify.next?.slug).toBe("agrisense");
+
+    const firstInBranch = getAdjacentPublishedCaseStudies(
+      portfolioContent,
+      "quackta",
+    );
+    expect(firstInBranch.previous).toBeNull();
+
+    const lastInBranch = getAdjacentPublishedCaseStudies(
+      portfolioContent,
+      "risenrun-wifi-alarm-clock",
+    );
+    expect(lastInBranch.next).toBeNull();
+  });
+
 });
 
 describe("project metadata", () => {

@@ -39,6 +39,7 @@ import {
 } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import type { DeskHotspotData, DeskHotspotKey } from "@/lib/desk/hotspots";
+import { deskSceneGeometry } from "@/lib/desk/scene-geometry";
 
 type HotspotStyle = CSSProperties &
   Readonly<{
@@ -49,6 +50,13 @@ type HotspotStyle = CSSProperties &
   }>;
 
 const subscribeToHydration = () => () => undefined;
+
+const monitorScreenStyle = {
+  "--monitor-x": `${deskSceneGeometry.monitorScreenBounds.xPercent}%`,
+  "--monitor-y": `${deskSceneGeometry.monitorScreenBounds.yPercent}%`,
+  "--monitor-width": `${deskSceneGeometry.monitorScreenBounds.widthPercent}%`,
+  "--monitor-height": `${deskSceneGeometry.monitorScreenBounds.heightPercent}%`,
+} as CSSProperties;
 
 function toHotspotStyle(hotspot: DeskHotspotData): HotspotStyle {
   return {
@@ -287,8 +295,8 @@ export function DeskExperience({
               className="desk-art"
               fetchPriority="high"
               height="900"
-              src="/media/site/lakshya-desk.svg"
-              width="1440"
+              src="/media/site/lakshya-desk-v2.svg"
+              width="1200"
             />
 
             {hydrated ? (
@@ -306,12 +314,16 @@ export function DeskExperience({
               </ul>
             ) : null}
 
+            {/* Sits on the screen the generator actually drew. Matching the
+                screen's exact parallelogram is Phase 6 work; this is its
+                bounding box. */}
             <Link
               aria-label="Explore the project tree"
               className="desk-monitor-trigger"
               href="/work"
               onClick={handleMonitorClick}
               ref={monitorRef}
+              style={monitorScreenStyle}
             >
               <span>Explore project tree</span>
             </Link>

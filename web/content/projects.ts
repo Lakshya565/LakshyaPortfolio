@@ -48,7 +48,7 @@ export const projects = [
       "I built RepoFrame to turn bounded repository evidence into defensible project stories, with deterministic inspection and tool-using verification keeping generated claims traceable.",
     role: "Creator and full-stack engineer",
     startDate: "2026-06",
-    endDate: null,
+    endDate: "present",
     technologies: [
       "Next.js",
       "TypeScript",

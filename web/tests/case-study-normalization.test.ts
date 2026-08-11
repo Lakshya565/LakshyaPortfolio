@@ -133,4 +133,9 @@ describe("case-study normalization", () => {
     expect(formatProjectDateRange("2024-09", "2024-09")).toBe("Sep 2024");
     expect(formatProjectDateRange("bad", "2025")).toBe("2025");
   });
+
+  it("renders an ongoing range only when the content says so", () => {
+    expect(formatProjectDateRange("2026-06", "present")).toBe("Jun 2026 – Present");
+    expect(formatProjectDateRange(null, "present")).toBeNull();
+  });
 });

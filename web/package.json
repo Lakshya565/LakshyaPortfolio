@@ -11,6 +11,7 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
+    "generate:desk": "tsx scripts/generate-desk.ts",
     "validate:content": "tsx scripts/validate-content.ts",
     "validate:content:release": "tsx scripts/validate-content.ts --release",
     "check": "npm run validate:content && npm run lint && npm run typecheck && npm run test"

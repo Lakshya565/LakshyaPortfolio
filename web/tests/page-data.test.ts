@@ -4,6 +4,7 @@ import { portfolioContent } from "../content/portfolio";
 import {
   buildAboutPageData,
   buildHomePageData,
+  buildSelectedWorkData,
   buildSiteShellData,
   buildWorkPageData,
 } from "../lib/content/page-data";
@@ -33,6 +34,27 @@ const expectedBranches = [
 ];
 
 describe("page data projections", () => {
+  it("leads the homepage with the flagships and still covers every branch", () => {
+    const selected = buildSelectedWorkData(portfolioContent);
+
+    expect(selected.map((project) => project.slug)).toEqual([
+      "cisco-agentic-runbook-creator",
+      "repoframe",
+      "smartlift-sleeve",
+      "quackta",
+    ]);
+    // Priority alone would return three Software projects and hide the range.
+    expect(new Set(selected.map((project) => project.workMode))).toEqual(
+      new Set(["software", "hardware", "hybrid"]),
+    );
+    expect(selected.map((project) => project.branchLabel)).toEqual([
+      "Software",
+      "Software",
+      "Hardware",
+      "Hybrid",
+    ]);
+  });
+
   it("builds one ordered project tree for the homepage and /work", () => {
     const home = buildHomePageData(portfolioContent);
     const work = buildWorkPageData(portfolioContent);

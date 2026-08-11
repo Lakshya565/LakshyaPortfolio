@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { IsometricDesk } from "@/components/desk/isometric-desk";
+import { SelectedWork } from "@/components/home/selected-work";
 import { SocialLinks } from "@/components/site/social-links";
 import { Button } from "@/components/ui/button";
 import { getHomePageData } from "@/lib/content/portfolio-repository";
@@ -21,7 +22,15 @@ export default function Home() {
           />
         </div>
 
-        <IsometricDesk data={data} />
+        {/* Work precedes the desk in DOM order so a phone, a screen reader, and
+            the Tab key all reach the projects before the illustration. */}
+        <div className="personal-hero-body">
+          <SelectedWork
+            projects={data.selectedWork}
+            totalProjectCount={data.totalProjectCount}
+          />
+          <IsometricDesk data={data} />
+        </div>
       </header>
 
       <section

@@ -98,11 +98,9 @@ function ProjectTreeBranch({
       className="project-tree-branch"
       data-work-mode={branch.workMode}
     >
-      <header className="project-tree-branch-header">
+      {/* Branch head: the rectangle each chain hangs from. */}
+      <header className="project-tree-branch-node">
         <Heading id={headingId}>{branch.label}</Heading>
-        <span>
-          {branch.projects.length} {branch.projects.length === 1 ? "project" : "projects"}
-        </span>
       </header>
 
       {branch.projects.length > 0 ? (

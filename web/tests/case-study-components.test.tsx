@@ -110,7 +110,7 @@ describe("case-study renderer", () => {
     expect(html).not.toContain("case-study-metrics");
     expect(html).not.toContain("case-study-gallery");
     expect(html).not.toContain("case-study-video-list");
-    expect(html).not.toContain('aria-label="Other case studies"');
+    expect(html).not.toContain('aria-label="Adjacent projects"');
     expect(html).not.toContain('aria-label="Case study sections"');
   });
 
@@ -122,6 +122,7 @@ describe("case-study renderer", () => {
           previous: {
             title: "Previous project",
             category: "Hardware",
+            workMode: "hardware",
             href: "/projects/previous",
           },
           next: null,

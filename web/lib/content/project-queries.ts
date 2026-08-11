@@ -50,6 +50,11 @@ export function getPublishedCaseStudyParams(
   return getPublishedCaseStudyProjects(content).map(({ slug }) => ({ slug }));
 }
 
+/**
+ * Adjacency stays inside the project's own branch. Walking the global order
+ * would send a reader from a Hybrid project to a Hardware one, contradicting
+ * the tree they navigated in from.
+ */
 export function getAdjacentPublishedCaseStudies(
   content: Pick<PortfolioContent, "projects">,
   slug: string,
@@ -57,16 +62,20 @@ export function getAdjacentPublishedCaseStudies(
   previous: CaseStudyProject | null;
   next: CaseStudyProject | null;
 }> {
-  const projects = getPublishedCaseStudyProjects(content);
-  const index = projects.findIndex((project) => project.slug === slug);
+  const current = getPublishedProjectBySlug(content, slug);
 
-  if (index === -1) {
+  if (!current) {
     return { previous: null, next: null };
   }
 
+  const branch = getPublishedCaseStudyProjects(content).filter(
+    (project) => project.workMode === current.workMode,
+  );
+  const index = branch.findIndex((project) => project.slug === slug);
+
   return {
-    previous: projects[index - 1] ?? null,
-    next: projects[index + 1] ?? null,
+    previous: branch[index - 1] ?? null,
+    next: branch[index + 1] ?? null,
   };
 }
 

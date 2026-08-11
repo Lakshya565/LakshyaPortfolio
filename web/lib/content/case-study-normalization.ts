@@ -1,3 +1,4 @@
+import { ongoingProjectDate } from "@/types/content";
 import type {
   CaseStudyProject,
   ProjectAssetKind,
@@ -52,6 +53,7 @@ export type CaseStudyPageData = Readonly<{
 export type CaseStudyNavigationItem = Readonly<{
   title: string;
   category: ProjectCategory;
+  workMode: ProjectWorkMode;
   href: string;
 }>;
 
@@ -101,6 +103,13 @@ export function formatProjectDateRange(
   endDate: string | null | undefined,
 ): string | null {
   const start = normalizeProjectDate(startDate);
+
+  // Ongoing work must be stated, never inferred: a null end date means the end
+  // is unknown, which is not the same claim as "still running".
+  if (start && normalizeOptionalText(endDate) === ongoingProjectDate) {
+    return `${start} – Present`;
+  }
+
   const end = normalizeProjectDate(endDate);
 
   if (start && end) {
@@ -259,6 +268,7 @@ export function toCaseStudyNavigationItem(
   return {
     title: project.title.trim(),
     category: project.category,
+    workMode: project.workMode,
     href: `/projects/${project.slug}`,
   };
 }

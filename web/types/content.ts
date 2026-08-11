@@ -37,6 +37,19 @@ export type ProjectCategory = (typeof projectCategories)[number];
 export const projectWorkModes = ["software", "hardware", "hybrid"] as const;
 export type ProjectWorkMode = (typeof projectWorkModes)[number];
 
+/** The single source for branch naming, shared by the tree and case studies. */
+export const projectWorkModeLabels = {
+  hybrid: "Hybrid",
+  software: "Software",
+  hardware: "Hardware",
+} as const satisfies Readonly<Record<ProjectWorkMode, string>>;
+
+/**
+ * Explicit `endDate` sentinel for work that is still running. A `null` end date
+ * means the end is unknown; only this value licenses rendering "– Present".
+ */
+export const ongoingProjectDate = "present";
+
 export const projectLinkKinds = ["repository", "live", "video"] as const;
 export type ProjectLinkKind = (typeof projectLinkKinds)[number];
 

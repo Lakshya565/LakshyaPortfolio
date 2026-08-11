@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import {
+  ongoingProjectDate,
   personalMotifKeys,
   projectAssetKinds,
   projectCategories,
@@ -19,6 +20,9 @@ const projectDate = z
   .string()
   .regex(/^\d{4}(?:-(?:0[1-9]|1[0-2]))?$/, "must use YYYY or YYYY-MM")
   .nullable();
+// An end date may also be the explicit ongoing sentinel. `null` still means the
+// end is simply unknown, so only this value renders as "– Present".
+const projectEndDate = z.union([z.literal(ongoingProjectDate), projectDate]);
 
 const siteProfileSchema = z.object({
   name: nonEmptyText,
@@ -117,7 +121,7 @@ const projectBaseSchema = z.object({
   shortDescription: z.string().trim().min(40),
   role: nonEmptyText,
   startDate: projectDate,
-  endDate: projectDate,
+  endDate: projectEndDate,
   technologies: z.array(nonEmptyText).min(1),
   workMode: z.enum(projectWorkModes),
   publication: z.enum(["draft", "published"]),

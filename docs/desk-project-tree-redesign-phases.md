@@ -211,6 +211,28 @@ The tree must not reach into raw editorial content.
   overflow, and one route action.
 - Use static CSS/SVG connectors that remain intelligible without decoration.
 
+### Connector geometry (revised 2026-08-10)
+
+The original left-hand bracket connectors were rejected on review: the runs left
+whitespace between segments, the columns did not read as centered, and every
+line ended in mid-air instead of meeting the node it described. The tree is now
+built as **three vertical chains**.
+
+- Each branch is a chain headed by a **branch node** — a rectangle labelled
+  Hybrid, Software, or Hardware — with its project nodes stacked beneath it.
+- Consecutive nodes are joined by exactly **one vertical connector, centered on
+  the bottom edge of the node above and the top edge of the node below**. A
+  connector must terminate flush against both rectangles; no floating ends.
+- The root joins the three branch nodes with a rounded **elbow**: one trunk drops
+  from the root's bottom-center to a horizontal rail, and three drops descend
+  from the rail into each branch node's top-center. Corners are rounded so the
+  join does not read as a spreadsheet grid.
+- Connector centering is derived from the same layout that positions the cards,
+  so expanding a node cannot desynchronise the geometry.
+
+This shape exists to serve Phase 4: a single straight path per branch is what
+makes one cheap traveling pulse possible.
+
 ### Verification and exit gate
 
 Verify exact membership/order, all ten links, native disclosure, mobile DOM order,
@@ -246,9 +268,9 @@ movement between branches. Phase 4 cannot begin until reflow is stable.
 Add purposeful work-mode motion to the stable tree without recreating the site's
 earlier scrolling problems.
 
-Inspect and install local source for Magic UI Rainbow Button and Animated Beam
-through the configured shadcn registry. Map generated colors to local tokens and
-remove duplicated themes or unjustified dependencies.
+Inspect and install local source for Magic UI Rainbow Button through the
+configured shadcn registry. Map generated colors to local tokens and remove
+duplicated themes or unjustified dependencies.
 
 - Use Rainbow Button `asChild` for the root `/about` link with a green-blue-purple
   sequence.
@@ -256,15 +278,31 @@ remove duplicated themes or unjustified dependencies.
 - Software cards use green tones, Hybrid blue tones, Hardware purple tones.
 - Project borders animate only on hover, focus-within, or pinned state.
 - Remove or greatly reduce expensive blurred glow.
-- Extend the beam to follow intermediate branch nodes.
-- Render one static path and one traveling pulse per branch: three pulses total.
-- Recalculate paths in a batched container measurement after reflow.
-- Pause motion when the dialog is closed, the tree is offscreen, or the document
-  is hidden.
 - Reduced motion retains static semantic paths and borders.
 
-Prefer a local CSS/SVG gradient implementation over retaining Motion if it produces
-the same effect. Keep the dependency only with measured justification.
+### Beam approach (decided 2026-08-10)
+
+**Do not use Magic UI Animated Beam here.** It measures a `from` and a `to` DOM
+node, draws a re-measured SVG between them, and animates it with Motion. For a
+root, three branch nodes, and ten project nodes that is roughly thirteen measured
+beams animating at once — the exact pattern the release notes blame for the
+site's earlier scroll problems — and every expanded node forces a re-measure.
+
+The revised chain geometry removes the need for it. Each branch is a straight
+vertical run at a position the layout already controls, so the beam is:
+
+- One static path plus **one traveling pulse per branch: three pulses total**,
+  implemented as a local CSS gradient or `stroke-dashoffset` animation over an
+  SVG path. No measurement, no Motion, no client component.
+- The intended sequence is root → split at the rail → down each chain through
+  every node → last node → loop.
+- The loop is **strictly budgeted**: hard-paused when the tree is offscreen, when
+  the document is hidden, when the dialog is closed, and under reduced motion.
+  Visibility gating is the one piece that may justify a small client boundary
+  (an `IntersectionObserver` toggling a class), not the animation itself.
+- Animate only transform, opacity, or gradient/dash offset. Never layout.
+
+Keep Motion as a dependency only with measured justification.
 
 The exit gate requires no decoration-related long task over 50ms, no persistent
 dropped frames, accurate paths after expansion, and idle card borders that do not
@@ -279,7 +317,12 @@ or homepage code. This phase changes artwork only.
 
 ### Art direction
 
-- Wide 16:10 stylized diorama.
+**Revised 2026-08-10.** The homepage hero now places a selected-work rail beside
+the desk, so the desk occupies a narrower column and is recomposed for a squarer
+**~4:3** frame rather than a wide strip. The artwork is generated from a typed
+projection module rather than hand-authored paths; see "Production method" below.
+
+- Squarer ~4:3 stylized diorama sized for the hero's desk column.
 - One three-quarter, slightly top-down camera and vanishing system.
 - Central monitor occupying roughly one-third of useful width.
 - Keyboard below, mouse beside it, and quieter object clusters on both sides.
@@ -291,14 +334,43 @@ or homepage code. This phase changes artwork only.
 - No plaques, floating props, extra objects, text, logos, branded packaging,
   copied anime imagery, people, or watermarks.
 
-Use built-in image generation rather than a paid CLI/API path. Generate a small
-set of coherent drafts, compare perspective and recognizability, select the
-strongest, and iterate with one targeted change at a time. Save a versioned master
-without overwriting the SVG.
+### Production method (decided 2026-08-10)
 
-The final phase report includes the render, dimensions, exact prompt, represented
-objects, known imperfections, and content-safety inspection. Explicit visual
-approval is required before Phase 6.
+The rejected SVG failed because it is hand-authored quadrilaterals in which every
+object invented its own vanishing directions — there is no shared projection, no
+unit cube, no light rule, and no contact shadows. Editing those paths cannot
+converge. The replacement is **generated from code**, so perspective, scale,
+lighting, and grounding are properties of the system rather than things redrawn
+by hand:
+
+- `web/lib/desk/projection.ts` — 2:1 dimetric axis vectors, a `project(x, y, z)`
+  to screen space, a `box()` helper emitting the three visible faces of a unit
+  cube, the mechanical light rule, and `contactShadow()`.
+- `web/lib/desk/scene.ts` — every object as position, size, and material in scene
+  units, sized against the keyboard as the human-scale reference.
+- `web/scripts/generate-desk.ts` — emits the SVG plus a typed geometry module
+  containing each hotspot's bounds and the monitor screen's four corner points,
+  so hotspots derive from the artwork instead of hand-tuned percentages.
+
+Shading is **flat faces plus contact shadows**: one solid tone per face from the
+light rule, a soft contact shadow under every object, and a 1px lit top edge.
+Realism comes from correct geometry and grounding, not rendering tricks. Gradient
+shading is a possible later pass, deliberately excluded from the first version so
+composition can be judged without rendering noise.
+
+Object density is tiered: four hero objects that read instantly (monitor,
+Arduino/breadboard, debugging duck, paired drinks) and four subtle rewards
+(climbing hold and chalk bag, weight plate, belt stripes with compass, abstract
+anime panels). The eight-group/nine-motif hotspot contract is unchanged; only
+visual prominence differs.
+
+Colour discipline: near-monochrome graphite, with green, blue, and purple
+appearing only as emissive light such as screen glow and LEDs — never as paint
+on an object's faces.
+
+Keep the rejected SVG until the replacement is approved. The final phase report
+includes the render, dimensions, represented objects, known imperfections, and
+content-safety inspection. Explicit visual approval is required before Phase 6.
 
 ## Phase 6 — Desk asset and monitor integration
 
@@ -316,6 +388,17 @@ hotspots, history behavior, and the `/work` fallback.
 - Use a restrained pointer zoom; keyboard and reduced motion open immediately.
 - Restore monitor focus on close and preserve Back/hash and modified-click behavior.
 - Keep the old SVG until this phase passes.
+
+**Monitor behavior (decided 2026-08-10).** The screen becomes a real HTML
+surface rather than a trigger for a generic overlay: a panel positioned by a CSS
+`matrix3d` derived from the screen-corner points exported by the generator,
+containing the actual project tree. Zooming scales the camera toward the monitor
+while the panel un-skews to face the viewer, so the motion explains itself.
+`foreignObject` is not an option — the desk SVG must stay a passive asset with no
+embedded HTML. Transform and opacity only, one animated element, no
+`backdrop-filter`. Without JavaScript the monitor stays an ordinary `/work` link;
+keyboard and reduced motion skip the zoom and land on the flat readable state.
+This replaces the current 600ms zoom into a full-screen dialog.
 
 Test desktop placement, tablet/mobile crops, drawer parity, keyboard, focus return,
 Back behavior, no-JavaScript navigation, reduced motion, layout shift, and image

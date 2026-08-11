@@ -4,6 +4,7 @@ import {
   getPublishedSocialLinks,
 } from "@/lib/content/project-queries";
 import { buildDeskHotspots, type DeskHotspotData } from "@/lib/desk/hotspots";
+import { projectWorkModeLabels } from "@/types/content";
 import type {
   AboutItem,
   PortfolioContent,
@@ -49,6 +50,18 @@ export type ProjectTreeData = Readonly<{
   projectCount: number;
 }>;
 
+export type SelectedWorkProjectData = Readonly<{
+  slug: ProjectSlug;
+  title: string;
+  category: ProjectCategory;
+  summary: string;
+  role: string;
+  workMode: ProjectWorkMode;
+  branchLabel: string;
+  dateLabel: string | null;
+  routeHref: string;
+}>;
+
 export type SiteShellData = Readonly<{
   name: string;
   socialLinks: readonly SocialLinkData[];
@@ -58,6 +71,8 @@ export type HomePageData = Readonly<{
   profile: PortfolioContent["siteProfile"];
   personalHotspots: readonly DeskHotspotData[];
   projectTree: ProjectTreeData;
+  selectedWork: readonly SelectedWorkProjectData[];
+  totalProjectCount: number;
   socialLinks: readonly SocialLinkData[];
 }>;
 
@@ -89,14 +104,13 @@ function toSocialLinkData(
   }));
 }
 
-const projectTreeBranchDefinitions = [
-  { workMode: "hybrid", label: "Hybrid" },
-  { workMode: "software", label: "Software" },
-  { workMode: "hardware", label: "Hardware" },
-] as const satisfies readonly Readonly<{
-  workMode: ProjectWorkMode;
-  label: string;
-}>[];
+// Desktop reading order. Labels come from the shared map so the tree and the
+// case-study adjacency links can never name the same branch differently.
+const projectTreeBranchOrder = [
+  "hybrid",
+  "software",
+  "hardware",
+] as const satisfies readonly ProjectWorkMode[];
 
 function toProjectTreeProject(project: Project): ProjectTreeProjectData {
   return {
@@ -118,9 +132,9 @@ export function buildProjectTreeData(
   content: Pick<PortfolioContent, "siteProfile" | "projects">,
 ): ProjectTreeData {
   const projects = getPublishedProjects(content).map(toProjectTreeProject);
-  const branches = projectTreeBranchDefinitions.map(({ workMode, label }) => ({
+  const branches = projectTreeBranchOrder.map((workMode) => ({
     workMode,
-    label,
+    label: projectWorkModeLabels[workMode],
     projects: projects.filter((project) => project.workMode === workMode),
   }));
 
@@ -135,6 +149,61 @@ export function buildProjectTreeData(
   };
 }
 
+/** Flagship projects that lead the homepage regardless of branch. */
+const homeFlagshipCount = 2;
+
+/**
+ * The homepage scan path: the flagships first, then the highest-priority project
+ * from any branch they leave uncovered. The top entries by `displayOrder` are
+ * all Software, so priority alone would hide the hardware and hybrid range the
+ * site's whole claim rests on. Output stays in priority order.
+ */
+export function buildSelectedWorkData(
+  content: Pick<PortfolioContent, "projects">,
+): readonly SelectedWorkProjectData[] {
+  const projects = getPublishedProjects(content);
+  const selected = new Set(
+    projects.slice(0, homeFlagshipCount).map((project) => project.slug),
+  );
+  const coveredModes = new Set(
+    projects
+      .filter((project) => selected.has(project.slug))
+      .map((project) => project.workMode),
+  );
+
+  for (const workMode of projectTreeBranchOrder) {
+    if (coveredModes.has(workMode)) {
+      continue;
+    }
+
+    const leadProject = projects.find(
+      (project) => project.workMode === workMode,
+    );
+
+    if (leadProject) {
+      selected.add(leadProject.slug);
+    }
+  }
+
+  return projects
+    .filter((project) => selected.has(project.slug))
+    .map((project) => {
+      const tree = toProjectTreeProject(project);
+
+      return {
+        slug: tree.slug,
+        title: tree.title,
+        category: tree.category,
+        summary: tree.summary,
+        role: tree.role,
+        workMode: tree.workMode,
+        branchLabel: projectWorkModeLabels[tree.workMode],
+        dateLabel: tree.dateLabel,
+        routeHref: tree.routeHref,
+      };
+    });
+}
+
 export function buildSiteShellData(content: PortfolioContent): SiteShellData {
   return {
     name: content.siteProfile.name.trim(),
@@ -143,12 +212,16 @@ export function buildSiteShellData(content: PortfolioContent): SiteShellData {
 }
 
 export function buildHomePageData(content: PortfolioContent): HomePageData {
+  const projectTree = buildProjectTreeData(content);
+
   return {
     profile: content.siteProfile,
     personalHotspots: buildDeskHotspots(
       content.personalMotifs.toSorted(compareDisplayOrder),
     ),
-    projectTree: buildProjectTreeData(content),
+    projectTree,
+    selectedWork: buildSelectedWorkData(content),
+    totalProjectCount: projectTree.projectCount,
     socialLinks: toSocialLinkData(content),
   };
 }
