@@ -16,34 +16,56 @@ import { deskSceneGeometry } from "../lib/desk/scene-geometry";
 import { personalMotifKeys } from "../types/content";
 
 describe("desk hotspot configuration", () => {
-  it("defines eight groups that assign all nine motifs exactly once", () => {
+  it("maps every motif onto exactly one hotspot", () => {
     const assignedMotifs = deskHotspotDefinitions.flatMap(
       ({ motifKeys }) => motifKeys,
     );
     const hotspots = buildDeskHotspots(portfolioContent.personalMotifs);
 
-    expect(deskHotspotDefinitions).toHaveLength(8);
+    // Nine motif hotspots plus the colophon. Splitting `leadership` into
+    // `taekwondo` and `scouting` removed the last hotspot that carried two
+    // motifs, so the mapping is now strictly one-to-one.
+    expect(deskHotspotDefinitions).toHaveLength(10);
     expect(assignedMotifs).toHaveLength(9);
     expect(new Set(assignedMotifs)).toEqual(new Set(personalMotifKeys));
     expect(new Set(assignedMotifs).size).toBe(assignedMotifs.length);
-    expect(hotspots).toHaveLength(8);
+    expect(hotspots).toHaveLength(10);
     expect(hotspots.flatMap(({ motifs }) => motifs)).toHaveLength(9);
     expect(getDeskHotspotIssues(portfolioContent.personalMotifs)).toEqual([]);
   });
 
+  it("gives every hotspot something to say", () => {
+    for (const hotspot of buildDeskHotspots(portfolioContent.personalMotifs)) {
+      expect(hotspot.details.length, hotspot.key).toBeGreaterThan(0);
+    }
+  });
+
+  it("reports a hotspot with neither motifs nor facts", () => {
+    const empty = {
+      ...deskHotspotDefinitions[0],
+      motifKeys: [],
+      facts: [],
+    } as const;
+
+    expect(
+      getDeskHotspotIssues(portfolioContent.personalMotifs, [empty]),
+    ).toContain("deskHotspots.colophon: has no motifs and no facts");
+  });
+
   it("reports duplicate assignments, missing motifs, and invalid placement", () => {
-    const duplicateDefinition = deskHotspotDefinitions[0];
+    const maker = deskHotspotDefinitions.find(({ key }) => key === "maker");
+    const quackta = deskHotspotDefinitions.find(({ key }) => key === "quackta");
+    if (!maker || !quackta) {
+      throw new Error("expected maker and quackta hotspots");
+    }
+
     const invalidDefinition = {
-      ...deskHotspotDefinitions[1],
-      placement: {
-        ...deskHotspotDefinitions[1].placement,
-        xPercent: 95,
-        widthPercent: 10,
-      },
+      ...quackta,
+      placement: { ...quackta.placement, xPercent: 95, widthPercent: 10 },
     } as const;
     const issues = getDeskHotspotIssues(portfolioContent.personalMotifs, [
-      duplicateDefinition,
-      duplicateDefinition,
+      maker,
+      maker,
       invalidDefinition,
     ]);
 
@@ -140,10 +162,40 @@ describe("desk SVG boundary", () => {
       "utf8",
     );
 
+    // Matched on the attribute rather than the whole opening tag: interactive
+    // groups also carry a `stroke`, and asserting exact tag text would break on
+    // any future attribute without anything actually being wrong.
+    const groups = new Set(
+      [...svg.matchAll(/<g data-object="([^"]+)"/g)].map((match) => match[1]),
+    );
+
     for (const key of Object.keys(deskSceneGeometry.hotspots)) {
-      expect(svg, key).toContain(`<g data-object="${key}">`);
+      expect([...groups], key).toContain(key);
     }
-    // Scenery is grouped too, so the monitor can respond as one piece.
-    expect(svg).toContain('<g data-object="monitor">');
+    // Scenery is grouped too, so the keyboard can respond as one piece.
+    expect([...groups]).toContain("keyboard");
+  });
+
+  it("strokes interactive objects in the accent and leaves scenery grey", async () => {
+    const svg = await readFile(
+      path.join(process.cwd(), "public", "media", "site", "lakshya-desk-v2.svg"),
+      "utf8",
+    );
+
+    // Colour is the only cue that an object responds, so this is a real contract
+    // rather than styling: every hotspot carries it, and nothing else does.
+    for (const key of Object.keys(deskSceneGeometry.hotspots)) {
+      expect(svg, key).toMatch(
+        new RegExp(`<g data-object="${key}" stroke="#57d4d4"`),
+      );
+    }
+
+    const accented = [
+      ...svg.matchAll(/<g data-object="([^"]+)" stroke="#57d4d4"/g),
+    ].map((match) => match[1]);
+
+    expect(new Set(accented)).toEqual(
+      new Set(Object.keys(deskSceneGeometry.hotspots)),
+    );
   });
 });

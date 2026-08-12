@@ -79,20 +79,29 @@ describe("page data projections", () => {
     expect(luckyArduino).not.toHaveProperty("metrics");
   });
 
-  it("builds eight desk hotspot groups that cover all nine motifs", () => {
+  it("builds ten desk hotspots covering all nine motifs one-to-one", () => {
     const home = buildHomePageData(portfolioContent);
     const projectedMotifKeys = home.personalHotspots.flatMap((hotspot) =>
       hotspot.motifs.map(({ key }) => key),
     );
 
-    expect(home.personalHotspots).toHaveLength(8);
+    // Nine motif hotspots plus the colophon, which carries authored facts rather
+    // than a motif. `leadership` used to hold two motifs and one object, and the
+    // object read as neither; splitting it into `taekwondo` and `scouting` left
+    // every motif mapped to exactly one hotspot.
+    expect(home.personalHotspots).toHaveLength(10);
     expect(projectedMotifKeys).toHaveLength(9);
     expect(new Set(projectedMotifKeys)).toEqual(
       new Set(portfolioContent.personalMotifs.map(({ key }) => key)),
     );
-    expect(
-      home.personalHotspots.find(({ key }) => key === "leadership")?.motifs,
-    ).toHaveLength(2);
+    for (const hotspot of home.personalHotspots) {
+      expect(hotspot.motifs.length, hotspot.key).toBeLessThanOrEqual(1);
+      expect(hotspot.details.length, hotspot.key).toBeGreaterThan(0);
+    }
+
+    const colophon = home.personalHotspots.find(({ key }) => key === "colophon");
+    expect(colophon?.motifs).toHaveLength(0);
+    expect(colophon?.details.length).toBeGreaterThan(0);
   });
 
   it("projects the supplied public contact links", () => {

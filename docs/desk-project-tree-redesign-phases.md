@@ -56,8 +56,9 @@ Every phase after Phase 1 requires separate approval.
 - Green means Software, blue means Hybrid, purple means Hardware, and warm amber
   means personal life.
 - Generic controls do not borrow a work-mode color without work-mode meaning.
-- Generated art contains no text, logos, brand packaging, copied anime art, or
-  watermarks.
+- Generated art may include real logos and marks where they carry meaning — tool
+  and stack attribution above all. Copied artwork (series frames, character art)
+  is still out, because that is someone else's drawing rather than an identifier.
 - Authored prose uses “I” for verified individual work and “we” for shared outcomes.
 - Uneven story depth is acceptable; invented depth is not.
 
@@ -331,8 +332,8 @@ projection module rather than hand-authored paths; see "Production method" below
 - Recognizable Arduino/breadboard, debugging duck, climbing hold and chalk bag,
   paired drinks, compact food tray, weight, abstract anime panels, belt stripes,
   and compass keepsake.
-- No plaques, floating props, extra objects, text, logos, branded packaging,
-  copied anime imagery, people, or watermarks.
+- No plaques, floating props, extra objects, or watermarks. Logos and marks are
+  allowed where they identify a real tool or influence; copied artwork is not.
 
 ### Production method (decided 2026-08-10)
 

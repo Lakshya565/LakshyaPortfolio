@@ -125,11 +125,11 @@ The desk may include small, recognizable references to:
 - Climbing/bouldering through a hold and chalk bag.
 - Gym time through a small weight plate or dumbbell.
 - Shared matcha/boba and good food through paired drinks and subtle food objects.
-- Sushi, froyo, orange cheese snacks, Thai food, and Indian food without brand
-  packaging or restaurant logos.
-- Anime interests through original abstract panels inspired by walls, strategy,
-  and football geometry. Do not use characters, logos, copied insignia, or series
-  titles in the artwork.
+- Sushi, froyo, orange cheese snacks, Thai food, and Indian food.
+- Anime interests through original panels inspired by walls, strategy, and
+  football geometry. Do not copy character art or frames from a series — that is
+  someone else's drawing. Logos and marks that identify a real tool or influence
+  are fine.
 
 Relationship wording should remain public and indirect: "people I care about."
 Do not name or directly depict Lakshya's girlfriend without new approval.

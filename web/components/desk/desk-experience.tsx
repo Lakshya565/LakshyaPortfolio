@@ -139,9 +139,9 @@ function DeskHotspot({
           <PopoverHeader>
             <PopoverTitle id={titleId}>{hotspot.label}</PopoverTitle>
             <PopoverDescription id={descriptionId}>
-              {hotspot.motifs.map((motif) => (
-                <span className="desk-popover-fact" key={motif.key}>
-                  {motif.detail}
+              {hotspot.details.map((detail) => (
+                <span className="desk-popover-fact" key={detail}>
+                  {detail}
                 </span>
               ))}
             </PopoverDescription>
@@ -230,8 +230,8 @@ export function DeskExperience({
               {hotspots.map((hotspot) => (
                 <details key={hotspot.key}>
                   <summary>{hotspot.label}</summary>
-                  {hotspot.motifs.map((motif) => (
-                    <p key={motif.key}>{motif.detail}</p>
+                  {hotspot.details.map((detail) => (
+                    <p key={detail}>{detail}</p>
                   ))}
                 </details>
               ))}

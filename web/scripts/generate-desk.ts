@@ -27,6 +27,7 @@ import {
   extrude,
   project,
   toPath,
+  toSmoothPath,
   type Bounds,
   type Point,
   type Point2,
@@ -50,7 +51,14 @@ function strokeWidth(viewWidth: number): number {
 
 type Emitted = Readonly<{ markup: string; points: readonly Point[] }>;
 
-/** Guo's exact attribute set, minus the fill, which varies. */
+/**
+ * Guo's exact attribute set, minus the fill, which varies.
+ *
+ * Carried once on a wrapper group rather than repeated on every path. It used to
+ * sit on all 277 of them, which was roughly 19 KB of identical text in a 76 KB
+ * file — and, more importantly, made per-object colour impossible, because an
+ * attribute on the path always beats one inherited from its group.
+ */
 const strokeAttrs = `stroke="${ink.line}" stroke-miterlimit="1.5" stroke-linecap="round" stroke-linejoin="round"`;
 
 /** Andrew's monotone chain. Footprints in this scene are convex. */
@@ -83,13 +91,19 @@ function convexHull(points: readonly Point[]): readonly Point[] {
 
 function paint(
   points: readonly Point[],
-  part: Pick<DeskPart, "outlineOnly" | "tone">,
+  part: Pick<DeskPart, "outlineOnly" | "tone" | "smooth" | "accent">,
 ): string {
+  const d = part.smooth ? toSmoothPath(points) : toPath(points);
+
+  // Shadows must opt out explicitly now that stroke is inherited rather than
+  // set per path — otherwise every shadow picks up an outline.
   if (part.tone === "shadow") {
-    return `<path d="${toPath(points)}" fill="${ink.shadow}"/>`;
+    return `<path d="${d}" fill="${ink.shadow}" stroke="none"/>`;
   }
-  const fill = part.outlineOnly ? "none" : ink.ground;
-  return `<path d="${toPath(points)}" fill="${fill}" ${strokeAttrs}/>`;
+  if (part.accent) {
+    return `<path d="${d}" fill="${part.accent}" stroke="${part.accent}"/>`;
+  }
+  return `<path d="${d}" fill="${part.outlineOnly ? "none" : ink.ground}"/>`;
 }
 
 function emitPart(part: DeskPart): Emitted {
@@ -210,8 +224,11 @@ type View = Readonly<{
  * screen space for the same reason his are: the grid is a property of the
  * picture plane, not of any object in the scene.
  */
-function emitGrid(view: View): string {
-  const spacing = view.width * 0.0205;
+function emitGrid(
+  view: View,
+  spacing = view.width * 0.0205,
+  weight = strokeWidth(view.width),
+): string {
   const left = view.originX - view.width * 0.1;
   const right = view.originX + view.width * 1.1;
   const lines: string[] = [];
@@ -235,7 +252,7 @@ function emitGrid(view: View): string {
     }
   }
 
-  return `<g stroke="${ink.grid}" stroke-width="${strokeWidth(view.width)}" stroke-miterlimit="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none">${lines.join("")}</g>`;
+  return `<g stroke="${ink.grid}" stroke-width="${weight}" stroke-miterlimit="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none">${lines.join("")}</g>`;
 }
 
 /**
@@ -400,42 +417,136 @@ function toPercentBounds(points: readonly Point[], view: View) {
   };
 }
 
+/**
+ * Everything one object contributes, kept together so the scene and the
+ * per-object catalog are built from the same emission rather than from two code
+ * paths that could disagree about what an object looks like.
+ */
+type BuiltObject = Readonly<{
+  key: string;
+  id: string;
+  scenery: boolean;
+  /** Labelled objects are drawn in the accent: colour means "this responds". */
+  interactive: boolean;
+  tier: string;
+  shadowMarkup: string;
+  bodyMarkup: string;
+  points: readonly Point[];
+  bounds: Bounds;
+}>;
+
+function buildObject(object: DeskObject): BuiltObject {
+  const shadows: string[] = [];
+  const bodies: string[] = [];
+  const points: Point[] = [];
+
+  // Shadows first within the group, so nothing casts over its own object.
+  for (const part of object.parts) {
+    const shadow = emitShadow(part);
+    if (shadow) {
+      shadows.push(shadow.markup);
+      points.push(...shadow.points);
+    }
+  }
+
+  for (const part of object.parts) {
+    const emitted = emitPart(part);
+    bodies.push(emitted.markup);
+    points.push(...emitted.points);
+  }
+
+  return {
+    key: object.hotspot ?? object.id,
+    id: object.id,
+    scenery: object.scenery === true,
+    interactive: object.hotspot !== undefined,
+    tier: object.tier ?? "detail",
+    shadowMarkup: shadows.join(""),
+    bodyMarkup: bodies.join(""),
+    points,
+    bounds: boundsOf(object.parts.flatMap(partPoints)),
+  };
+}
+
+/**
+ * Every object rendered alone, tightly cropped.
+ *
+ * This exists because the scene is reviewed at 1444px wide, where a duck is
+ * forty pixels across and nobody — me included — can tell whether it reads. The
+ * entries come from the same `BuiltObject` records the scene is assembled from,
+ * so a tile can never show something the artwork does not.
+ *
+ * Shadow, body, and grid stay separate so the workbench can toggle them.
+ */
+function emitCatalog(built: readonly BuiltObject[], scene: View): string {
+  const spacing = scene.width * 0.0205;
+  const weight = strokeWidth(scene.width);
+
+  const entries = built.map((item) => {
+    const width = item.bounds.maxX - item.bounds.minX;
+    const height = item.bounds.maxY - item.bounds.minY;
+    const pad = Math.max(width, height) * 0.18 + 4;
+
+    const view: View = {
+      originX: item.bounds.minX - pad,
+      originY: item.bounds.minY - pad,
+      width: width + pad * 2,
+      height: height + pad * 2,
+    };
+
+    return [
+      "  {",
+      `    key: ${JSON.stringify(item.key)},`,
+      `    id: ${JSON.stringify(item.id)},`,
+      `    scenery: ${item.scenery},`,
+      `    interactive: ${item.interactive},`,
+      `    stroke: ${JSON.stringify(item.interactive ? ink.accent : ink.line)},`,
+      `    tier: ${JSON.stringify(item.tier)},`,
+      `    width: ${round(width)},`,
+      `    height: ${round(height)},`,
+      `    viewBox: ${JSON.stringify(
+        `${round(view.originX)} ${round(view.originY)} ${round(view.width)} ${round(view.height)}`,
+      )},`,
+      `    grid: ${JSON.stringify(emitGrid(view, spacing, weight))},`,
+      `    shadow: ${JSON.stringify(item.shadowMarkup)},`,
+      `    body: ${JSON.stringify(item.bodyMarkup)},`,
+      "  },",
+    ].join("\n");
+  });
+
+  return [
+    "// Generated by scripts/generate-desk.ts. Do not edit by hand.",
+    "// Each object rendered alone and tightly cropped, for the /lab workbench",
+    "// and the contact sheet. Built from the same records as the scene itself.",
+    "",
+    `export const deskCatalogStrokeWidth = ${weight};`,
+    "",
+    "export const deskCatalog = [",
+    ...entries,
+    "] as const;",
+    "",
+    "export type DeskCatalogEntry = (typeof deskCatalog)[number];",
+    "",
+  ].join("\n");
+}
+
 async function main() {
   const orderedObjects = [...deskObjects].sort(compareObjects);
-  const groups: string[] = [];
-  const allPoints: Point[] = [];
-  const screenBoxes: ScreenBox[] = [];
+  const built = orderedObjects.map(buildObject);
+  const allPoints: Point[] = built.flatMap((item) => [...item.points]);
 
-  for (const object of orderedObjects) {
-    const fragments: string[] = [];
+  // One group per object, as Guo's `<g id="pencil">` is — this is what lets the
+  // page hover the object itself rather than a rectangle floated over it.
+  const groups = built.map(
+    (item) =>
+      `<g data-object="${item.key}"${item.interactive ? ` stroke="${ink.accent}"` : ""}>${item.shadowMarkup}${item.bodyMarkup}</g>`,
+  );
 
-    // Shadows first within the group, so nothing casts over its own object.
-    for (const part of object.parts) {
-      const shadow = emitShadow(part);
-      if (shadow) {
-        fragments.push(shadow.markup);
-        allPoints.push(...shadow.points);
-      }
-    }
-
-    for (const part of object.parts) {
-      const emitted = emitPart(part);
-      fragments.push(emitted.markup);
-      allPoints.push(...emitted.points);
-    }
-
-    // One group per object, as Guo's `<g id="pencil">` is — this is what lets
-    // the page hover the object itself rather than a rectangle floated over it.
-    groups.push(
-      `<g data-object="${object.hotspot ?? object.id}">${fragments.join("")}</g>`,
-    );
-
-    screenBoxes.push({
-      key: object.hotspot ?? object.id,
-      scenery: object.scenery === true,
-      bounds: boundsOf(object.parts.flatMap(partPoints)),
-    });
-  }
+  const screenBoxes: ScreenBox[] = built.map((item) => ({
+    key: item.key,
+    scenery: item.scenery,
+    bounds: item.bounds,
+  }));
 
   assertNoOverlaps(screenBoxes);
 
@@ -456,7 +567,9 @@ async function main() {
     `<rect x="${round(view.originX)}" y="${round(view.originY)}" width="${round(view.width)}" height="${round(view.height)}" fill="${ink.ground}"/>`,
     emitGrid(view),
     fade.markup,
-    groups.join(""),
+    // One wrapper carries the stroke set for every object; interactive groups
+    // override just the colour.
+    `<g ${strokeAttrs}>${groups.join("")}</g>`,
   ].join("");
 
   const svg = [
@@ -464,7 +577,7 @@ async function main() {
     ` viewBox="${viewBox}" fill="none" stroke-width="${strokeWidth(view.width)}"`,
     ` role="img" aria-labelledby="desk-title desk-description">`,
     `<title id="desk-title">Things on my desk</title>`,
-    `<desc id="desk-description">An isometric line drawing of a workspace: a monitor, keyboard and lamp, a dev board, a rubber duck, a folded belt and compass, two drinks, a sushi plate, a chalk bag and climbing hold, a dumbbell, a stack of books, a clock tower, and scattered trees and figures.</desc>`,
+    `<desc id="desk-description">An isometric line drawing of a workspace: a monitor showing code, a keyboard and mouse, a desk lamp, a dev board, a rubber duck, a coiled martial-arts belt, a compass, two drinks, a sushi plate, a climbing wall panel with holds, a dumbbell, a screen paused mid-episode beside two books, a clock tower, and scattered trees and figures.</desc>`,
     inner,
     `</svg>`,
   ].join("");
@@ -501,19 +614,24 @@ async function main() {
     "",
   ].join("\n");
 
+  const catalogModule = emitCatalog(built, view);
+
   const webRoot = process.cwd();
   const svgPath = join(webRoot, "public", "media", "site", "lakshya-desk-v2.svg");
   const geometryPath = join(webRoot, "lib", "desk", "scene-geometry.ts");
   const markupPath = join(webRoot, "lib", "desk", "scene-markup.ts");
+  const catalogPath = join(webRoot, "lib", "desk", "scene-catalog.ts");
 
   await mkdir(dirname(svgPath), { recursive: true });
   await writeFile(svgPath, svg, "utf8");
   await writeFile(geometryPath, geometry, "utf8");
   await writeFile(markupPath, markupModule, "utf8");
+  await writeFile(catalogPath, catalogModule, "utf8");
 
   console.log(`Wrote ${svgPath}`);
   console.log(`Wrote ${geometryPath}`);
   console.log(`Wrote ${markupPath}`);
+  console.log(`Wrote ${catalogPath}`);
   console.log(`Objects: ${screenBoxes.length}, no overlaps beyond budget`);
 }
 

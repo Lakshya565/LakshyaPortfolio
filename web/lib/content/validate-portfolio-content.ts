@@ -258,11 +258,17 @@ async function getFileIssues(content: PortfolioContent, webRoot: string) {
   const publicRoot = path.resolve(webRoot, "public");
   const caseStudyRoot = path.resolve(webRoot, "content", "case-studies");
   const referencedCaseStudies = new Set<string>();
+  /**
+   * The generated scene. This used to validate `lakshya-desk.svg`, the original
+   * hand-authored asset that was rejected three rebuilds ago and is no longer
+   * rendered anywhere — so the check passed on a file the site does not use, and
+   * only surfaced when new hotspot keys appeared that the dead file lacked.
+   */
   const deskSvgPath = path.resolve(
     publicRoot,
     "media",
     "site",
-    "lakshya-desk.svg",
+    "lakshya-desk-v2.svg",
   );
 
   try {
@@ -270,11 +276,10 @@ async function getFileIssues(content: PortfolioContent, webRoot: string) {
       readFile(deskSvgPath, "utf8"),
       stat(deskSvgPath),
     ]);
-    const requiredDeskIds = [
-      "desk-monitor",
-      ...deskHotspotDefinitions.map(({ key }) => `desk-${key}`),
-    ];
-    const deskIds = [...deskSvg.matchAll(/\sid="([^"]+)"/g)].map(
+    // Objects are addressed by `data-object`, not by id: placement is derived
+    // from the same scene data the artwork is generated from, so there are no
+    // id strings for the two to disagree about.
+    const deskObjectKeys = [...deskSvg.matchAll(/\sdata-object="([^"]+)"/g)].map(
       (match) => match[1],
     );
 
@@ -284,16 +289,19 @@ async function getFileIssues(content: PortfolioContent, webRoot: string) {
     if (deskSvgStats.size > 250_000) {
       issues.push("desk: public desk SVG exceeds 250 KB");
     }
-    if (!/\bviewBox="0 0 1440 900"/.test(deskSvg)) {
-      issues.push("desk: public desk SVG must use viewBox 0 0 1440 900");
+    if (!/\bviewBox="[-\d. ]+"/.test(deskSvg)) {
+      issues.push("desk: public desk SVG must declare a viewBox");
     }
-    for (const requiredId of requiredDeskIds) {
-      if (!deskIds.includes(requiredId)) {
-        issues.push(`desk: public desk SVG is missing id ${requiredId}`);
+    for (const { key } of deskHotspotDefinitions) {
+      if (!deskObjectKeys.includes(key)) {
+        issues.push(`desk: public desk SVG is missing object ${key}`);
       }
     }
-    for (const duplicateId of findDuplicateValues(deskIds, (value) => value)) {
-      issues.push(`desk: public desk SVG has duplicate id ${duplicateId}`);
+    for (const duplicateKey of findDuplicateValues(
+      deskObjectKeys,
+      (value) => value,
+    )) {
+      issues.push(`desk: public desk SVG has duplicate object ${duplicateKey}`);
     }
     if (
       /<(?:script|foreignObject|filter|animate|animateMotion|animateTransform)\b/i.test(
@@ -313,7 +321,9 @@ async function getFileIssues(content: PortfolioContent, webRoot: string) {
       issues.push("desk: public desk SVG contains an external or executable reference");
     }
   } catch {
-    issues.push("desk: missing public desk SVG /media/site/lakshya-desk.svg");
+    issues.push(
+      "desk: missing public desk SVG /media/site/lakshya-desk-v2.svg — run `npm run generate:desk`",
+    );
   }
 
   for (const project of content.projects) {

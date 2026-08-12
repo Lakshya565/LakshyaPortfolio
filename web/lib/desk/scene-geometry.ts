@@ -3,16 +3,18 @@
 // cannot drift away from the illustration.
 
 export const deskSceneGeometry = {
-  viewBox: { x: -193.07, y: -32.5, width: 494.65, height: 246.64 },
+  viewBox: { x: -195.52, y: -38.5, width: 495.04, height: 246.83 },
   aspectRatio: 2.0056,
   hotspots: {
-    "maker": { tier: "hero", xPercent: 30.41, yPercent: 29.21, widthPercent: 8.330000000000002, heightPercent: 8.060000000000002 },
-    "anime": { tier: "detail", xPercent: 20.19, yPercent: 33.02, widthPercent: 5.139999999999997, heightPercent: 8.54 },
-    "quackta": { tier: "hero", xPercent: 43.28, yPercent: 32.23, widthPercent: 7.07, heightPercent: 13.240000000000002 },
-    "leadership": { tier: "hero", xPercent: 30.04, yPercent: 45.51, widthPercent: 8.579999999999998, heightPercent: 9.43 },
-    "shared-food": { tier: "hero", xPercent: 73.22, yPercent: 46.56, widthPercent: 4.280000000000001, heightPercent: 11.049999999999997 },
-    "climbing": { tier: "detail", xPercent: 59.21, yPercent: 51.33, widthPercent: 6.309999999999995, heightPercent: 9.079999999999998 },
-    "gym": { tier: "detail", xPercent: 74.61, yPercent: 66.49, widthPercent: 4.859999999999999, heightPercent: 6.609999999999999 },
-    "food-favorites": { tier: "detail", xPercent: 58.91, yPercent: 73.79, widthPercent: 5.469999999999999, heightPercent: 7.159999999999997 },
+    "maker": { tier: "hero", xPercent: 31.11, yPercent: 27.25, widthPercent: 9.079999999999998, heightPercent: 10.920000000000002 },
+    "colophon": { tier: "detail", xPercent: 56.46, yPercent: 20.05, widthPercent: 10.100000000000001, heightPercent: 22.98 },
+    "anime": { tier: "detail", xPercent: 19.09, yPercent: 28.72, widthPercent: 9.030000000000001, heightPercent: 15 },
+    "quackta": { tier: "hero", xPercent: 41.92, yPercent: 33.83, widthPercent: 8.280000000000001, heightPercent: 15.25 },
+    "taekwondo": { tier: "detail", xPercent: 27.24, yPercent: 45.03, widthPercent: 5.120000000000001, heightPercent: 5.6299999999999955 },
+    "shared-food": { tier: "hero", xPercent: 71.26, yPercent: 42.54, widthPercent: 6.5, heightPercent: 13.730000000000004 },
+    "scouting": { tier: "detail", xPercent: 32.92, yPercent: 55.59, widthPercent: 4.269999999999996, heightPercent: 4.349999999999994 },
+    "climbing": { tier: "detail", xPercent: 63.13, yPercent: 51.25, widthPercent: 5.050000000000004, heightPercent: 15.599999999999994 },
+    "gym": { tier: "detail", xPercent: 73.84, yPercent: 65.43, widthPercent: 5.6499999999999915, heightPercent: 7.709999999999994 },
+    "food-favorites": { tier: "detail", xPercent: 55.31, yPercent: 71.3, widthPercent: 5.469999999999999, heightPercent: 7.150000000000006 },
   },
 } as const;

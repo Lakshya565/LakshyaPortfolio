@@ -47,6 +47,55 @@ export function toPath(points: readonly Point[]): string {
   return `M${first}L${rest.join("L")}Z`;
 }
 
+/**
+ * A closed path through the same points, curved instead of faceted.
+ *
+ * This is the fix for the flattest complaint about the old objects: the duck was
+ * "a random set of lines with zero curvature", while the trees looked perfect.
+ * Both were the same primitive. A tree hides its facets by using twenty segments
+ * at radius 7, where each flat edge is sub-pixel; a duck drawn with eighteen
+ * points at radius 20 shows every one of them.
+ *
+ * Rather than demand ever more vertices, this interpolates a centripetal-ish
+ * Catmull-Rom spline through the control points and emits it as cubic Béziers.
+ * The curve passes exactly through every point, so a shape stays authored where
+ * it was authored — the vertices remain the drawing, and the smoothing only
+ * removes the creases between them.
+ *
+ * `tension` at 1 is a natural curve; lower values tighten toward straight lines.
+ */
+export function toSmoothPath(points: readonly Point[], tension = 1): string {
+  const count = points.length;
+  if (count < 3) {
+    return toPath(points);
+  }
+
+  const at = (index: number) => points[(index + count) % count];
+  const segments: string[] = [];
+
+  for (let index = 0; index < count; index += 1) {
+    const previous = at(index - 1);
+    const start = at(index);
+    const end = at(index + 1);
+    const next = at(index + 2);
+
+    const control1 = {
+      x: start.x + ((end.x - previous.x) / 6) * tension,
+      y: start.y + ((end.y - previous.y) / 6) * tension,
+    };
+    const control2 = {
+      x: end.x - ((next.x - start.x) / 6) * tension,
+      y: end.y - ((next.y - start.y) / 6) * tension,
+    };
+
+    segments.push(
+      `C${round(control1.x)} ${round(control1.y)} ${round(control2.x)} ${round(control2.y)} ${round(end.x)} ${round(end.y)}`,
+    );
+  }
+
+  return `M${round(points[0].x)} ${round(points[0].y)}${segments.join("")}Z`;
+}
+
 function round(value: number): number {
   return Math.round(value * 100) / 100;
 }

@@ -29,6 +29,10 @@ export function IsometricDesk({
           aria-hidden="true"
           className="desk-art"
           fill="none"
+          // Carried as a prop into a multi-child position in `DeskExperience`,
+          // so React validates it as a list item and wants a key even though
+          // there is only ever one of it.
+          key="desk-scene"
           preserveAspectRatio="xMidYMid meet"
           strokeWidth={deskSceneStrokeWidth}
           viewBox={deskSceneViewBox}

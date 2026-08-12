@@ -31,75 +31,75 @@ function at(placement: Placement) {
  * it sits, and is checked against that contract below.
  */
 const hotspotLayout = [
-  { key: "maker", build: objects.devBoard, place: { x: 30, y: 52 } },
-  { key: "quackta", build: objects.duck, place: { x: 92, y: 56 } },
-  { key: "leadership", build: objects.beltAndCompass, place: { x: 66, y: 104 } },
-  { key: "shared-food", build: objects.twoCups, place: { x: 190, y: 14 } },
-  { key: "food-favorites", build: objects.sushiPlate, place: { x: 216, y: 104 } },
-  { key: "climbing", build: objects.chalkAndHold, place: { x: 160, y: 52 } },
-  { key: "gym", build: objects.dumbbell, place: { x: 232, y: 50 } },
-  { key: "anime", build: objects.bookStack, place: { x: 16, y: 100 } },
+  // Back rank, level with the workstation.
+  { key: "colophon", build: objects.monitor, place: { x: 94, y: 2 } },
+  { key: "shared-food", build: objects.twoCups, place: { x: 178, y: 8 } },
+  // Middle rank.
+  { key: "maker", build: objects.devBoard, place: { x: 24, y: 46 } },
+  { key: "quackta", build: objects.duck, place: { x: 92, y: 62 } },
+  { key: "climbing", build: objects.climbingHold, place: { x: 174, y: 54 } },
+  { key: "gym", build: objects.dumbbell, place: { x: 228, y: 44 } },
+  // Front rank, nearest the eye.
+  { key: "anime", build: objects.animeScreen, place: { x: 6, y: 92 } },
+  // The belt and the compass were one object and read as neither. They stay
+  // neighbours so the leadership story still groups, but each is now its own
+  // hotspot with room for its own hover field.
+  { key: "taekwondo", build: objects.belt, place: { x: 62, y: 110 } },
+  { key: "scouting", build: objects.compass, place: { x: 98, y: 120 } },
+  { key: "food-favorites", build: objects.sushiPlate, place: { x: 194, y: 102 } },
 ] as const satisfies readonly Readonly<{
   key: DeskHotspotKey;
   build: objects.ObjectBuilder;
   place: Placement;
 }>[];
 
-/** The workspace objects. Not labelled — they carry scale, not meaning. */
+/**
+ * The workspace objects. Not labelled — they carry scale, not meaning.
+ *
+ * Keyboard and mouse sit directly in front of the monitor rather than ninety
+ * units south of it, which is where the keyboard used to be. A workstation is
+ * the one cluster in the field that has to read as a group.
+ */
 const workspaceLayout = [
-  { id: "desk-lamp", build: objects.deskLamp, place: { x: 18, y: 10 } },
-  { id: "clock-tower", build: objects.clockTower, place: { x: 60, y: 6 } },
-  { id: "monitor", build: objects.monitor, place: { x: 100, y: 6 } },
-  { id: "keyboard", build: objects.keyboard, place: { x: 128, y: 100 } },
+  { id: "desk-lamp", build: objects.deskLamp, place: { x: 14, y: 6 } },
+  { id: "clock-tower", build: objects.clockTower, place: { x: 52, y: 0 } },
+  { id: "keyboard", build: objects.keyboard, place: { x: 96, y: 28 } },
+  { id: "mouse", build: objects.mouse, place: { x: 148, y: 32 } },
 ] as const;
 
 /**
- * Guo's field carries fourteen trees, seven figures, and a cube alongside his
- * labelled objects, and that population is most of why it reads as a place. The
- * figures also give the scene its scale: everything else is read against them.
+ * Scenery is framing, not content.
+ *
+ * This used to be eighteen trees, nine figures and two cubes — twenty-nine
+ * scenery objects against twelve real ones, so the things a visitor is meant to
+ * read were outnumbered better than two to one. Reviewed side by side in the
+ * workbench the imbalance was impossible to miss.
+ *
+ * Now eight, four and one. They sit around the rim of the field and leave the
+ * middle to the objects that mean something. Heights still vary: a stand of
+ * identical lollipops reads as wallpaper rather than as planting.
  */
 const treePlaces: readonly (Placement &
   Readonly<{ height: number; canopy: number }>)[] = [
-  // Heights vary the way Guo's do. A stand of identical lollipops reads as a
-  // pattern rather than as planting.
-  { x: 4, y: 22, height: 24, canopy: 7.5 },
-  { x: 28, y: 0, height: 17, canopy: 5.5 },
-  { x: 154, y: 0, height: 21, canopy: 6.5 },
-  { x: 214, y: 0, height: 15, canopy: 5 },
-  { x: 262, y: 6, height: 25, canopy: 8 },
-  { x: 14, y: 92, height: 19, canopy: 6 },
-  { x: 276, y: 74, height: 22, canopy: 7 },
-  { x: 2, y: 128, height: 26, canopy: 8 },
-  { x: 214, y: 140, height: 18, canopy: 6 },
-  { x: 60, y: 136, height: 23, canopy: 7.5 },
-  { x: 264, y: 132, height: 16, canopy: 5.5 },
-  { x: 34, y: 160, height: 27, canopy: 8.5 },
-  { x: 130, y: 158, height: 20, canopy: 6.5 },
-  { x: 292, y: 34, height: 20, canopy: 6.5 },
-  // The lower-left of the frame is low-x, high-y ground. Without planting it
-  // reads as a corner the scene forgot about.
-  { x: 2, y: 150, height: 21, canopy: 6.5 },
-  { x: 30, y: 178, height: 25, canopy: 8 },
-  { x: 74, y: 194, height: 18, canopy: 6 },
-  { x: 118, y: 202, height: 23, canopy: 7 },
+  { x: -10, y: 24, height: 24, canopy: 7.5 },
+  { x: 136, y: -16, height: 21, canopy: 6.5 },
+  { x: 248, y: 2, height: 25, canopy: 8 },
+  { x: 266, y: 76, height: 22, canopy: 7 },
+  { x: -14, y: 128, height: 26, canopy: 8 },
+  { x: 242, y: 142, height: 18, canopy: 6 },
+  { x: 132, y: 156, height: 23, canopy: 7.5 },
+  { x: 40, y: 156, height: 20, canopy: 6.5 },
 ];
 
+/** The figures are the scale reference — everything else is read against them. */
 const figurePlaces: readonly Placement[] = [
-  { x: 240, y: 16 },
-  { x: 206, y: 74 },
-  { x: 104, y: 96 },
-  { x: 118, y: 126 },
-  { x: 246, y: 122 },
-  { x: 66, y: 154 },
-  { x: 178, y: 150 },
-  { x: 48, y: 184 },
-  { x: 152, y: 196 },
+  { x: 210, y: 22 },
+  { x: 130, y: 88 },
+  { x: 250, y: 104 },
+  { x: 100, y: 150 },
 ];
 
-const cubePlaces: readonly Placement[] = [
-  { x: 172, y: 28 },
-  { x: 96, y: 166 },
-];
+const cubePlaces: readonly Placement[] = [{ x: 150, y: 116 }];
 
 /**
  * The four objects a recruiter should read first. `tier` only changes

@@ -12,7 +12,13 @@
   --accent-green: oklch(0.79 0.145 155);
   --accent-blue: oklch(0.79 0.12 235);
   --accent-purple: oklch(0.78 0.13 305);
-  --accent-personal: oklch(0.82 0.11 75);
+  /* The isometric field. A fourth hue on purpose: green, blue and purple carry
+     Software/Hybrid/Hardware in the project tree directly below the scene, so
+     reusing them on desk objects would imply a category that isn't there. Here
+     colour means only that an object responds. Replaces --accent-personal, an
+     amber that nothing outside the desk ever used. Kept in sync with `ink.accent`
+     in lib/desk/parts.ts, which resolves to #57d4d4. */
+  --accent-desk: oklch(0.8 0.11 195);
   --focus: oklch(0.9 0.02 260);
   --canvas-header: oklch(0.12 0.012 270 / 0.94);
   --surface-overlay: oklch(0.205 0.018 270 / 0.96);
@@ -29,8 +35,9 @@
   --accent-purple-soft: oklch(0.78 0.13 305 / 0.46);
   --accent-purple-hover: oklch(0.83 0.14 305);
   --accent-purple-text-hover: oklch(0.86 0.13 305);
-  --accent-personal-faint: oklch(0.82 0.11 75 / 0.08);
-  --accent-personal-soft: oklch(0.82 0.11 75 / 0.42);
+  --accent-desk-faint: oklch(0.8 0.11 195 / 0.08);
+  --accent-desk-soft: oklch(0.8 0.11 195 / 0.46);
+  --accent-desk-hover: oklch(0.88 0.13 195);
   --font-body: "Inter", "Segoe UI", sans-serif;
   --font-code: "Cascadia Code", "SFMono-Regular", Consolas, monospace;
   --content-wide: 72rem;
@@ -72,7 +79,7 @@
   --color-accent-green: var(--accent-green);
   --color-accent-blue: var(--accent-blue);
   --color-accent-purple: var(--accent-purple);
-  --color-accent-personal: var(--accent-personal);
+  --color-accent-desk: var(--accent-desk);
   --font-sans: var(--font-body);
   --font-mono: var(--font-code);
   --font-heading: var(--font-body);
@@ -363,13 +370,22 @@ dd {
 }
 
 /* Hovering lifts the object itself, as guochen.design does. Transform only, one
-   element at a time, no continuous animation. */
+   element at a time, no continuous animation.
+
+   The generator strokes interactive groups in the accent and leaves scenery
+   grey, so colour alone marks what responds. Lifting also brightens the stroke:
+   a group's `stroke` attribute is inherited by its paths, so setting it here
+   recolours the whole object at once, while the Claude mark keeps its own orange
+   because a stroke set on the element itself beats an inherited one. */
 .desk-art [data-object] {
-  transition: transform 180ms var(--ease-out);
+  transition:
+    transform 180ms var(--ease-out),
+    stroke 180ms ease;
 }
 
 .desk-art [data-object][data-lifted] {
   transform: translateY(-6px);
+  stroke: var(--accent-desk-hover);
 }
 
 .desk-hotspots {
@@ -411,8 +427,8 @@ dd {
 }
 
 .desk-hotspot-trigger:focus-visible > span {
-  border-color: var(--accent-personal);
-  background: color-mix(in oklch, var(--accent-personal) 7%, transparent);
+  border-color: var(--accent-desk);
+  background: color-mix(in oklch, var(--accent-desk) 7%, transparent);
 }
 
 .desk-drawer-trigger {
@@ -425,7 +441,7 @@ dd {
   z-index: 70;
   width: min(19rem, calc(100vw - 2rem));
   transform-origin: var(--radix-popover-content-transform-origin);
-  border: 1px solid var(--accent-personal-soft);
+  border: 1px solid var(--accent-desk-soft);
   border-radius: var(--radius-card);
   background: var(--surface-overlay);
   padding: 0.9rem;
@@ -445,7 +461,7 @@ dd {
 }
 
 .desk-popover-content [data-slot="popover-title"] {
-  color: var(--accent-personal);
+  color: var(--accent-desk);
   font-size: 0.875rem;
 }
 
@@ -513,7 +529,7 @@ dd {
   min-height: 2.75rem;
   cursor: pointer;
   padding: 0.75rem;
-  color: var(--accent-personal);
+  color: var(--accent-desk);
   font-family: var(--font-code);
   font-size: 0.75rem;
   font-weight: 600;
@@ -1350,8 +1366,8 @@ dd {
   }
 
   .desk-hotspot-trigger:hover > span {
-    border-color: var(--accent-personal-soft);
-    background: color-mix(in oklch, var(--accent-personal) 6%, transparent);
+    border-color: var(--accent-desk-soft);
+    background: color-mix(in oklch, var(--accent-desk) 6%, transparent);
   }
 
   .project-tree-action:hover {

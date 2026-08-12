@@ -32,8 +32,25 @@ export const ink = {
   line: "#9aa2b1",
   /** The isometric grid. Guo's #EDEDED. */
   grid: "#232833",
+  /**
+   * Interactive objects. `--accent-desk`, `oklch(0.80 0.11 195)`.
+   *
+   * A fourth hue on purpose: green, blue and purple mean Software, Hybrid and
+   * Hardware in the project tree directly below the scene, and reusing them here
+   * would invite a reading of the duck as a category. Colour in this field means
+   * one thing only — that the object responds.
+   */
+  accent: "#57d4d4",
   /** Flat cast shadows. Guo's #E8E8E8 — one polygon, no stroke. */
   shadow: "#242a36",
+  /**
+   * Claude's orange, for the mark on the monitor screen.
+   *
+   * The one deliberate spot colour in the scene. It reads as a brand colour
+   * rather than site chrome, which is why it survives the palette moving off
+   * orange everywhere else.
+   */
+  claude: "#d97757",
 } as const;
 
 type PartCommon = Readonly<{
@@ -46,6 +63,22 @@ type PartCommon = Readonly<{
   outlineOnly?: boolean;
   /** Fill flat in the shadow tone with no stroke, like Guo's `cube-shadow`. */
   tone?: "shadow";
+  /**
+   * Draw a curve through the points instead of straight segments between them.
+   *
+   * Anything organic needs this. Without it a silhouette is a polygon, and a
+   * polygon at object scale reads as a set of creases — which is exactly what
+   * the first duck was. See `toSmoothPath`.
+   */
+  smooth?: boolean;
+  /**
+   * Fill and stroke this part in a specific colour rather than the ink line.
+   *
+   * Used sparingly: the scene is monochrome by design. Its one job today is the
+   * Claude mark on the monitor screen, which has to be its own orange to be that
+   * mark at all.
+   */
+  accent?: string;
 }>;
 
 export type BoxPart = PartCommon &

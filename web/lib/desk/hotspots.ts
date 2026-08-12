@@ -2,9 +2,11 @@ import { deskSceneGeometry } from "@/lib/desk/scene-geometry";
 import type { PersonalMotif, PersonalMotifKey } from "@/types/content";
 
 export const deskHotspotKeys = [
+  "colophon",
   "maker",
   "quackta",
-  "leadership",
+  "taekwondo",
+  "scouting",
   "shared-food",
   "food-favorites",
   "climbing",
@@ -18,6 +20,15 @@ type DeskHotspotDefinition = Readonly<{
   key: DeskHotspotKey;
   label: string;
   motifKeys: readonly PersonalMotifKey[];
+  /**
+   * Copy for a hotspot that is not about a personal motif.
+   *
+   * Only the colophon uses this. Rather than invent a fake motif to satisfy the
+   * motif contract — which would put site-build trivia into the personal content
+   * model where it does not belong — a hotspot may carry its own text and no
+   * motif keys at all.
+   */
+  facts?: readonly string[];
   placement: Readonly<{
     xPercent: number;
     yPercent: number;
@@ -30,9 +41,28 @@ type DeskHotspotDefinition = Readonly<{
 export type DeskHotspotData = DeskHotspotDefinition &
   Readonly<{
     motifs: readonly PersonalMotif[];
+    /** Motif details and authored facts, flattened for rendering. */
+    details: readonly string[];
   }>;
 
 export const deskHotspotDefinitions = [
+  {
+    key: "colophon",
+    label: "How this site is built",
+    motifKeys: [],
+    facts: [
+      "Next.js and React with TypeScript throughout, styled with Tailwind, and deployed as a static build.",
+      "The desk is generated, not drawn: every object is typed scene data projected through one camera, so the artwork cannot drift out of step with the code.",
+      "Built with Claude, and the isometric field owes its whole approach to Guo Chen's work at guochen.design.",
+    ],
+    placement: {
+      xPercent: 40,
+      yPercent: 4,
+      widthPercent: 22,
+      heightPercent: 24,
+      side: "right",
+    },
+  },
   {
     key: "maker",
     label: "Maker origin",
@@ -58,14 +88,26 @@ export const deskHotspotDefinitions = [
     },
   },
   {
-    key: "leadership",
-    label: "Training and leadership",
-    motifKeys: ["taekwondo", "scouting"],
+    key: "taekwondo",
+    label: "Fourth-degree black belt",
+    motifKeys: ["taekwondo"],
     placement: {
-      xPercent: 15,
+      xPercent: 12,
       yPercent: 56,
-      widthPercent: 21,
-      heightPercent: 17,
+      widthPercent: 13,
+      heightPercent: 15,
+      side: "top",
+    },
+  },
+  {
+    key: "scouting",
+    label: "Eagle Scout",
+    motifKeys: ["scouting"],
+    placement: {
+      xPercent: 26,
+      yPercent: 62,
+      widthPercent: 12,
+      heightPercent: 13,
       side: "top",
     },
   },
@@ -164,14 +206,22 @@ export function buildDeskHotspots(
 ): readonly DeskHotspotData[] {
   const motifByKey = new Map(motifs.map((motif) => [motif.key, motif]));
 
-  return definitions.map((definition) => ({
-    ...definition,
-    placement: resolveHotspotPlacement(definition),
-    motifs: definition.motifKeys.flatMap((key) => {
+  return definitions.map((definition) => {
+    const motifs = definition.motifKeys.flatMap((key) => {
       const motif = motifByKey.get(key);
       return motif ? [motif] : [];
-    }),
-  }));
+    });
+
+    return {
+      ...definition,
+      placement: resolveHotspotPlacement(definition),
+      motifs,
+      details: [
+        ...motifs.map((motif) => motif.detail),
+        ...(definition.facts ?? []),
+      ],
+    };
+  });
 }
 
 function isOutsideScene(
@@ -213,6 +263,13 @@ export function getDeskHotspotIssues(
 
     if (placements.some(isOutsideScene)) {
       issues.push(`deskHotspots.${definition.key}: placement is outside the scene`);
+    }
+
+    // A hotspot with neither motifs nor authored facts opens an empty popup.
+    // Allowing `motifKeys: []` for the colophon means this has to be checked
+    // explicitly rather than falling out of the motif contract.
+    if (definition.motifKeys.length === 0 && (definition.facts ?? []).length === 0) {
+      issues.push(`deskHotspots.${definition.key}: has no motifs and no facts`);
     }
 
     for (const motifKey of definition.motifKeys) {
