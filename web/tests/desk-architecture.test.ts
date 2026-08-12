@@ -57,18 +57,19 @@ describe("desk hotspot configuration", () => {
     expect(issues).toContain("deskHotspots: motif anime is not assigned");
   });
 
-  it("keeps the monitor as a real fallback link without inert hotspot controls", () => {
+  it("renders the scene inline with no inert hotspot controls before hydration", () => {
     const html = renderToStaticMarkup(
       createElement(DeskExperience, {
         hotspots: buildDeskHotspots(portfolioContent.personalMotifs),
-        projectTree: createElement("p", null, "Project tree"),
+        scene: createElement("svg", { className: "desk-art" }),
       }),
     );
 
-    expect(html).toContain('href="/work"');
-    expect(html).toContain('aria-label="Explore the project tree"');
-    expect(html).toContain('src="/media/site/lakshya-desk-v2.svg"');
-    expect(html).not.toContain('aria-label="Objects on my desk"');
+    // The monitor is no longer a portal: no dialog, no zoom, no /work link.
+    expect(html).toContain("desk-art");
+    expect(html).not.toContain('href="/work"');
+    expect(html).not.toContain("desk-monitor-trigger");
+    expect(html).not.toContain('aria-label="Things on my desk"');
   });
 });
 
@@ -78,18 +79,12 @@ describe("desk scene geometry", () => {
    * depends on matching id strings inside the artwork: it is generated from the
    * same scene the artwork is drawn from, which is the stronger guarantee.
    */
-  it("covers every hotspot and the monitor screen", () => {
+  it("covers every hotspot", () => {
     const generatedKeys = Object.keys(deskSceneGeometry.hotspots);
 
     expect(new Set(generatedKeys)).toEqual(
       new Set(deskHotspotDefinitions.map(({ key }) => key)),
     );
-    expect(deskSceneGeometry.monitorScreen).toHaveLength(4);
-
-    const { widthPercent, heightPercent } =
-      deskSceneGeometry.monitorScreenBounds;
-    expect(widthPercent).toBeGreaterThan(0);
-    expect(heightPercent).toBeGreaterThan(0);
   });
 
   it("places every generated hotspot inside the artwork", () => {
@@ -120,7 +115,7 @@ describe("desk SVG boundary", () => {
     expect(svg).not.toMatch(/(?:href|xlink:href)\s*=\s*["'](?:https?:|\/\/|data:|javascript:)/i);
   });
 
-  it("declares a square frame matching the generated geometry", async () => {
+  it("declares a frame matching the generated geometry", async () => {
     const svg = await readFile(
       path.join(process.cwd(), "public", "media", "site", "lakshya-desk-v2.svg"),
       "utf8",
@@ -130,10 +125,25 @@ describe("desk SVG boundary", () => {
     expect(svg).toContain(
       `viewBox="${viewBox.x} ${viewBox.y} ${viewBox.width} ${viewBox.height}"`,
     );
+    // A fixed 1444x720 frame, as guochen.design uses. The grid fills the frame,
+    // so the frame cannot be derived from the objects' own bounds.
     expect(viewBox.width / viewBox.height).toBeCloseTo(
       deskSceneGeometry.aspectRatio,
       3,
     );
-    expect(deskSceneGeometry.aspectRatio).toBeCloseTo(1, 3);
+    expect(deskSceneGeometry.aspectRatio).toBeCloseTo(1444 / 720, 3);
+  });
+
+  it("wraps every object in its own group so it can be hovered", async () => {
+    const svg = await readFile(
+      path.join(process.cwd(), "public", "media", "site", "lakshya-desk-v2.svg"),
+      "utf8",
+    );
+
+    for (const key of Object.keys(deskSceneGeometry.hotspots)) {
+      expect(svg, key).toContain(`<g data-object="${key}">`);
+    }
+    // Scenery is grouped too, so the monitor can respond as one piece.
+    expect(svg).toContain('<g data-object="monitor">');
   });
 });

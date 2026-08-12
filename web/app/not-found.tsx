@@ -23,7 +23,7 @@ export default function NotFound() {
         </p>
         <ul className="mt-8 flex flex-wrap gap-3" role="list">
           <li>
-            <Link className="button-primary inline-flex" href="/work">
+            <Link className="button-primary inline-flex" href="/#project-tree">
               Browse the project tree
             </Link>
           </li>

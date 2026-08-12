@@ -112,12 +112,9 @@ body {
   min-height: 100vh;
   margin: 0;
   overflow-x: clip;
-  background:
-    radial-gradient(circle at 15% 4%, var(--accent-green-faint), transparent 25rem),
-    radial-gradient(circle at 54% 12%, var(--accent-blue-faint), transparent 24rem),
-    radial-gradient(circle at 88% 18%, var(--accent-purple-faint), transparent 28rem),
-    var(--canvas);
-  background-attachment: scroll;
+  /* Flat, like guochen.design's. The old radial accent tints sat exactly where
+     the isometric field does and left a visible seam against its ground fill. */
+  background: var(--canvas);
   color: var(--primary);
   font-family: var(--font-body);
   text-rendering: optimizeLegibility;
@@ -250,7 +247,7 @@ dd {
 }
 
 .personal-hero {
-  padding-block: 4.5rem 5rem;
+  padding-block: 4.5rem 2.5rem;
 }
 
 .personal-hero-copy {
@@ -344,132 +341,35 @@ dd {
   text-underline-offset: 0.25em;
 }
 
-.personal-hero-body {
-  display: grid;
-  gap: 2.5rem;
-  margin-top: 2.75rem;
-}
-
-.selected-work-list {
-  display: grid;
-  gap: 0.5rem;
-  margin: 1rem 0 0;
-  padding: 0;
-  list-style: none;
-}
-
-.selected-work-item {
-  --project-accent: var(--accent-green);
-  min-width: 0;
-}
-
-.selected-work-item[data-work-mode="hybrid"] {
-  --project-accent: var(--accent-blue);
-}
-
-.selected-work-item[data-work-mode="hardware"] {
-  --project-accent: var(--accent-purple);
-}
-
-.selected-work-link {
-  display: grid;
-  gap: 0.4rem;
-  border: 1px solid var(--line);
-  border-left: 2px solid var(--project-accent);
-  border-radius: var(--radius-card);
-  background: var(--surface);
-  padding: 1rem 1.1rem;
-  text-decoration: none;
-}
-
-.selected-work-branch {
-  color: var(--project-accent);
-  font-family: var(--font-code);
-  font-size: 0.65rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.selected-work-link strong {
-  color: var(--primary);
-  font-size: clamp(1.05rem, 1.6vw, 1.25rem);
-  letter-spacing: -0.02em;
-  line-height: 1.25;
-}
-
-/* Trimmed to keep the rail scannable; the full summary opens with the project. */
-.selected-work-summary {
-  display: -webkit-box;
-  overflow: hidden;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 3;
-  color: var(--secondary);
-  font-size: 0.85rem;
-  line-height: 1.6;
-}
-
-.selected-work-meta {
-  color: var(--muted);
-  font-family: var(--font-code);
-  font-size: 0.7rem;
-  line-height: 1.5;
-}
-
-.selected-work-all {
-  display: inline-block;
-  margin-top: 1rem;
-  color: var(--primary);
-  font-family: var(--font-code);
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-decoration: underline;
-  text-decoration-color: var(--line-strong);
-  text-underline-offset: 0.25em;
-}
-
 .desk-experience {
   margin-top: 0;
 }
 
+/* No panel, no border. The scene bleeds into the page the way Guo's does, and
+   its own edge-fade gradients do the containing. */
 .desk-scene-frame {
   position: relative;
-  overflow: hidden;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-panel);
-  background:
-    radial-gradient(circle at 30% 30%, var(--accent-green-faint), transparent 25rem),
-    radial-gradient(circle at 55% 24%, var(--accent-blue-faint), transparent 24rem),
-    radial-gradient(circle at 78% 20%, var(--accent-purple-faint), transparent 28rem),
-    var(--surface);
-  isolation: isolate;
-}
-
-.desk-scene-frame::after {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  border-radius: inherit;
-  box-shadow: inset 0 0 0 1px oklch(1 0 0 / 0.025);
-  content: "";
-}
-
-.desk-camera {
-  position: relative;
-  width: 100%;
-  transform-origin: 50% 37%;
-  transition: transform 600ms var(--ease-out);
-}
-
-.desk-camera[data-zoomed] {
-  transform: scale(2.15);
 }
 
 .desk-art {
   display: block;
+  /* The field is 2:1, so an uncapped full-bleed width makes it 1280px tall on a
+     wide monitor and pushes the work off the screen entirely. */
+  max-width: 96rem;
   width: 100%;
   height: auto;
+  margin-inline: auto;
   user-select: none;
+}
+
+/* Hovering lifts the object itself, as guochen.design does. Transform only, one
+   element at a time, no continuous animation. */
+.desk-art [data-object] {
+  transition: transform 180ms var(--ease-out);
+}
+
+.desk-art [data-object][data-lifted] {
+  transform: translateY(-6px);
 }
 
 .desk-hotspots {
@@ -513,42 +413,6 @@ dd {
 .desk-hotspot-trigger:focus-visible > span {
   border-color: var(--accent-personal);
   background: color-mix(in oklch, var(--accent-personal) 7%, transparent);
-}
-
-/* Position comes from the generated screen bounds, so the trigger tracks the
-   artwork instead of a hand-tuned guess. */
-.desk-monitor-trigger {
-  position: absolute;
-  top: var(--monitor-y, 17%);
-  left: var(--monitor-x, 33%);
-  display: grid;
-  width: var(--monitor-width, 32%);
-  height: var(--monitor-height, 30%);
-  min-width: 0;
-  min-height: 2.75rem;
-  place-items: center;
-  border-radius: 0.5rem;
-  color: var(--primary);
-  text-decoration: none;
-}
-
-.desk-monitor-trigger span {
-  max-width: 100%;
-  padding: 0.5rem 0.7rem;
-  border: 1px solid var(--line-strong);
-  border-radius: 999px;
-  background: oklch(0.12 0.012 270 / 0.9);
-  color: var(--primary);
-  font-family: var(--font-code);
-  font-size: clamp(0.58rem, 1.15vw, 0.8rem);
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-align: center;
-  text-transform: uppercase;
-  transition:
-    transform var(--duration-interaction) var(--ease-out),
-    background-color var(--duration-interaction) ease,
-    color var(--duration-interaction) ease;
 }
 
 .desk-drawer-trigger {
@@ -599,8 +463,7 @@ dd {
   padding-top: 0.45rem;
 }
 
-.desk-drawer-overlay,
-.project-system-dialog-overlay {
+.desk-drawer-overlay {
   position: fixed;
   z-index: 60;
   inset: 0;
@@ -664,74 +527,9 @@ dd {
   line-height: 1.55;
 }
 
-.project-system-dialog-content {
-  --dialog-gutter: max(1rem, calc((100vw - var(--content-wide)) / 2));
-  position: fixed;
-  z-index: 61;
-  inset: 0;
-  display: grid;
-  grid-template-rows: auto minmax(0, 1fr);
-  overflow: hidden;
-  background: var(--canvas);
-  color: var(--primary);
-}
-
-.project-system-dialog-content[data-state="open"] {
-  animation: project-system-in 180ms var(--ease-out);
-}
-
-@keyframes project-system-in {
-  from {
-    opacity: 0;
-    transform: scale(0.99);
-  }
-}
-
-/* The close button is absolutely positioned, so the header reserves room for it
-   rather than letting the title run underneath. */
-.project-system-dialog-header {
-  min-width: 0;
-  border-bottom: 1px solid var(--line);
-  padding: 0.85rem var(--dialog-gutter) 0.9rem;
-  padding-right: calc(var(--dialog-gutter) + 5.5rem);
-}
-
-.project-system-dialog-title {
-  color: var(--primary);
-  font-size: 1rem;
-  font-weight: 600;
-}
-
-/* Focused only as an arrival target, never reachable by Tab, so a ring here
-   reads as a stray full-width box rather than a keyboard position. */
-.project-system-dialog-title:focus-visible,
-.desk-drawer-content [data-slot="drawer-title"]:focus-visible {
-  outline: none;
-}
-
-.project-system-dialog-description {
-  max-width: 46rem;
-  margin-top: 0.35rem;
-  color: var(--muted);
-  font-size: 0.75rem;
-  line-height: 1.5;
-}
-
-.project-system-dialog-close {
-  position: absolute;
-  z-index: 1;
-  top: 0.75rem;
-  right: var(--dialog-gutter);
-}
-
-.project-system-dialog-scroll {
-  overflow-y: auto;
-  padding: 2rem var(--dialog-gutter) 4rem;
-  overscroll-behavior: contain;
-}
-
-.work-page {
-  padding-block: 3.5rem 6rem;
+/* The project tree now sits on the home page under the scene. */
+.home-tree {
+  padding-block: 3rem 4.5rem;
 }
 
 .project-tree-page-header {
@@ -739,7 +537,8 @@ dd {
   margin-bottom: 2rem;
 }
 
-.project-tree-page-header h1 {
+/* The tree is a section of the home page now, so its heading is an h2. */
+.project-tree-page-header h2 {
   margin-top: 0.5rem;
   color: var(--primary);
   font-size: clamp(2rem, 5vw, 3.25rem);
@@ -1555,26 +1354,8 @@ dd {
     background: color-mix(in oklch, var(--accent-personal) 6%, transparent);
   }
 
-  .desk-monitor-trigger:hover span {
-    transform: rotate(9deg) scale(1.04);
-    background: var(--primary);
-    color: var(--canvas);
-  }
-
   .project-tree-action:hover {
     color: color-mix(in oklch, var(--project-accent) 80%, white);
-  }
-
-  .selected-work-link {
-    transition:
-      border-color var(--duration-interaction) ease,
-      background-color var(--duration-interaction) ease;
-  }
-
-  .selected-work-link:hover {
-    border-color: var(--line-strong);
-    border-left-color: var(--project-accent);
-    background: var(--surface-raised);
   }
 
   .case-study-outline a:hover,
@@ -1623,7 +1404,7 @@ dd {
   }
 
   .personal-hero {
-    padding-block: 4.5rem;
+    padding-block: 4.5rem 2.5rem;
   }
 
   .project-tree-root::after {
@@ -1667,12 +1448,6 @@ dd {
     height: var(--tree-link);
   }
 
-  .personal-hero-body {
-    grid-template-columns: minmax(19rem, 0.8fr) minmax(0, 1.2fr);
-    align-items: start;
-    gap: 2.25rem;
-  }
-
   .personal-closing {
     grid-template-columns: minmax(15rem, 0.75fr) minmax(24rem, 1.25fr);
     align-items: start;
@@ -1708,15 +1483,13 @@ dd {
   .button-secondary,
   [data-slot="button"],
   .about-item-card,
-  .desk-camera,
-  .desk-monitor-trigger span,
+  .desk-art [data-object],
   .desk-hotspot-trigger > span {
     transition: none;
   }
 
   .desk-popover-content[data-state="open"],
-  .desk-drawer-content[data-state="open"],
-  .project-system-dialog-content[data-state="open"] {
+  .desk-drawer-content[data-state="open"] {
     animation: none;
   }
 }

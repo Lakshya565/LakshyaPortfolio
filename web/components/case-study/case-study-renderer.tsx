@@ -149,7 +149,7 @@ export function CaseStudyRenderer({
       id="main-content"
       tabIndex={-1}
     >
-      <Link className="text-link font-mono text-sm" href="/work">
+      <Link className="text-link font-mono text-sm" href="/#project-tree">
         ← All work
       </Link>
 

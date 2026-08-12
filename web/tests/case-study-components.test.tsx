@@ -103,7 +103,7 @@ describe("case-study renderer", () => {
     );
 
     expect(html.match(/<h1/g)).toHaveLength(1);
-    expect(html).toContain('href="/work"');
+    expect(html).toContain('href="/#project-tree"');
     expect(html).not.toContain("case-study-facts");
     expect(html).not.toContain("case-study-technologies");
     expect(html).not.toContain("case-study-links");

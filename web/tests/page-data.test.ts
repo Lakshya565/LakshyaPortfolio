@@ -4,9 +4,7 @@ import { portfolioContent } from "../content/portfolio";
 import {
   buildAboutPageData,
   buildHomePageData,
-  buildSelectedWorkData,
   buildSiteShellData,
-  buildWorkPageData,
 } from "../lib/content/page-data";
 import {
   isNavigationItemActive,
@@ -34,32 +32,9 @@ const expectedBranches = [
 ];
 
 describe("page data projections", () => {
-  it("leads the homepage with the flagships and still covers every branch", () => {
-    const selected = buildSelectedWorkData(portfolioContent);
-
-    expect(selected.map((project) => project.slug)).toEqual([
-      "cisco-agentic-runbook-creator",
-      "repoframe",
-      "smartlift-sleeve",
-      "quackta",
-    ]);
-    // Priority alone would return three Software projects and hide the range.
-    expect(new Set(selected.map((project) => project.workMode))).toEqual(
-      new Set(["software", "hardware", "hybrid"]),
-    );
-    expect(selected.map((project) => project.branchLabel)).toEqual([
-      "Software",
-      "Software",
-      "Hardware",
-      "Hybrid",
-    ]);
-  });
-
-  it("builds one ordered project tree for the homepage and /work", () => {
+  it("builds one ordered project tree for the homepage", () => {
     const home = buildHomePageData(portfolioContent);
-    const work = buildWorkPageData(portfolioContent);
 
-    expect(home.projectTree).toEqual(work.projectTree);
     expect(home.projectTree.root).toEqual({
       name: "Lakshya Agarwal",
       oneLiner: "I make computers do useful things in the real world.",
@@ -80,9 +55,9 @@ describe("page data projections", () => {
   });
 
   it("projects routed display data without editorial control fields", () => {
-    const projects = buildWorkPageData(portfolioContent).projectTree.branches.flatMap(
-      (branch) => branch.projects,
-    );
+    const projects = buildHomePageData(
+      portfolioContent,
+    ).projectTree.branches.flatMap((branch) => branch.projects);
     const cisco = projects.find(
       ({ slug }) => slug === "cisco-agentic-runbook-creator",
     );
@@ -153,11 +128,9 @@ describe("page data projections", () => {
     } satisfies PortfolioContent;
 
     const home = buildHomePageData(emptyContent);
-    const work = buildWorkPageData(emptyContent);
     const about = buildAboutPageData(emptyContent);
 
     expect(home.projectTree.projectCount).toBe(0);
-    expect(work.projectTree.projectCount).toBe(0);
     expect(
       home.projectTree.branches.every(({ projects }) => projects.length === 0),
     ).toBe(true);
@@ -173,10 +146,10 @@ describe("page data projections", () => {
 describe("site navigation state", () => {
   const [work, about] = siteNavigationItems;
 
-  it("uses /work as the conventional project destination", () => {
-    expect(work.href).toBe("/work");
-    expect(isNavigationItemActive("/", work)).toBe(false);
-    expect(isNavigationItemActive("/work", work)).toBe(true);
+  it("points work at the tree on the home page", () => {
+    expect(work.href).toBe("/#project-tree");
+    // The tree no longer has its own route, so home counts as the work page.
+    expect(isNavigationItemActive("/", work)).toBe(true);
     expect(isNavigationItemActive("/projects/repoframe", work)).toBe(true);
     expect(isNavigationItemActive("/about", about)).toBe(true);
     expect(isNavigationItemActive("/about", work)).toBe(false);

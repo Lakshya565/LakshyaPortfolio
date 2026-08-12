@@ -1,9 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import {
   type CSSProperties,
-  type MouseEvent,
   type ReactNode,
   useEffect,
   useId,
@@ -12,13 +10,6 @@ import {
   useSyncExternalStore,
 } from "react";
 
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import {
   Drawer,
   DrawerClose,
@@ -39,7 +30,6 @@ import {
 } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import type { DeskHotspotData, DeskHotspotKey } from "@/lib/desk/hotspots";
-import { deskSceneGeometry } from "@/lib/desk/scene-geometry";
 
 type HotspotStyle = CSSProperties &
   Readonly<{
@@ -50,13 +40,6 @@ type HotspotStyle = CSSProperties &
   }>;
 
 const subscribeToHydration = () => () => undefined;
-
-const monitorScreenStyle = {
-  "--monitor-x": `${deskSceneGeometry.monitorScreenBounds.xPercent}%`,
-  "--monitor-y": `${deskSceneGeometry.monitorScreenBounds.yPercent}%`,
-  "--monitor-width": `${deskSceneGeometry.monitorScreenBounds.widthPercent}%`,
-  "--monitor-height": `${deskSceneGeometry.monitorScreenBounds.heightPercent}%`,
-} as CSSProperties;
 
 function toHotspotStyle(hotspot: DeskHotspotData): HotspotStyle {
   return {
@@ -151,7 +134,7 @@ function DeskHotspot({
             onOpenChange(false);
           }}
           side={hotspot.placement.side}
-          sideOffset={8}
+          sideOffset={10}
         >
           <PopoverHeader>
             <PopoverTitle id={titleId}>{hotspot.label}</PopoverTitle>
@@ -169,232 +152,98 @@ function DeskHotspot({
   );
 }
 
-function hasModifiedNavigation(event: MouseEvent<HTMLAnchorElement>) {
-  return event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey;
-}
-
 export function DeskExperience({
   hotspots,
-  projectTree,
+  scene,
 }: Readonly<{
   hotspots: readonly DeskHotspotData[];
-  projectTree: ReactNode;
+  /** The inlined SVG, rendered on the server so its markup never ships as JS. */
+  scene: ReactNode;
 }>) {
   const [activeHotspot, setActiveHotspot] = useState<DeskHotspotKey | null>(null);
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [zoomed, setZoomed] = useState(false);
+  const sceneRef = useRef<HTMLDivElement>(null);
   const hydrated = useSyncExternalStore(
     subscribeToHydration,
     () => true,
     () => false,
   );
-  const monitorRef = useRef<HTMLAnchorElement>(null);
-  const dialogTitleRef = useRef<HTMLHeadingElement>(null);
-  const drawerTitleRef = useRef<HTMLHeadingElement>(null);
-  const openTimerRef = useRef<number | null>(null);
 
+  /**
+   * Lift the hovered object itself, the way guochen.design does — the artwork
+   * responds, not just a panel beside it. The overlay buttons stay because they
+   * are what make the scene keyboard-reachable and screen-reader legible; Guo's
+   * version is mouse-only, and that is the one place not to copy him.
+   */
   useEffect(() => {
-    const syncDialogToHistory = () => {
-      const shouldOpen = window.location.hash === "#project-system";
-      setDialogOpen(shouldOpen);
-      if (!shouldOpen) {
-        setZoomed(false);
-      }
-    };
-
-    const initialSyncTimer = window.setTimeout(syncDialogToHistory, 0);
-    window.addEventListener("hashchange", syncDialogToHistory);
-    window.addEventListener("popstate", syncDialogToHistory);
-    return () => {
-      window.clearTimeout(initialSyncTimer);
-      window.removeEventListener("hashchange", syncDialogToHistory);
-      window.removeEventListener("popstate", syncDialogToHistory);
-      if (openTimerRef.current !== null) {
-        window.clearTimeout(openTimerRef.current);
-      }
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!zoomed || dialogOpen) {
+    const root = sceneRef.current;
+    if (!root) {
       return;
     }
 
-    const cancelPendingOpen = (event: KeyboardEvent) => {
-      if (event.key !== "Escape") {
-        return;
-      }
-
-      event.preventDefault();
-      if (openTimerRef.current !== null) {
-        window.clearTimeout(openTimerRef.current);
-        openTimerRef.current = null;
-      }
-      setZoomed(false);
-      monitorRef.current?.focus();
-    };
-
-    window.addEventListener("keydown", cancelPendingOpen, true);
-    return () => window.removeEventListener("keydown", cancelPendingOpen, true);
-  }, [dialogOpen, zoomed]);
-
-  const openProjectTree = () => {
-    const destination = new URL(window.location.href);
-    destination.hash = "project-system";
-    if (window.location.hash !== destination.hash) {
-      window.history.pushState({ projectSystem: true }, "", destination);
-    }
-    setDialogOpen(true);
-  };
-
-  const handleMonitorClick = (event: MouseEvent<HTMLAnchorElement>) => {
-    if (hasModifiedNavigation(event)) {
-      return;
+    for (const node of root.querySelectorAll("[data-object][data-lifted]")) {
+      node.removeAttribute("data-lifted");
     }
 
-    event.preventDefault();
-    setActiveHotspot(null);
-    const shouldOpenImmediately =
-      event.detail === 0 ||
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-    if (shouldOpenImmediately) {
-      openProjectTree();
-      return;
+    if (activeHotspot) {
+      root
+        .querySelector(`[data-object="${activeHotspot}"]`)
+        ?.setAttribute("data-lifted", "");
     }
-
-    if (openTimerRef.current !== null) {
-      window.clearTimeout(openTimerRef.current);
-    }
-    setZoomed(true);
-    openTimerRef.current = window.setTimeout(() => {
-      openTimerRef.current = null;
-      openProjectTree();
-    }, 600);
-  };
-
-  const requestDialogClose = () => {
-    if (window.location.hash === "#project-system") {
-      window.history.back();
-      return;
-    }
-    setDialogOpen(false);
-    setZoomed(false);
-  };
+  }, [activeHotspot]);
 
   return (
-    <>
-      <div className="desk-experience">
-        <div className="desk-scene-frame">
-          <div className="desk-camera" data-zoomed={zoomed || undefined}>
-            {/* A raw SVG avoids rasterizing or proxying this lightweight local illustration. */}
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              alt=""
-              aria-hidden="true"
-              className="desk-art"
-              fetchPriority="high"
-              height="900"
-              src="/media/site/lakshya-desk-v2.svg"
-              width="1200"
-            />
-
-            {hydrated ? (
-              <ul aria-label="Objects on my desk" className="desk-hotspots">
-                {hotspots.map((hotspot) => (
-                  <DeskHotspot
-                    hotspot={hotspot}
-                    isOpen={activeHotspot === hotspot.key}
-                    key={hotspot.key}
-                    onOpenChange={(open) =>
-                      setActiveHotspot(open ? hotspot.key : null)
-                    }
-                  />
-                ))}
-              </ul>
-            ) : null}
-
-            {/* Sits on the screen the generator actually drew. Matching the
-                screen's exact parallelogram is Phase 6 work; this is its
-                bounding box. */}
-            <Link
-              aria-label="Explore the project tree"
-              className="desk-monitor-trigger"
-              href="/work"
-              onClick={handleMonitorClick}
-              ref={monitorRef}
-              style={monitorScreenStyle}
-            >
-              <span>Explore project tree</span>
-            </Link>
-          </div>
-        </div>
+    <div className="desk-experience">
+      <div className="desk-scene-frame" ref={sceneRef}>
+        {scene}
 
         {hydrated ? (
-          <Drawer>
-            <DrawerTrigger asChild>
-              <Button className="desk-drawer-trigger" variant="outline">
-                Objects on my desk
-              </Button>
-            </DrawerTrigger>
-            <DrawerContent
-              onOpenAutoFocus={(event) => {
-                event.preventDefault();
-                drawerTitleRef.current?.focus();
-              }}
-            >
-              <DrawerHeader>
-                <DrawerTitle ref={drawerTitleRef} tabIndex={-1}>
-                  Objects on my desk
-                </DrawerTitle>
-                <DrawerDescription>
-                  A few things that explain how I work and reset.
-                </DrawerDescription>
-              </DrawerHeader>
-              <div className="desk-drawer-list">
-                {hotspots.map((hotspot) => (
-                  <details key={hotspot.key}>
-                    <summary>{hotspot.label}</summary>
-                    {hotspot.motifs.map((motif) => (
-                      <p key={motif.key}>{motif.detail}</p>
-                    ))}
-                  </details>
-                ))}
-              </div>
-              <DrawerFooter>
-                <DrawerClose asChild>
-                  <Button variant="outline">Close</Button>
-                </DrawerClose>
-              </DrawerFooter>
-            </DrawerContent>
-          </Drawer>
+          <ul aria-label="Things on my desk" className="desk-hotspots">
+            {hotspots.map((hotspot) => (
+              <DeskHotspot
+                hotspot={hotspot}
+                isOpen={activeHotspot === hotspot.key}
+                key={hotspot.key}
+                onOpenChange={(open) =>
+                  setActiveHotspot(open ? hotspot.key : null)
+                }
+              />
+            ))}
+          </ul>
         ) : null}
       </div>
 
-      <Dialog open={dialogOpen} onOpenChange={(open) => !open && requestDialogClose()}>
-        <DialogContent
-          aria-describedby="project-system-dialog-description"
-          className="project-system-dialog"
-          onCloseAutoFocus={(event) => {
-            event.preventDefault();
-            monitorRef.current?.focus();
-          }}
-          onOpenAutoFocus={(event) => {
-            event.preventDefault();
-            dialogTitleRef.current?.focus();
-          }}
-        >
-          <DialogHeader>
-            <DialogTitle ref={dialogTitleRef} tabIndex={-1}>
-              Project tree
-            </DialogTitle>
-            <DialogDescription id="project-system-dialog-description">
-              Open a node for context, or follow it to the complete project story.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="project-system-dialog-scroll">{projectTree}</div>
-        </DialogContent>
-      </Dialog>
-    </>
+      {hydrated ? (
+        <Drawer>
+          <DrawerTrigger asChild>
+            <Button className="desk-drawer-trigger" variant="outline">
+              Things on my desk
+            </Button>
+          </DrawerTrigger>
+          <DrawerContent>
+            <DrawerHeader>
+              <DrawerTitle>Things on my desk</DrawerTitle>
+              <DrawerDescription>
+                A few things that explain how I work and reset.
+              </DrawerDescription>
+            </DrawerHeader>
+            <div className="desk-drawer-list">
+              {hotspots.map((hotspot) => (
+                <details key={hotspot.key}>
+                  <summary>{hotspot.label}</summary>
+                  {hotspot.motifs.map((motif) => (
+                    <p key={motif.key}>{motif.detail}</p>
+                  ))}
+                </details>
+              ))}
+            </div>
+            <DrawerFooter>
+              <DrawerClose asChild>
+                <Button variant="outline">Close</Button>
+              </DrawerClose>
+            </DrawerFooter>
+          </DrawerContent>
+        </Drawer>
+      ) : null}
+    </div>
   );
 }

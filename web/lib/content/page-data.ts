@@ -50,18 +50,6 @@ export type ProjectTreeData = Readonly<{
   projectCount: number;
 }>;
 
-export type SelectedWorkProjectData = Readonly<{
-  slug: ProjectSlug;
-  title: string;
-  category: ProjectCategory;
-  summary: string;
-  role: string;
-  workMode: ProjectWorkMode;
-  branchLabel: string;
-  dateLabel: string | null;
-  routeHref: string;
-}>;
-
 export type SiteShellData = Readonly<{
   name: string;
   socialLinks: readonly SocialLinkData[];
@@ -71,13 +59,7 @@ export type HomePageData = Readonly<{
   profile: PortfolioContent["siteProfile"];
   personalHotspots: readonly DeskHotspotData[];
   projectTree: ProjectTreeData;
-  selectedWork: readonly SelectedWorkProjectData[];
-  totalProjectCount: number;
   socialLinks: readonly SocialLinkData[];
-}>;
-
-export type WorkPageData = Readonly<{
-  projectTree: ProjectTreeData;
 }>;
 
 type AboutPageData = Readonly<{
@@ -149,60 +131,6 @@ export function buildProjectTreeData(
   };
 }
 
-/** Flagship projects that lead the homepage regardless of branch. */
-const homeFlagshipCount = 2;
-
-/**
- * The homepage scan path: the flagships first, then the highest-priority project
- * from any branch they leave uncovered. The top entries by `displayOrder` are
- * all Software, so priority alone would hide the hardware and hybrid range the
- * site's whole claim rests on. Output stays in priority order.
- */
-export function buildSelectedWorkData(
-  content: Pick<PortfolioContent, "projects">,
-): readonly SelectedWorkProjectData[] {
-  const projects = getPublishedProjects(content);
-  const selected = new Set(
-    projects.slice(0, homeFlagshipCount).map((project) => project.slug),
-  );
-  const coveredModes = new Set(
-    projects
-      .filter((project) => selected.has(project.slug))
-      .map((project) => project.workMode),
-  );
-
-  for (const workMode of projectTreeBranchOrder) {
-    if (coveredModes.has(workMode)) {
-      continue;
-    }
-
-    const leadProject = projects.find(
-      (project) => project.workMode === workMode,
-    );
-
-    if (leadProject) {
-      selected.add(leadProject.slug);
-    }
-  }
-
-  return projects
-    .filter((project) => selected.has(project.slug))
-    .map((project) => {
-      const tree = toProjectTreeProject(project);
-
-      return {
-        slug: tree.slug,
-        title: tree.title,
-        category: tree.category,
-        summary: tree.summary,
-        role: tree.role,
-        workMode: tree.workMode,
-        branchLabel: projectWorkModeLabels[tree.workMode],
-        dateLabel: tree.dateLabel,
-        routeHref: tree.routeHref,
-      };
-    });
-}
 
 export function buildSiteShellData(content: PortfolioContent): SiteShellData {
   return {
@@ -220,14 +148,8 @@ export function buildHomePageData(content: PortfolioContent): HomePageData {
       content.personalMotifs.toSorted(compareDisplayOrder),
     ),
     projectTree,
-    selectedWork: buildSelectedWorkData(content),
-    totalProjectCount: projectTree.projectCount,
     socialLinks: toSocialLinkData(content),
   };
-}
-
-export function buildWorkPageData(content: PortfolioContent): WorkPageData {
-  return { projectTree: buildProjectTreeData(content) };
 }
 
 export function buildAboutPageData(content: PortfolioContent): AboutPageData {

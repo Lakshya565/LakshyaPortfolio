@@ -2,9 +2,9 @@
  * Axonometric projection for the generated desk scene.
  *
  * The rejected hand-authored SVG failed because every object invented its own
- * vanishing directions. Here the projection, the light model, and the contact
- * shadows are one system, so perspective and grounding are correct by
- * construction rather than by redrawing.
+ * vanishing directions. Here every vertex in the scene goes through one
+ * `project()`, so perspective is correct by construction rather than by
+ * redrawing. There is no light model: the scene is line art.
  *
  * World axes: `x` runs right-and-forward, `y` runs left-and-forward (depth),
  * `z` is up. The basis is 2:1 dimetric — a unit cube's top face is twice as
@@ -19,14 +19,17 @@ export type Vec3 = Readonly<{ x: number; y: number; z: number }>;
 export type Size3 = Readonly<{ width: number; depth: number; height: number }>;
 
 /**
- * Camera basis. `depth` controls how much of the ground plane opens up and
- * `height` how tall verticals read. A larger depth-to-height ratio tilts the
- * camera further down, which is what lets the desk surface, the figure row, and
- * the inside of the shelf cubbies all be visible at once.
+ * Camera basis, matching guochen.design. His grid lines run at slope ±0.5 — true
+ * 2:1 dimetric, where a unit cube's top face is exactly twice as wide as it is
+ * tall — so `depth` is 0.5 rather than the shallower 0.38 the shaded build used.
+ *
+ * This reverses an earlier choice made when objects were shaded and needed tall
+ * side faces to stay recognizable. Line art does not depend on that, and Guo's
+ * angle is the reference.
  */
 const camera = {
   horizontal: 1,
-  depth: 0.38,
+  depth: 0.5,
   height: 1,
 } as const;
 
@@ -88,28 +91,6 @@ export function boxFaces(origin: Vec3, size: Size3): BoxFaces {
 }
 
 /**
- * A quad lying on a box's left face, inset by `inset` on every side. Used for
- * screens, panels, and labels so they sit exactly in the surface plane instead
- * of floating a pixel above it.
- */
-export function leftFaceQuad(
-  origin: Vec3,
-  size: Size3,
-  inset: number,
-): readonly Point[] {
-  const { x, y, z } = origin;
-  const { width, depth, height } = size;
-  const faceY = y + depth;
-
-  return [
-    project({ x: x + inset, y: faceY, z: z + height - inset }),
-    project({ x: x + width - inset, y: faceY, z: z + height - inset }),
-    project({ x: x + width - inset, y: faceY, z: z + inset }),
-    project({ x: x + inset, y: faceY, z: z + inset }),
-  ];
-}
-
-/**
  * A soft rhombus on the surface an object rests on. Nothing in the scene is
  * allowed to float: this is the cheapest and most convincing grounding cue.
  */
@@ -151,15 +132,32 @@ export type Extrusion = Readonly<{
  *
  * Only faces turned toward the camera are emitted, so a cylinder costs half its
  * segments and no hidden geometry is ever drawn.
+ *
+ * `offset` shears the top face sideways and `scale` grows or shrinks it about
+ * the footprint's centroid, which turns this one primitive into a wedge, a lamp
+ * arm, a leaning book, a tilted screen, a cup, or a plant pot. Without them
+ * every object has to be a vertical prism, and a landscape built only from
+ * vertical prisms is exactly the pile of featureless cylinders this scene
+ * started as.
  */
+export type ExtrudeShaping = Readonly<{ offset?: Point2; scale?: number }>;
+
 export function extrude(
   footprint: readonly Point2[],
   baseZ: number,
   height: number,
+  shaping: ExtrudeShaping = {},
 ): Extrusion {
   const topZ = baseZ + height;
   const outward = footprintWinding(footprint);
   const sides: ExtrudedFace[] = [];
+  const offset = shaping.offset ?? { x: 0, y: 0 };
+  const scale = shaping.scale ?? 1;
+  const centroid = centroidOf(footprint);
+  const shift = (point: Point2): Point2 => ({
+    x: centroid.x + (point.x - centroid.x) * scale + offset.x,
+    y: centroid.y + (point.y - centroid.y) * scale + offset.y,
+  });
 
   for (let index = 0; index < footprint.length; index += 1) {
     const start = footprint[index];
@@ -176,10 +174,13 @@ export function extrude(
       continue;
     }
 
+    const topStart = shift(start);
+    const topEnd = shift(end);
+
     sides.push({
       points: [
-        project({ x: start.x, y: start.y, z: topZ }),
-        project({ x: end.x, y: end.y, z: topZ }),
+        project({ x: topStart.x, y: topStart.y, z: topZ }),
+        project({ x: topEnd.x, y: topEnd.y, z: topZ }),
         project({ x: end.x, y: end.y, z: baseZ }),
         project({ x: start.x, y: start.y, z: baseZ }),
       ],
@@ -188,9 +189,19 @@ export function extrude(
   }
 
   return {
-    top: footprint.map((point) => project({ ...point, z: topZ })),
+    top: footprint.map((point) => project({ ...shift(point), z: topZ })),
     sides,
   };
+}
+
+export function centroidOf(footprint: readonly Point2[]): Point2 {
+  return footprint.reduce(
+    (total, point) => ({
+      x: total.x + point.x / footprint.length,
+      y: total.y + point.y / footprint.length,
+    }),
+    { x: 0, y: 0 },
+  );
 }
 
 /** +1 when the footprint is wound so that (dy, -dx) points outward. */
@@ -253,64 +264,6 @@ export function roundedFootprint(
       };
     }),
   );
-}
-
-/** Face tones derived mechanically from one base colour. */
-export type FaceTones = Readonly<{
-  top: string;
-  left: string;
-  right: string;
-  edge: string;
-}>;
-
-const lightRule = {
-  top: 0.16,
-  left: -0.04,
-  right: -0.2,
-  edge: 0.3,
-} as const;
-
-export function faceTones(base: string): FaceTones {
-  return {
-    top: shade(base, lightRule.top),
-    left: shade(base, lightRule.left),
-    right: shade(base, lightRule.right),
-    edge: shade(base, lightRule.edge),
-  };
-}
-
-/**
- * Continuous version of the same rule, for extruded side faces. A cylinder gets
- * a real wrap-around falloff instead of two flat tones, using the identical
- * light direction as the box faces so the two primitives cannot disagree.
- */
-export function sideTone(base: string, light: number): string {
-  // A box's two visible faces sit at light = 1 (+y, lit) and light = 0 (+x,
-  // turned away), so the box tones are the anchors and faces past them keep
-  // falling off to a bounded minimum.
-  const span = lightRule.left - lightRule.right;
-  const amount = Math.max(
-    lightRule.right - 0.1,
-    Math.min(lightRule.left, lightRule.right + span * light),
-  );
-  return shade(base, amount);
-}
-
-/** Mixes a hex colour toward white (positive) or black (negative). */
-export function shade(hex: string, amount: number): string {
-  const value = hex.replace("#", "");
-  const channels = [0, 2, 4].map((offset) =>
-    Number.parseInt(value.slice(offset, offset + 2), 16),
-  );
-  const target = amount >= 0 ? 255 : 0;
-  const ratio = Math.abs(amount);
-
-  return `#${channels
-    .map((channel) => {
-      const mixed = Math.round(channel + (target - channel) * ratio);
-      return Math.max(0, Math.min(255, mixed)).toString(16).padStart(2, "0");
-    })
-    .join("")}`;
 }
 
 export type Bounds = Readonly<{

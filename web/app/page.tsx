@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 import { IsometricDesk } from "@/components/desk/isometric-desk";
-import { SelectedWork } from "@/components/home/selected-work";
+import { ProjectTree } from "@/components/project-tree/project-tree";
 import { SocialLinks } from "@/components/site/social-links";
 import { Button } from "@/components/ui/button";
 import { getHomePageData } from "@/lib/content/portfolio-repository";
@@ -12,26 +12,37 @@ export default function Home() {
   return (
     <main id="main-content" tabIndex={-1}>
       <header className="personal-hero site-container">
-        <div className="personal-hero-copy">
-          <p className="eyebrow">{data.profile.name} · Computer Engineering</p>
-          <h1 className="hero-title">{data.profile.headline}</h1>
-          <p className="hero-intro">{data.profile.shortIntro}</p>
-          <SocialLinks
-            className="hero-social-links"
-            links={data.socialLinks}
-          />
-        </div>
-
-        {/* Work precedes the desk in DOM order so a phone, a screen reader, and
-            the Tab key all reach the projects before the illustration. */}
-        <div className="personal-hero-body">
-          <SelectedWork
-            projects={data.selectedWork}
-            totalProjectCount={data.totalProjectCount}
-          />
-          <IsometricDesk data={data} />
-        </div>
+        <p className="eyebrow">{data.profile.name} · Computer Engineering</p>
+        <h1 className="hero-title">{data.profile.headline}</h1>
+        <p className="hero-intro">{data.profile.shortIntro}</p>
+        <SocialLinks className="hero-social-links" links={data.socialLinks} />
       </header>
+
+      {/* The scene is a 2:1 band, so it spans the page rather than sharing a
+          column. Squeezed into half the width it renders too small to tell one
+          object from another, which is the whole point of it. */}
+      <section aria-label="Things on my desk" className="desk-band">
+        <IsometricDesk hotspots={data.personalHotspots} />
+      </section>
+
+      {/* The project tree lives here now rather than on its own route: one page,
+          one index, and the work sits directly under the illustration. */}
+      <section
+        aria-labelledby="project-tree-title"
+        className="home-tree site-container"
+        id="project-tree"
+      >
+        <div className="project-tree-page-header">
+          <p className="eyebrow">
+            Work · {data.projectTree.projectCount} projects
+          </p>
+          <h2 id="project-tree-title">Project tree</h2>
+          <p>
+            Open a node for context, or follow it to the complete project story.
+          </p>
+        </div>
+        <ProjectTree branchHeadingLevel="h3" data={data.projectTree} />
+      </section>
 
       <section
         aria-labelledby="about-title"

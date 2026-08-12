@@ -5,7 +5,6 @@ import {
   buildAboutPageData,
   buildHomePageData,
   buildSiteShellData,
-  buildWorkPageData,
 } from "@/lib/content/page-data";
 import {
   toCaseStudyNavigationItem,
@@ -23,10 +22,6 @@ export function getSiteShellData() {
 
 export function getHomePageData() {
   return buildHomePageData(portfolioContent);
-}
-
-export function getWorkPageData() {
-  return buildWorkPageData(portfolioContent);
 }
 
 export function getAboutPageData() {
