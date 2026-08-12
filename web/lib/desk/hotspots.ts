@@ -48,12 +48,12 @@ export type DeskHotspotData = DeskHotspotDefinition &
 export const deskHotspotDefinitions = [
   {
     key: "colophon",
-    label: "How this site is built",
+    label: "How This Site Was Built",
     motifKeys: [],
     facts: [
       "Next.js and React with TypeScript throughout, styled with Tailwind, and deployed as a static build.",
-      "The desk is generated, not drawn: every object is typed scene data projected through one camera, so the artwork cannot drift out of step with the code.",
-      "Built with Claude, and the isometric field owes its whole approach to Guo Chen's work at guochen.design.",
+      "The desk is generated, and all assets are hand-drawn: every object is typed scene data projected through one camera, so the artwork cannot drift out of step with the code.",
+      "Built with assistance from Claude, and the isometric field owes its whole approach to Guo Chen's work at guochen.design.",
     ],
     placement: {
       xPercent: 40,
@@ -65,7 +65,7 @@ export const deskHotspotDefinitions = [
   },
   {
     key: "maker",
-    label: "Maker origin",
+    label: "Humble Beginnings",
     motifKeys: ["maker-origin"],
     placement: {
       xPercent: 21,
@@ -77,7 +77,7 @@ export const deskHotspotDefinitions = [
   },
   {
     key: "quackta",
-    label: "A debugging duck",
+    label: "A Debugging Duck",
     motifKeys: ["quackta"],
     placement: {
       xPercent: 70,
@@ -89,7 +89,7 @@ export const deskHotspotDefinitions = [
   },
   {
     key: "taekwondo",
-    label: "Fourth-degree black belt",
+    label: "Master Instructor & Fourth-Degree Black Belt",
     motifKeys: ["taekwondo"],
     placement: {
       xPercent: 12,
@@ -113,7 +113,7 @@ export const deskHotspotDefinitions = [
   },
   {
     key: "shared-food",
-    label: "Good company",
+    label: "Food & Friends",
     motifKeys: ["shared-food"],
     placement: {
       xPercent: 77,
@@ -125,7 +125,7 @@ export const deskHotspotDefinitions = [
   },
   {
     key: "food-favorites",
-    label: "Current food rotation",
+    label: "Current Favorites",
     motifKeys: ["food-favorites"],
     placement: {
       xPercent: 57,
@@ -137,7 +137,7 @@ export const deskHotspotDefinitions = [
   },
   {
     key: "climbing",
-    label: "Climbing reset",
+    label: "Moonlighting As A Monkey",
     motifKeys: ["climbing"],
     placement: {
       xPercent: 8,
@@ -149,7 +149,7 @@ export const deskHotspotDefinitions = [
   },
   {
     key: "gym",
-    label: "Time under the bar",
+    label: "Lifting Heavy Circles",
     motifKeys: ["gym"],
     placement: {
       xPercent: 70,
@@ -161,7 +161,7 @@ export const deskHotspotDefinitions = [
   },
   {
     key: "anime",
-    label: "Anime nights",
+    label: "Anime Enthusiast",
     motifKeys: ["anime"],
     placement: {
       xPercent: 60,

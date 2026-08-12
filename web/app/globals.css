@@ -12,13 +12,12 @@
   --accent-green: oklch(0.79 0.145 155);
   --accent-blue: oklch(0.79 0.12 235);
   --accent-purple: oklch(0.78 0.13 305);
-  /* The isometric field. A fourth hue on purpose: green, blue and purple carry
-     Software/Hybrid/Hardware in the project tree directly below the scene, so
-     reusing them on desk objects would imply a category that isn't there. Here
-     colour means only that an object responds. Replaces --accent-personal, an
-     amber that nothing outside the desk ever used. Kept in sync with `ink.accent`
-     in lib/desk/parts.ts, which resolves to #57d4d4. */
-  --accent-desk: oklch(0.8 0.11 195);
+  /* The isometric field. Green, shared with the project tree's Software branch —
+     Lakshya's explicit call, and the reuse does not mean a desk object belongs to
+     a category. In the scene, colour means only that the object responds; scenery
+     stays grey. Replaces --accent-personal, an amber nothing outside the desk
+     used. Kept in sync with `ink.accent` in lib/desk/parts.ts (#62d691). */
+  --accent-desk: var(--accent-green);
   --focus: oklch(0.9 0.02 260);
   --canvas-header: oklch(0.12 0.012 270 / 0.94);
   --surface-overlay: oklch(0.205 0.018 270 / 0.96);
@@ -35,9 +34,9 @@
   --accent-purple-soft: oklch(0.78 0.13 305 / 0.46);
   --accent-purple-hover: oklch(0.83 0.14 305);
   --accent-purple-text-hover: oklch(0.86 0.13 305);
-  --accent-desk-faint: oklch(0.8 0.11 195 / 0.08);
-  --accent-desk-soft: oklch(0.8 0.11 195 / 0.46);
-  --accent-desk-hover: oklch(0.88 0.13 195);
+  --accent-desk-faint: var(--accent-green-faint);
+  --accent-desk-soft: var(--accent-green-soft);
+  --accent-desk-hover: var(--accent-green-hover);
   --font-body: "Inter", "Segoe UI", sans-serif;
   --font-code: "Cascadia Code", "SFMono-Regular", Consolas, monospace;
   --content-wide: 72rem;
@@ -438,6 +437,11 @@ dd {
 }
 
 .desk-popover-content {
+  /* The panel is read, never interacted with — it holds no links or controls.
+     Making it transparent to the pointer means it can neither keep itself open
+     once the cursor has left the object, nor create dead zones over the artwork
+     where an object underneath it stops responding. */
+  pointer-events: none;
   z-index: 70;
   width: min(19rem, calc(100vw - 2rem));
   transform-origin: var(--radix-popover-content-transform-origin);
@@ -1365,10 +1369,10 @@ dd {
     transform: translateY(-1px);
   }
 
-  .desk-hotspot-trigger:hover > span {
-    border-color: var(--accent-desk-soft);
-    background: color-mix(in oklch, var(--accent-desk) 6%, transparent);
-  }
+  /* Deliberately nothing on hover. The object itself lifts and brightens, which
+     is the whole point of drawing the scene as real elements — a translucent
+     rectangle floating over the artwork just advertised the hit box. Keyboard
+     focus still draws one, because a keyboard user has no pointer to follow. */
 
   .project-tree-action:hover {
     color: color-mix(in oklch, var(--project-accent) 80%, white);

@@ -33,14 +33,13 @@ export const ink = {
   /** The isometric grid. Guo's #EDEDED. */
   grid: "#232833",
   /**
-   * Interactive objects. `--accent-desk`, `oklch(0.80 0.11 195)`.
+   * Interactive objects. Matches `--accent-green`, `oklch(0.79 0.145 155)`.
    *
-   * A fourth hue on purpose: green, blue and purple mean Software, Hybrid and
-   * Hardware in the project tree directly below the scene, and reusing them here
-   * would invite a reading of the duck as a category. Colour in this field means
-   * one thing only — that the object responds.
+   * This is the project tree's Software colour, chosen anyway at Lakshya's
+   * explicit call — the shared hue does not imply that a desk object belongs to
+   * a category. In this field colour means one thing: the object responds.
    */
-  accent: "#57d4d4",
+  accent: "#62d691",
   /** Flat cast shadows. Guo's #E8E8E8 — one polygon, no stroke. */
   shadow: "#242a36",
   /**

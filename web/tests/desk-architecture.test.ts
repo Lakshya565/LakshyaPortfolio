@@ -12,6 +12,7 @@ import {
   deskHotspotDefinitions,
   getDeskHotspotIssues,
 } from "../lib/desk/hotspots";
+import { ink } from "../lib/desk/parts";
 import { deskSceneGeometry } from "../lib/desk/scene-geometry";
 import { personalMotifKeys } from "../types/content";
 
@@ -183,15 +184,17 @@ describe("desk SVG boundary", () => {
     );
 
     // Colour is the only cue that an object responds, so this is a real contract
-    // rather than styling: every hotspot carries it, and nothing else does.
+    // rather than styling: every hotspot carries it, and nothing else does. Read
+    // from `ink` rather than a literal, so changing the accent cannot fail this
+    // test for the wrong reason.
     for (const key of Object.keys(deskSceneGeometry.hotspots)) {
-      expect(svg, key).toMatch(
-        new RegExp(`<g data-object="${key}" stroke="#57d4d4"`),
-      );
+      expect(svg, key).toContain(`<g data-object="${key}" stroke="${ink.accent}"`);
     }
 
     const accented = [
-      ...svg.matchAll(/<g data-object="([^"]+)" stroke="#57d4d4"/g),
+      ...svg.matchAll(
+        new RegExp(`<g data-object="([^"]+)" stroke="${ink.accent}"`, "g"),
+      ),
     ].map((match) => match[1]);
 
     expect(new Set(accented)).toEqual(

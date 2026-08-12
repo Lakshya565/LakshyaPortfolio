@@ -62,7 +62,6 @@ function DeskHotspot({
   const titleId = useId();
   const descriptionId = useId();
   const closeTimerRef = useRef<number | null>(null);
-  const suppressFocusOpenRef = useRef(false);
 
   useEffect(
     () => () => {
@@ -100,12 +99,15 @@ function DeskHotspot({
                 event.preventDefault();
               }
             }}
-            onFocus={() => {
-              if (suppressFocusOpenRef.current) {
-                suppressFocusOpenRef.current = false;
-                return;
+            // Keyboard focus only. A plain `onFocus` also fired when Radix
+            // restored focus to the trigger on close, which reopened the popover
+            // the instant the pointer left it — the popover then outlived the
+            // hover that created it. `:focus-visible` does not match
+            // pointer-induced focus, so this now means what it says.
+            onFocus={(event) => {
+              if (event.currentTarget.matches(":focus-visible")) {
+                onOpenChange(true);
               }
-              onOpenChange(true);
             }}
             onKeyDown={(event) => {
               if (event.key === "Escape") {
@@ -127,12 +129,13 @@ function DeskHotspot({
           align="center"
           aria-describedby={descriptionId}
           aria-labelledby={titleId}
-          onMouseEnter={cancelScheduledClose}
-          onMouseLeave={scheduleClose}
-          onEscapeKeyDown={() => {
-            suppressFocusOpenRef.current = true;
-            onOpenChange(false);
-          }}
+          // This is a tooltip, not a dialog: focus belongs on the trigger the
+          // whole time. Letting Radix pull focus into the panel and hand it back
+          // on close is what made closing re-open it, and it also stole the
+          // caret from a keyboard user mid-tab.
+          onOpenAutoFocus={(event) => event.preventDefault()}
+          onCloseAutoFocus={(event) => event.preventDefault()}
+          onEscapeKeyDown={() => onOpenChange(false)}
           side={hotspot.placement.side}
           sideOffset={10}
         >
