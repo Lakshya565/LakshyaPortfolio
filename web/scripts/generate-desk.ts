@@ -735,7 +735,16 @@ function buildObject(object: DeskObject): BuiltObject {
 
   for (const part of object.parts) {
     const emitted = emitPart(part);
-    bodies.push(emitted.markup);
+    // A part declared `tone: "shadow"` is a shadow too, and belongs in the same
+    // bucket as the ones `emitShadow` derives from a `shadow: n` spread.
+    //
+    // `emitShadow` only fires for solids that can have a footprint expanded, so
+    // it skips `face` and `screen` parts by design — which is exactly what
+    // `groundShadow()` produces, since a screen-space silhouette has no
+    // footprint to derive one from. The result was that every hand-declared
+    // shadow ended up in the body: `/lab`'s Shadows switch left the duck, Kirby,
+    // the belt, the dumbbell and all fourteen trees still casting.
+    (part.tone === "shadow" ? shadows : bodies).push(emitted.markup);
     points.push(...emitted.points);
   }
 

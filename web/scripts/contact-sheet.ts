@@ -12,9 +12,11 @@
  *
  * Requires `npm run dev` to be running. Usage:
  *
- *   npm run contact-sheet                  # /lab at 1600px wide
+ *   npm run contact-sheet                       # /lab at 1600px wide
  *   npm run contact-sheet -- --width 2200
- *   npm run contact-sheet -- --path /      # any route, e.g. the real scene
+ *   npm run contact-sheet -- --path /           # any route, e.g. the real scene
+ *   npm run contact-sheet -- --toggle Shadows   # flip /lab switches before capture
+ *   npm run contact-sheet -- --toggle Shadows,Grid --name no-shadows
  */
 
 import { spawn } from "node:child_process";
@@ -42,6 +44,17 @@ const routePath = arg("path", "/lab");
 const origin = arg("origin", "http://localhost:3000");
 const outDir = arg("out", join(process.cwd(), ".desk-review"));
 const name = arg("name", routePath === "/lab" ? "contact-sheet" : "page");
+/**
+ * `/lab` switches to click before capturing, by their visible label.
+ *
+ * The toggles are React state behind checkboxes, so there is no URL that renders
+ * the workbench without shadows — the only way to capture that view is to drive
+ * the control the way a person would.
+ */
+const toggles = arg("toggle", "")
+  .split(",")
+  .map((entry) => entry.trim())
+  .filter(Boolean);
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -148,8 +161,40 @@ async function main(): Promise<void> {
     sessionId,
   );
   await send("Page.enable", {}, sessionId);
+  await send("Runtime.enable", {}, sessionId);
   await send("Page.navigate", { url }, sessionId);
   await sleep(2500);
+
+  if (toggles.length > 0) {
+    const result = await send<{ result?: { value?: string } }>(
+      "Runtime.evaluate",
+      {
+        expression: `(() => {
+          const wanted = ${JSON.stringify(toggles.map((entry) => entry.toLowerCase()))};
+          const labels = [...document.querySelectorAll(".lab-controls label")];
+          const missed = [];
+          for (const want of wanted) {
+            const hit = labels.find(
+              (label) => label.textContent.trim().toLowerCase() === want,
+            );
+            if (hit) hit.querySelector("input").click();
+            else missed.push(want);
+          }
+          return missed.join(", ");
+        })()`,
+        returnByValue: true,
+      },
+      sessionId,
+    );
+    const missed = result?.result?.value;
+    if (missed) {
+      throw new Error(
+        `No such /lab toggle: ${missed}. Available: Grid, Shadows, Wireframe, Labels.`,
+      );
+    }
+    // React has to commit the state change and the browser has to repaint.
+    await sleep(400);
+  }
 
   const { data } = await send<{ data: string }>(
     "Page.captureScreenshot",
