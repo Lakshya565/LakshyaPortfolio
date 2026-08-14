@@ -9,8 +9,10 @@
  *
  * Ours is the same technique inverted for a dark page: fills take the page
  * ground so objects still punch out the grid, and the two greys sit above it
- * rather than below white. There are no materials, no light model, and no per
- * object hues — a part is either a solid face or a detail line.
+ * rather than below white. There is no material system and no light model — a
+ * part is either a solid face or a detail line. What we do have beyond Guo is
+ * `palette`: an object that is a specific colour in life may take that colour,
+ * because it is the fastest way to say what the object is.
  */
 
 import type { Point2, Size3, Vec3 } from "@/lib/desk/projection";
@@ -55,11 +57,16 @@ export const ink = {
 /**
  * Named colours for objects that are a specific colour in life.
  *
- * Each entry is a pair, and the pairing is the whole idea. A saturated fill on a
- * near-black ground swallows its own outline and the object stops being line art
- * — so `line` is the bright hue that carries the stroke, and `wash` is the same
- * hue held down near the ground so it reads as tint rather than as a block. Use
- * `hue()` for both, `hueLine()` when only the outline should take the colour.
+ * Each entry is a pair: `line` is the bright hue that carries the stroke, `wash`
+ * is the same hue at a mid value for the fill. Use `hue()` for both, `hueLine()`
+ * when only the outline should take the colour.
+ *
+ * **The washes are mid-tones, not tints.** They began near the ground, on the
+ * theory that a dark fill lets the outline carry the object. Seen at the size
+ * the scene is actually viewed — forty pixels — that made every fill read as
+ * black: Kirby was a black ball with a pink edge and the matcha was a black cup.
+ * A wash has to be far enough from `ink.ground` to name its own colour on its
+ * own. It still sits well below `line`, so the outline keeps the drawing.
  *
  * This is where the scene departs from guochen.design, which is strictly two
  * greys. Lakshya's call: the annotated objects are things with real colours —
@@ -68,9 +75,15 @@ export const ink = {
  */
 export const palette = {
   /** Arduino's board teal. Their brand colour, not a stand-in. */
-  arduino: { line: "#3fbfc9", wash: "#0e2f34" },
-  /** Printed silkscreen and labels. The brightest thing in the palette. */
-  silkscreen: { line: "#e6e2d6", wash: "#2a2823" },
+  arduino: { line: "#3fbfc9", wash: "#1c6a72" },
+  /**
+   * Printed silkscreen and labels, and the sushi plate. The brightest thing in
+   * the palette — so "lift the wash toward the real colour" means lifting it
+   * most of the way to white, not to a mid grey. Held at a mid value this turned
+   * a white plate into a slate one, which is the same mistake as leaving a pink
+   * Kirby black, just in the other direction.
+   */
+  silkscreen: { line: "#e6e2d6", wash: "#cdc8b9" },
   /**
    * Header strips, jacks, connector shells.
    *
@@ -78,66 +91,67 @@ export const palette = {
    * full brightness the headers outrank the board they sit on, and the object
    * stops reading as a board with parts and starts reading as parts on a tray.
    */
-  connector: { line: "#a8a294", wash: "#1c1a16" },
+  connector: { line: "#a8a294", wash: "#4a463d" },
   /** Matcha. */
-  matcha: { line: "#8ecf5c", wash: "#1d3014" },
+  matcha: { line: "#8ecf5c", wash: "#467a2c" },
   /** Thai tea, and the warmer of the two climbing holds. */
-  thaiTea: { line: "#eb9a45", wash: "#33220e" },
+  thaiTea: { line: "#eb9a45", wash: "#8a5620" },
   /** Cup lids. */
-  lid: { line: "#63a8ec", wash: "#12263c" },
+  lid: { line: "#63a8ec", wash: "#2c5f96" },
   /** Straws, and anything else in kraft brown. */
-  cocoa: { line: "#b07a4e", wash: "#2b1c11" },
+  cocoa: { line: "#b07a4e", wash: "#6b4527" },
   /**
-   * Tapioca pearls. Nearly black, which is both true to life and necessary —
-   * against the tea they sit in, a brown pearl is invisible.
+   * Tapioca pearls. Deliberately the one thing left dark, because that is both
+   * true to life and necessary: they sit inside the tea, and a pearl at the
+   * tea's own value is invisible.
    */
-  pearl: { line: "#8a5f3e", wash: "#120b06" },
+  pearl: { line: "#8a5f3e", wash: "#241509" },
   /** Salmon nigiri. */
-  salmon: { line: "#f2896a", wash: "#3a1c15" },
+  salmon: { line: "#f2896a", wash: "#a04a34" },
   /** Nori. */
-  nori: { line: "#4f8a63", wash: "#12241a" },
-  /** Sushi rice. Warmer and dimmer than silkscreen, which is a printed white. */
-  rice: { line: "#dcd3bd", wash: "#2b2820" },
+  nori: { line: "#4f8a63", wash: "#2c5940" },
+  /** Sushi rice. Warmer and a shade dimmer than silkscreen's printed white. */
+  rice: { line: "#dcd3bd", wash: "#bdb49b" },
   /** Kirby. */
-  kirbyPink: { line: "#f79ac4", wash: "#3a1728" },
-  /**
-   * Kirby's receding side, and the duck's.
-   *
-   * A third value below the wash, for the far edge of a round body. Filling a
-   * receding contour with the same wash as the volume it sits on draws nothing
-   * at all — which is exactly what happened the first time both of these were
-   * added, and why they looked untouched. `triforceSide` exists for the same
-   * reason on a flat-faced solid.
-   */
-  kirbyShade: { line: "#b8688e", wash: "#230d16" },
-  kirbyBlue: { line: "#5b86e0", wash: "#141f3c" },
-  kirbyRed: { line: "#e75f52", wash: "#33110e" },
+  kirbyPink: { line: "#f79ac4", wash: "#c96a99" },
+  /** His eyes: dark navy under a bright rim, which is how they are drawn. */
+  kirbyBlue: { line: "#5b86e0", wash: "#22366b" },
+  /** His feet and cheeks. */
+  kirbyRed: { line: "#e75f52", wash: "#9c332a" },
   /** The belt's rank stripes. */
-  beltGold: { line: "#dbb45f", wash: "#2e2412" },
+  beltGold: { line: "#dbb45f", wash: "#8a6d28" },
   /**
-   * Black webbing. The `line` is the sheen along a fold, not the belt's colour —
-   * a genuinely black outline on a near-black ground draws nothing at all.
+   * Black webbing — the one entry that stays dark on purpose, because the belt's
+   * colour *is* black and lifting it would make it a grey belt. It still clears
+   * `ink.ground` enough to punch out the grid. The `line` is the sheen along a
+   * fold, not the belt's colour: a genuinely black outline draws nothing here.
    */
-  beltBlack: { line: "#c3c9d6", wash: "#0a0c11" },
+  beltBlack: { line: "#c3c9d6", wash: "#16191f" },
   /** Climbing holds. */
-  holdGreen: { line: "#5fc784", wash: "#122e1e" },
-  holdBlue: { line: "#5aa8d8", wash: "#0f2632" },
-  /** The duck's printed PLA, and its receding side. */
-  filament: { line: "#57d18f", wash: "#0f2e20" },
-  filamentShade: { line: "#3d9668", wash: "#092018" },
+  holdGreen: { line: "#5fc784", wash: "#2e7a4c" },
+  holdBlue: { line: "#5aa8d8", wash: "#2a6488" },
+  /** The duck's printed PLA. */
+  filament: { line: "#57d18f", wash: "#2a7d55" },
   /** The Triforce's lit faces. */
-  triforce: { line: "#f2c94c", wash: "#3a2d0b" },
+  triforce: { line: "#f2c94c", wash: "#9c7a1c" },
   /**
    * Its receding faces. The one place in the palette where two entries are the
    * same hue at two values: a prism whose sides match its front reads as a flat
-   * emblem, and the side faces are the only thing that can say otherwise.
+   * emblem, and the side faces are the only thing that can say otherwise. Unlike
+   * the shading that used to sit on Kirby and the duck, this is a real face at a
+   * real angle, not a contour painted onto a curve.
    */
-  triforceSide: { line: "#b08d2e", wash: "#241a05" },
+  triforceSide: { line: "#b08d2e", wash: "#6a5212" },
   /** A lit LED. */
-  led: { line: "#ff6b6b", wash: "#3a1010" },
+  led: { line: "#ff6b6b", wash: "#a52f2f" },
+  /** The compass needle. North is red and south is white on every real one. */
+  needleNorth: { line: "#e75f52", wash: "#a83329" },
+  needleSouth: { line: "#e6e2d6", wash: "#7c786d" },
+  /** A CRT that is switched on. */
+  crtGlow: { line: "#7fd4e8", wash: "#1f5a6b" },
   /** Jumper wires. Outline-only, so the wash is never asked for. */
-  wireWarm: { line: "#e8b34a", wash: "#332711" },
-  wireCool: { line: "#5a8ed0", wash: "#111f33" },
+  wireWarm: { line: "#e8b34a", wash: "#7a5c1c" },
+  wireCool: { line: "#5a8ed0", wash: "#28477a" },
 } as const;
 
 export type PaletteName = keyof typeof palette;
@@ -524,6 +538,10 @@ export function groundShadow(
       ...point,
       z,
     })),
+    // Smoothed for the same reason `circle` is: sixteen segments around a small
+    // footprint projects to a visibly angular blob, and a hard-cornered shadow
+    // under a round object is the one thing in the scene with no excuse for it.
+    smooth: true,
     tone: "shadow",
   };
 }
@@ -537,7 +555,15 @@ export function silhouette(
   return { shape: "screen", anchor, offsets, ...options };
 }
 
-/** A true circle in screen space — a ball, not a coin lying flat. */
+/**
+ * A true circle in screen space — a ball, not a coin lying flat.
+ *
+ * Smoothed by default, and that default is not cosmetic. Callers pass a segment
+ * count sized for the object's *scene* footprint, so a 1.4-unit eye or a
+ * 1.5-unit pearl got twelve segments and came out a visible dodecagon the moment
+ * anything was magnified. Curving through the points costs nothing and removes
+ * the whole class of "small circles are polygons".
+ */
 export function circle(
   anchor: Vec3,
   radius: number,
@@ -552,6 +578,6 @@ export function circle(
       const angle = (index / segments) * Math.PI * 2;
       return { x: cx + Math.cos(angle) * radius, y: cy + Math.sin(angle) * radius };
     }),
-    rest,
+    { smooth: true, ...rest },
   );
 }

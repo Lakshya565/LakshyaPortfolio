@@ -9,6 +9,7 @@ import {
   dome,
   face,
   hue,
+  ink,
   palette,
   pyramid,
   rounded,
@@ -182,15 +183,55 @@ describe("part colour", () => {
   });
 
   it("pairs every palette hue with a distinct wash", () => {
-    // The pairing is the whole design: a bright line over a dark fill of the
-    // same hue. Collapsing the two would make the object a solid block and lose
-    // the outline that carries the drawing.
+    // The pairing is the whole design: a bright line over a fill of the same
+    // hue at a lower value. Collapsing the two would make the object a solid
+    // block and lose the outline that carries the drawing.
     for (const [name, tones] of Object.entries(palette)) {
       expect(tones.line, name).not.toBe(tones.wash);
       expect(hue(name as PaletteName), name).toEqual({
         stroke: tones.line,
         fill: tones.wash,
       });
+    }
+  });
+
+  /**
+   * A wash also has to separate from the page, not just from its own line.
+   *
+   * The first colour pass held every wash within a few percent of `ink.ground`
+   * on the theory that the outline could carry the object. At the size the scene
+   * is viewed that made Kirby a black ball with a pink edge and the matcha a
+   * black cup — the colours were technically present and did nothing. This is
+   * the arithmetic form of that failure, which is the only form of it a test can
+   * see.
+   */
+  it("keeps every wash clear of the page ground", () => {
+    // Two entries are deliberately near-black, and both would be wrong lifted:
+    // a black belt lifted is a grey belt, and a tapioca pearl at the value of
+    // the tea it sits in is invisible.
+    const intentionallyDark = new Set<PaletteName>(["beltBlack", "pearl"]);
+
+    const luminance = (colour: string) => {
+      const channel = (from: number) => {
+        const value = Number.parseInt(colour.slice(from, from + 2), 16) / 255;
+        return value <= 0.04045
+          ? value / 12.92
+          : ((value + 0.055) / 1.055) ** 2.4;
+      };
+      return (
+        0.2126 * channel(1) + 0.7152 * channel(3) + 0.0722 * channel(5)
+      );
+    };
+
+    const ground = luminance(ink.ground);
+    for (const [name, tones] of Object.entries(palette)) {
+      if (intentionallyDark.has(name as PaletteName)) {
+        continue;
+      }
+      const ratio = (luminance(tones.wash) + 0.05) / (ground + 0.05);
+      expect(ratio, `${name} wash is indistinguishable from the page`).toBeGreaterThan(
+        1.4,
+      );
     }
   });
 });

@@ -14,6 +14,7 @@
     "generate:desk": "tsx scripts/generate-desk.ts",
     "generate:desk:watch": "tsx scripts/watch-desk.ts",
     "contact-sheet": "tsx scripts/contact-sheet.ts",
+    "shot": "node scripts/shot-object.mjs",
     "validate:content": "tsx scripts/validate-content.ts",
     "validate:content:release": "tsx scripts/validate-content.ts --release",
     "check": "npm run validate:content && npm run lint && npm run typecheck && npm run test"
