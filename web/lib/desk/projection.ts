@@ -41,10 +41,120 @@ export function project(point: Vec3): Point {
 }
 
 export function toPath(points: readonly Point[]): string {
+  return `${toOpenPath(points)}Z`;
+}
+
+/**
+ * The same polyline, left open.
+ *
+ * `toPath` closes every path, which is right for a face and wrong for a stroke
+ * that is genuinely a line — a jumper wire arcing between two points came back
+ * along its own chord and rendered as a filled sail. Two-point details never
+ * showed the problem, because a closing segment drawn back over itself is
+ * invisible; it only appears once a polyline has a third point.
+ */
+export function toOpenPath(points: readonly Point[]): string {
   const [first, ...rest] = points.map(
     (point) => `${round(point.x)} ${round(point.y)}`,
   );
-  return `M${first}L${rest.join("L")}Z`;
+  return rest.length === 0 ? `M${first}` : `M${first}L${rest.join("L")}`;
+}
+
+/**
+ * A run of points along a path, either straight or curved.
+ *
+ * A cylinder is the reason this exists. Its outline is two hard corners — where
+ * the side wall meets the rim — joined by two genuine arcs. `toPath` would make
+ * the whole thing faceted and `toSmoothPath` would round the corners off, so
+ * neither can draw one. Segments let a single path mix both.
+ */
+export type PathRun = Readonly<{ points: readonly Point[]; curved?: boolean }>;
+
+/**
+ * Builds one closed path from alternating straight and curved runs.
+ *
+ * Curved runs are emitted as cubic Béziers through their points using the same
+ * Catmull-Rom construction as `toSmoothPath`, but open-ended: the tangents at a
+ * run's first and last point look only within the run, so the joins to the
+ * neighbouring straight segments stay sharp.
+ */
+export function toSegmentPath(runs: readonly PathRun[]): string {
+  const parts: string[] = [];
+  let started = false;
+
+  for (const run of runs) {
+    const { points, curved } = run;
+    if (points.length === 0) {
+      continue;
+    }
+
+    if (!started) {
+      parts.push(`M${round(points[0].x)} ${round(points[0].y)}`);
+      started = true;
+    } else {
+      parts.push(`L${round(points[0].x)} ${round(points[0].y)}`);
+    }
+
+    if (!curved || points.length < 3) {
+      for (const point of points.slice(1)) {
+        parts.push(`L${round(point.x)} ${round(point.y)}`);
+      }
+      continue;
+    }
+
+    // Clamped Catmull-Rom: duplicate the endpoints so the curve starts and ends
+    // exactly where the straight runs meet it.
+    const at = (index: number) =>
+      points[Math.min(Math.max(index, 0), points.length - 1)];
+
+    for (let index = 0; index < points.length - 1; index += 1) {
+      const previous = at(index - 1);
+      const start = at(index);
+      const end = at(index + 1);
+      const next = at(index + 2);
+
+      const c1x = start.x + (end.x - previous.x) / 6;
+      const c1y = start.y + (end.y - previous.y) / 6;
+      const c2x = end.x - (next.x - start.x) / 6;
+      const c2y = end.y - (next.y - start.y) / 6;
+
+      parts.push(
+        `C${round(c1x)} ${round(c1y)} ${round(c2x)} ${round(c2y)} ${round(end.x)} ${round(end.y)}`,
+      );
+    }
+  }
+
+  return `${parts.join("")}Z`;
+}
+
+/**
+ * Points along part of an ellipse in the ground plane, projected.
+ *
+ * `polygonFootprint` only closes whole rings, which is fine for a footprint but
+ * useless for the front half of a base — and the front half is precisely the arc
+ * that tells you a cylinder is sitting on the ground rather than pasted onto it.
+ */
+export function ellipseArc(
+  center: Point2,
+  radiusX: number,
+  radiusY: number,
+  z: number,
+  from: number,
+  to: number,
+  segments = 20,
+): readonly Point[] {
+  // Guard the divide: a zero-segment arc is a single point, and without this it
+  // produces NaN coordinates that silently poison the scene's bounds.
+  const steps = Math.max(1, segments);
+
+  return Array.from({ length: steps + 1 }, (_, index) => {
+    const angle = from + ((to - from) * index) / steps;
+    return project({
+      x: center.x + Math.cos(angle) * radiusX,
+      y: center.y + Math.sin(angle) * radiusY,
+      z,
+    });
+  });
 }
 
 /**

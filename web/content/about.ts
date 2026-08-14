@@ -65,14 +65,14 @@ export const personalMotifs = [
   {
     key: "maker-origin",
     label: "Maker origin",
-    detail: "I documented more than fifty Arduino builds and lessons while learning electronics in public.",
+    detail: "I documented more than fifty Arduino builds and lessons while learning electronics on Youtube and a personal website",
     group: "engineering",
     displayOrder: 10,
   },
   {
     key: "quackta",
     label: "A debugging duck",
-    detail: "QuackTA turned rubber-duck debugging into a physical teaching assistant during a hardware hackathon.",
+    detail: "QuackTA turned rubber-duck debugging into a physical ECE teaching assistant during the IEEE hardware hackathon at UIUC. We 3D-printed the duck in green filament with a hollow belly and an opening in its side, which took the wing mount and let us seat the board and wiring inside the body.",
     group: "engineering",
     displayOrder: 20,
   },
@@ -93,7 +93,7 @@ export const personalMotifs = [
   {
     key: "shared-food",
     label: "Two drinks",
-    detail: "I love getting drinks with friends, and boba & matcha are some of my top choices right now.",
+    detail: "I love getting drinks with friends and a special someone, and boba & matcha are some of my top choices right now.",
     group: "life",
     displayOrder: 50,
   },
@@ -121,8 +121,22 @@ export const personalMotifs = [
   {
     key: "anime",
     label: "Anime nights",
-    detail: "Current Favorites include Attack on Titan, Code Geass, Jujustu Kaisen, and Blue Lock. I love strategic, mind-bending plots, and aurafarming moments equally as much. ",
+    detail: "Current Favorites include Attack on Titan, Code Geass, Jujustu Kaisen, and Blue Lock. I love strategic decisions, mind-bending plots, and aurafarming moments equally as much. ",
     group: "life",
     displayOrder: 90,
+  },
+  {
+    key: "kirby",
+    label: "A cute puffball",
+    detail: "Kirby is a cute puffball I got attached to in high school, and now my desk is covered in different Kirbys — the mousepad, the plushies, the figurines. Kirby is also my Smash main, and I have enjoyed the games.",
+    group: "life",
+    displayOrder: 100,
+  },
+  {
+    key: "triforce",
+    label: "The Legend of Zelda",
+    detail: "The Legend of Zelda is my favourite game series.",
+    group: "life",
+    displayOrder: 110,
   },
 ] as const satisfies readonly PersonalMotif[];

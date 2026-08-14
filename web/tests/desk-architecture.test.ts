@@ -12,7 +12,7 @@ import {
   deskHotspotDefinitions,
   getDeskHotspotIssues,
 } from "../lib/desk/hotspots";
-import { ink } from "../lib/desk/parts";
+import { ink, palette } from "../lib/desk/parts";
 import { deskSceneGeometry } from "../lib/desk/scene-geometry";
 import { personalMotifKeys } from "../types/content";
 
@@ -23,15 +23,16 @@ describe("desk hotspot configuration", () => {
     );
     const hotspots = buildDeskHotspots(portfolioContent.personalMotifs);
 
-    // Nine motif hotspots plus the colophon. Splitting `leadership` into
+    // Eleven motif hotspots plus the colophon. Splitting `leadership` into
     // `taekwondo` and `scouting` removed the last hotspot that carried two
-    // motifs, so the mapping is now strictly one-to-one.
-    expect(deskHotspotDefinitions).toHaveLength(10);
-    expect(assignedMotifs).toHaveLength(9);
+    // motifs, so the mapping is strictly one-to-one; `kirby` and `triforce`
+    // joined as motifs ten and eleven.
+    expect(deskHotspotDefinitions).toHaveLength(12);
+    expect(assignedMotifs).toHaveLength(11);
     expect(new Set(assignedMotifs)).toEqual(new Set(personalMotifKeys));
     expect(new Set(assignedMotifs).size).toBe(assignedMotifs.length);
-    expect(hotspots).toHaveLength(10);
-    expect(hotspots.flatMap(({ motifs }) => motifs)).toHaveLength(9);
+    expect(hotspots).toHaveLength(12);
+    expect(hotspots.flatMap(({ motifs }) => motifs)).toHaveLength(11);
     expect(getDeskHotspotIssues(portfolioContent.personalMotifs)).toEqual([]);
   });
 
@@ -200,5 +201,19 @@ describe("desk SVG boundary", () => {
     expect(new Set(accented)).toEqual(
       new Set(Object.keys(deskSceneGeometry.hotspots)),
     );
+  });
+
+  it("lets a part override its group's stroke with its own colour", async () => {
+    const svg = await readFile(
+      path.join(process.cwd(), "public", "media", "site", "lakshya-desk-v2.svg"),
+      "utf8",
+    );
+
+    // The board is teal because an Arduino is teal; the group around it is green
+    // because it responds. Both have to be true at once, which only works if a
+    // part's own stroke beats the one it would otherwise inherit.
+    expect(svg).toContain(`stroke="${palette.arduino.line}"`);
+    expect(svg).toContain(`fill="${palette.arduino.wash}"`);
+    expect(svg).toContain(`<g data-object="maker" stroke="${ink.accent}"`);
   });
 });

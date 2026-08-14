@@ -35,7 +35,9 @@ const hotspotLayout = [
   { key: "colophon", build: objects.monitor, place: { x: 94, y: 2 } },
   { key: "shared-food", build: objects.twoCups, place: { x: 178, y: 8 } },
   // Middle rank.
-  { key: "maker", build: objects.devBoard, place: { x: 24, y: 46 } },
+  // Moved back and left when the breadboard arrived: the object grew a whole
+  // second body behind the board, and it was crowding the duck.
+  { key: "maker", build: objects.devBoard, place: { x: 20, y: 52 } },
   { key: "quackta", build: objects.duck, place: { x: 92, y: 62 } },
   { key: "climbing", build: objects.climbingHold, place: { x: 174, y: 54 } },
   { key: "gym", build: objects.dumbbell, place: { x: 228, y: 44 } },
@@ -43,10 +45,15 @@ const hotspotLayout = [
   { key: "anime", build: objects.animeScreen, place: { x: 6, y: 92 } },
   // The belt and the compass were one object and read as neither. They stay
   // neighbours so the leadership story still groups, but each is now its own
-  // hotspot with room for its own hover field.
-  { key: "taekwondo", build: objects.belt, place: { x: 62, y: 110 } },
+  // hotspot with room for its own hover field. The belt moved further out when
+  // it became a tied one: a knot with two tails is twice the width of a coil.
+  { key: "taekwondo", build: objects.belt, place: { x: 56, y: 140 } },
   { key: "scouting", build: objects.compass, place: { x: 98, y: 120 } },
   { key: "food-favorites", build: objects.sushiPlate, place: { x: 194, y: 102 } },
+  // Both new, in the front-centre ground, which was the only gap left with room
+  // for two objects that must not touch.
+  { key: "kirby", build: objects.kirby, place: { x: 134, y: 128 } },
+  { key: "triforce", build: objects.triforce, place: { x: 168, y: 132 } },
 ] as const satisfies readonly Readonly<{
   key: DeskHotspotKey;
   build: objects.ObjectBuilder;
@@ -99,7 +106,7 @@ const figurePlaces: readonly Placement[] = [
   { x: 100, y: 150 },
 ];
 
-const cubePlaces: readonly Placement[] = [{ x: 150, y: 116 }];
+const cubePlaces: readonly Placement[] = [{ x: 158, y: 96 }];
 
 /**
  * The four objects a recruiter should read first. `tier` only changes

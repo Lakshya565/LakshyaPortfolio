@@ -2,7 +2,22 @@ import { describe, expect, it } from "vitest";
 
 import { deskCatalog } from "../lib/desk/scene-catalog";
 import { deskObjects } from "../lib/desk/scene";
-import type { DeskPart } from "../lib/desk/parts";
+import {
+  box,
+  circle,
+  cylinder,
+  dome,
+  face,
+  hue,
+  palette,
+  pyramid,
+  rounded,
+  silhouette,
+  wedge,
+  type DeskPart,
+  type PaletteName,
+} from "../lib/desk/parts";
+import type { Point2 } from "../lib/desk/projection";
 
 /**
  * Per-object invariants, in the spirit of the generator's overlap check.
@@ -129,6 +144,53 @@ describe("desk object catalog", () => {
     for (const entry of deskCatalog) {
       expect(entry.width, entry.key).toBeLessThan(220);
       expect(entry.height, entry.key).toBeLessThan(220);
+    }
+  });
+});
+
+describe("part colour", () => {
+  /**
+   * The shape helpers build their parts field by field rather than spreading
+   * their options, because most of what they receive is geometry to be
+   * converted. That made dropping a presentation option completely silent — the
+   * part simply came out grey, with nothing to point at. This is the guard.
+   */
+  it("forwards stroke and fill through every shape helper", () => {
+    const paint = { stroke: "#112233", fill: "#445566" } as const;
+    const square: readonly Point2[] = [
+      { x: 0, y: 0 },
+      { x: 4, y: 0 },
+      { x: 4, y: 4 },
+    ];
+
+    const built: readonly [string, DeskPart][] = [
+      ["box", box({ x: 0, y: 0, z: 0 }, { width: 4, depth: 4, height: 4 }, paint)],
+      ["cylinder", cylinder({ x: 0, y: 0 }, 4, 0, 4, paint)],
+      ["rounded", rounded({ x: 0, y: 0 }, 4, 4, 0, 4, paint)],
+      ["wedge", wedge(square as [Point2, Point2, Point2], 0, 4, paint)],
+      ["pyramid", pyramid(square, 0, 4, paint)],
+      ["dome", dome({ x: 0, y: 0 }, 4, 0, 4, paint)],
+      ["face", face([{ x: 0, y: 0, z: 0 }], paint)],
+      ["silhouette", silhouette({ x: 0, y: 0, z: 0 }, [{ x: 0, y: 0 }], paint)],
+      ["circle", circle({ x: 0, y: 0, z: 0 }, 4, paint)],
+    ];
+
+    for (const [name, part] of built) {
+      expect(part.stroke, name).toBe(paint.stroke);
+      expect(part.fill, name).toBe(paint.fill);
+    }
+  });
+
+  it("pairs every palette hue with a distinct wash", () => {
+    // The pairing is the whole design: a bright line over a dark fill of the
+    // same hue. Collapsing the two would make the object a solid block and lose
+    // the outline that carries the drawing.
+    for (const [name, tones] of Object.entries(palette)) {
+      expect(tones.line, name).not.toBe(tones.wash);
+      expect(hue(name as PaletteName), name).toEqual({
+        stroke: tones.line,
+        fill: tones.wash,
+      });
     }
   });
 });

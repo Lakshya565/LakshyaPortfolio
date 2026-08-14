@@ -24,15 +24,23 @@ import {
   boxFaces,
   centroidOf,
   contactShadow,
+  ellipseArc,
   extrude,
   project,
+  toOpenPath,
   toPath,
+  toSegmentPath,
   toSmoothPath,
   type Bounds,
   type Point,
   type Point2,
 } from "@/lib/desk/projection";
-import { ink } from "@/lib/desk/parts";
+import {
+  ink,
+  type DomePart,
+  type PyramidPart,
+  type RoundPart,
+} from "@/lib/desk/parts";
 import {
   deskObjects,
   type DeskObject,
@@ -89,24 +97,270 @@ function convexHull(points: readonly Point[]): readonly Point[] {
   return [...build(sorted), ...build([...sorted].reverse())];
 }
 
-function paint(
-  points: readonly Point[],
-  part: Pick<DeskPart, "outlineOnly" | "tone" | "smooth" | "accent">,
-): string {
-  const d = part.smooth ? toSmoothPath(points) : toPath(points);
+type Painted = Pick<
+  DeskPart,
+  "outlineOnly" | "tone" | "smooth" | "accent" | "stroke" | "fill" | "open"
+>;
 
+function fillOf(part: Painted): string {
+  if (part.tone === "shadow") {
+    return ink.shadow;
+  }
+  // An unfilled path is unfilled whatever colour it was handed — this is Guo's
+  // interior-detail style, and a fill would hide the faces underneath it.
+  if (part.outlineOnly) {
+    return "none";
+  }
+  return part.fill ?? part.accent ?? ink.ground;
+}
+
+/**
+ * The stroke attribute, or nothing at all.
+ *
+ * Returning an empty string is the common case and the important one: the path
+ * then inherits its colour from the object's group, which is what makes
+ * per-object colour possible with a single attribute.
+ */
+function strokeOf(part: Painted): string {
   // Shadows must opt out explicitly now that stroke is inherited rather than
   // set per path — otherwise every shadow picks up an outline.
   if (part.tone === "shadow") {
-    return `<path d="${d}" fill="${ink.shadow}" stroke="none"/>`;
+    return ` stroke="none"`;
   }
-  if (part.accent) {
-    return `<path d="${d}" fill="${part.accent}" stroke="${part.accent}"/>`;
+  const colour = part.stroke ?? part.accent;
+  return colour ? ` stroke="${colour}"` : "";
+}
+
+function paint(points: readonly Point[], part: Painted): string {
+  // `smooth` is a closed Catmull-Rom loop, so it has nothing to say about an
+  // open path; `open` wins where a caller has asked for both.
+  const d = part.open
+    ? toOpenPath(points)
+    : part.smooth
+      ? toSmoothPath(points)
+      : toPath(points);
+  return `<path d="${d}" fill="${fillOf(part)}"${strokeOf(part)}/>`;
+}
+
+/**
+ * Where a projected circle's silhouette edges fall.
+ *
+ * On the ground plane the camera gives `screenX = (x - y)`, so around a circle
+ * `screenX(t) = k + rx·cos t − ry·sin t`. That is stationary when
+ * `−rx·sin t − ry·cos t = 0`, i.e. `tan t = −ry/rx`. For a circular footprint
+ * that lands at 3π/4 and −π/4 — the two points where the side wall of a cylinder
+ * meets its rim, and therefore where the outline stops being an arc and becomes
+ * a straight edge. Getting these exactly right is what makes a cylinder look
+ * like a cylinder instead of a blob.
+ */
+function tangentAngles(radiusX: number, radiusY: number) {
+  const right = Math.atan2(-radiusY, radiusX);
+  return { left: right + Math.PI, right };
+}
+
+/**
+ * The near half of a rim, from the left silhouette point round to the right.
+ *
+ * Screen depth is `(x + y)`, so the front of the ring is at t = π/4; sweeping
+ * downward from 3π/4 to −π/4 passes through it.
+ */
+function frontArc(
+  center: Point2,
+  radiusX: number,
+  radiusY: number,
+  z: number,
+): readonly Point[] {
+  const { left, right } = tangentAngles(radiusX, radiusY);
+  return ellipseArc(center, radiusX, radiusY, z, left, right, 18);
+}
+
+function fullEllipse(
+  center: Point2,
+  radiusX: number,
+  radiusY: number,
+  z: number,
+): readonly Point[] {
+  return ellipseArc(center, radiusX, radiusY, z, 0, Math.PI * 2, 28);
+}
+
+function emitRound(part: RoundPart): Emitted {
+  const radiusY = part.radius * (part.squash ?? 1);
+  const topScale = part.topScale ?? 1;
+  const offset = part.topOffset ?? { x: 0, y: 0 };
+  const topCenter = {
+    x: part.center.x + offset.x,
+    y: part.center.y + offset.y,
+  };
+  const topZ = part.z + part.height;
+  const topRadiusX = part.radius * topScale;
+  const topRadiusY = radiusY * topScale;
+
+  const baseFront = frontArc(part.center, part.radius, radiusY, part.z);
+  const topFront = frontArc(topCenter, topRadiusX, topRadiusY, topZ);
+  const topRing = fullEllipse(topCenter, topRadiusX, topRadiusY, topZ);
+
+  // The wall: down the right silhouette edge, back along the front of the base,
+  // and up the left edge. Both rims stay curved; the two side edges stay
+  // straight, which is exactly the mix `toSegmentPath` exists for.
+  const wall = toSegmentPath([
+    { points: topFront, curved: true },
+    { points: [...baseFront].reverse(), curved: true },
+  ]);
+
+  const markup = [
+    `<path d="${wall}" fill="${fillOf(part)}"${strokeOf(part)}/>`,
+    // A cone tapers to nothing, so its top ring would be a dot.
+    topScale > 0.02
+      ? `<path d="${toSegmentPath([{ points: topRing, curved: true }])}" fill="${fillOf(part)}"${strokeOf(part)}/>`
+      : "",
+    ...(part.rings ?? []).map(
+      (scale) =>
+        `<path d="${toSegmentPath([
+          {
+            points: fullEllipse(
+              topCenter,
+              topRadiusX * scale,
+              topRadiusY * scale,
+              topZ,
+            ),
+            curved: true,
+          },
+        ])}" fill="none"${strokeOf(part)}/>`,
+    ),
+  ].join("");
+
+  return { markup, points: [...baseFront, ...topRing] };
+}
+
+/**
+ * The direction the camera looks, in world space.
+ *
+ * `project` maps `(x, y, z)` to `(x − y, ½(x + y) − z)`, so the ray that
+ * collapses to a single screen point is the one with `x = y = z`: the viewer
+ * sits along (1, 1, 1). A face is therefore visible when its outward normal has
+ * a positive dot product with that.
+ *
+ * `extrude` gets away with testing only `normal.x + normal.y` because its walls
+ * are vertical, so their normals have no z component at all. A pyramid's faces
+ * tilt upward, and the camera looks down as well as sideways — ignoring z there
+ * culls faces that are plainly visible, which is what made the roof transparent.
+ */
+const viewDirection = { x: 1, y: 1, z: 1 } as const;
+
+function emitPyramid(part: PyramidPart): Emitted {
+  const offset = part.apexOffset ?? { x: 0, y: 0 };
+  const centroid = centroidOf(part.base);
+  const apexWorld = {
+    x: centroid.x + offset.x,
+    y: centroid.y + offset.y,
+    z: part.z + part.height,
+  };
+  const apex = project(apexWorld);
+  const faces: string[] = [];
+  const points: Point[] = [apex];
+
+  for (let index = 0; index < part.base.length; index += 1) {
+    const start = { ...part.base[index], z: part.z };
+    const end = { ...part.base[(index + 1) % part.base.length], z: part.z };
+
+    const u = { x: end.x - start.x, y: end.y - start.y, z: 0 };
+    const v = {
+      x: apexWorld.x - start.x,
+      y: apexWorld.y - start.y,
+      z: apexWorld.z - start.z,
+    };
+    let normal = {
+      x: u.y * v.z - u.z * v.y,
+      y: u.z * v.x - u.x * v.z,
+      z: u.x * v.y - u.y * v.x,
+    };
+
+    // Orient outward without depending on the caller's winding: the normal must
+    // point away from the solid's own centre.
+    const away = {
+      x: (start.x + end.x) / 2 - centroid.x,
+      y: (start.y + end.y) / 2 - centroid.y,
+    };
+    if (normal.x * away.x + normal.y * away.y < 0) {
+      normal = { x: -normal.x, y: -normal.y, z: -normal.z };
+    }
+
+    const facing =
+      normal.x * viewDirection.x +
+      normal.y * viewDirection.y +
+      normal.z * viewDirection.z;
+    if (facing <= 0) {
+      continue;
+    }
+
+    const a = project(start);
+    const b = project(end);
+    points.push(a, b);
+    faces.push(
+      `<path d="${toPath([a, b, apex])}" fill="${fillOf(part)}"${strokeOf(part)}/>`,
+    );
   }
-  return `<path d="${d}" fill="${part.outlineOnly ? "none" : ink.ground}"/>`;
+
+  return { markup: faces.join(""), points };
+}
+
+function emitDome(part: DomePart): Emitted {
+  const radiusY = part.radius * (part.squash ?? 1);
+  const base = frontArc(part.center, part.radius, radiusY, part.z);
+  const { left, right } = tangentAngles(part.radius, radiusY);
+  const rimPoint = (angle: number) =>
+    project({
+      x: part.center.x + Math.cos(angle) * part.radius,
+      y: part.center.y + Math.sin(angle) * radiusY,
+      z: part.z,
+    });
+  const leftPoint = rimPoint(left);
+  const rightPoint = rimPoint(right);
+  const apex = project({ ...part.center, z: part.z + part.height });
+
+  // The shell arcs from one silhouette point over the apex to the other.
+  //
+  // An earlier version assumed both silhouette points sat at the same screen
+  // height and swept a half-ellipse between them. That only holds for a circular
+  // footprint: squash the base and the chord tilts, which flattened the dome
+  // into a disc. Interpolating along the chord and bulging toward the projected
+  // apex works whatever the footprint, because it is stated in terms of the
+  // three points that are actually known.
+  const mid = {
+    x: (leftPoint.x + rightPoint.x) / 2,
+    y: (leftPoint.y + rightPoint.y) / 2,
+  };
+  const bulge = { x: apex.x - mid.x, y: apex.y - mid.y };
+
+  const shell = Array.from({ length: 17 }, (_, index) => {
+    const t = index / 16;
+    const lift = 4 * t * (1 - t);
+    return {
+      x: leftPoint.x + (rightPoint.x - leftPoint.x) * t + bulge.x * lift,
+      y: leftPoint.y + (rightPoint.y - leftPoint.y) * t + bulge.y * lift,
+    };
+  });
+
+  const markup = `<path d="${toSegmentPath([
+    { points: shell, curved: true },
+    { points: [...base].reverse(), curved: true },
+  ])}" fill="${fillOf(part)}"${strokeOf(part)}/>`;
+
+  return { markup, points: [...base, ...shell] };
 }
 
 function emitPart(part: DeskPart): Emitted {
+  if (part.shape === "round") {
+    return emitRound(part);
+  }
+
+  if (part.shape === "pyramid") {
+    return emitPyramid(part);
+  }
+
+  if (part.shape === "dome") {
+    return emitDome(part);
+  }
 
   if (part.shape === "face") {
     const points = part.points.map(project);
@@ -175,12 +429,33 @@ function emitShadow(part: DeskPart): Emitted | null {
     return null;
   }
 
+  // Round forms cast a round shadow, drawn as a real ellipse. A polygonal
+  // shadow under a curved object is a tell, and this scene has enough of those.
+  if (part.shape === "round" || part.shape === "dome") {
+    const radiusY = part.radius * (part.squash ?? 1);
+    const polygon = fullEllipse(
+      { x: part.center.x + part.shadow * 0.35, y: part.center.y + part.shadow * 0.35 },
+      part.radius + part.shadow,
+      radiusY + part.shadow,
+      part.z,
+    );
+
+    return {
+      markup: `<path d="${toSegmentPath([{ points: polygon, curved: true }])}" fill="${ink.shadow}"/>`,
+      points: polygon,
+    };
+  }
+
   const polygon =
-    part.shape === "extrude"
-      ? expandFootprint(part.footprint, part.shadow).map((point) =>
+    part.shape === "pyramid"
+      ? expandFootprint(part.base, part.shadow).map((point) =>
           project({ ...point, z: part.z }),
         )
-      : contactShadow(part.origin, part.size, part.shadow);
+      : part.shape === "extrude"
+        ? expandFootprint(part.footprint, part.shadow).map((point) =>
+            project({ ...point, z: part.z }),
+          )
+        : contactShadow(part.origin, part.size, part.shadow);
 
   return {
     markup: `<path d="${toPath(polygon)}" fill="${ink.shadow}"/>`,
@@ -346,6 +621,12 @@ function assertNoOverlaps(boxes: readonly ScreenBox[]): void {
 // ---------------------------------------------------------------------------
 
 function partAnchor(part: DeskPart): Point2 {
+  if (part.shape === "round" || part.shape === "dome") {
+    return part.center;
+  }
+  if (part.shape === "pyramid") {
+    return centroidOf(part.base);
+  }
   if (part.shape === "extrude") {
     return centroidOf(part.footprint);
   }
@@ -369,6 +650,9 @@ function compareObjects(left: DeskObject, right: DeskObject): number {
 }
 
 function partPoints(part: DeskPart): readonly Point[] {
+  if (part.shape === "round" || part.shape === "dome" || part.shape === "pyramid") {
+    return emitPart(part).points;
+  }
   if (part.shape === "face") {
     return part.points.map(project);
   }
@@ -548,6 +832,17 @@ async function main() {
     bounds: item.bounds,
   }));
 
+  // A single NaN coordinate poisons the scene's bounds and every derived
+  // viewBox, and the artwork still renders — just wrong, and silently. Caught
+  // once already, from a zero-length arc dividing by its own segment count.
+  for (const box of screenBoxes) {
+    if (!Object.values(box.bounds).every(Number.isFinite)) {
+      throw new Error(
+        `scene: ${box.key} produced non-finite bounds — a shape is dividing by zero or projecting an undefined point`,
+      );
+    }
+  }
+
   assertNoOverlaps(screenBoxes);
 
   const view = toViewBox(boundsOf(allPoints));
@@ -577,7 +872,7 @@ async function main() {
     ` viewBox="${viewBox}" fill="none" stroke-width="${strokeWidth(view.width)}"`,
     ` role="img" aria-labelledby="desk-title desk-description">`,
     `<title id="desk-title">Things on my desk</title>`,
-    `<desc id="desk-description">An isometric line drawing of a workspace: a monitor showing code, a keyboard and mouse, a desk lamp, a dev board, a rubber duck, a coiled martial-arts belt, a compass, two drinks, a sushi plate, a climbing wall panel with holds, a dumbbell, a screen paused mid-episode beside two books, a clock tower, and scattered trees and figures.</desc>`,
+    `<desc id="desk-description">An isometric line drawing of a workspace: a monitor showing code, a keyboard and mouse, a teal dev board, a rubber duck, a coiled martial-arts belt, a compass, two drinks, a plate of sushi, a climbing wall panel with coloured holds, a dumbbell, a screen paused mid-episode, a clock tower, and scattered trees and figures.</desc>`,
     inner,
     `</svg>`,
   ].join("");
