@@ -23,16 +23,17 @@ describe("desk hotspot configuration", () => {
     );
     const hotspots = buildDeskHotspots(portfolioContent.personalMotifs);
 
-    // Eleven motif hotspots plus the colophon. Splitting `leadership` into
+    // Twelve motif hotspots plus the colophon. Splitting `leadership` into
     // `taekwondo` and `scouting` removed the last hotspot that carried two
     // motifs, so the mapping is strictly one-to-one; `kirby` and `triforce`
-    // joined as motifs ten and eleven.
-    expect(deskHotspotDefinitions).toHaveLength(12);
-    expect(assignedMotifs).toHaveLength(11);
+    // joined as motifs ten and eleven, and `music` as twelve when the field's
+    // last meaningless object — a plain cube — became a pair of headphones.
+    expect(deskHotspotDefinitions).toHaveLength(13);
+    expect(assignedMotifs).toHaveLength(12);
     expect(new Set(assignedMotifs)).toEqual(new Set(personalMotifKeys));
     expect(new Set(assignedMotifs).size).toBe(assignedMotifs.length);
-    expect(hotspots).toHaveLength(12);
-    expect(hotspots.flatMap(({ motifs }) => motifs)).toHaveLength(11);
+    expect(hotspots).toHaveLength(13);
+    expect(hotspots.flatMap(({ motifs }) => motifs)).toHaveLength(12);
     expect(getDeskHotspotIssues(portfolioContent.personalMotifs)).toEqual([]);
   });
 

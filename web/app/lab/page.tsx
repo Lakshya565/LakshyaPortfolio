@@ -101,10 +101,10 @@ export default function LabPage() {
   const entries = [...deskCatalog];
   const labelled = entries.filter((entry) => !entry.scenery);
   const workspace = entries.filter(
-    (entry) => entry.scenery && !/^(tree|figure|cube)-/.test(entry.id),
+    (entry) => entry.scenery && !/^(tree|figure)-/.test(entry.id),
   );
   const scenery = entries.filter((entry) =>
-    /^(tree|figure|cube)-/.test(entry.id),
+    /^(tree|figure)-/.test(entry.id),
   );
 
   return (

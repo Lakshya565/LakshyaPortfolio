@@ -14,6 +14,7 @@ export const deskHotspotKeys = [
   "anime",
   "kirby",
   "triforce",
+  "music",
 ] as const;
 
 export type DeskHotspotKey = (typeof deskHotspotKeys)[number];
@@ -195,6 +196,18 @@ export const deskHotspotDefinitions = [
       widthPercent: 12,
       heightPercent: 14,
       side: "top",
+    },
+  },
+  {
+    key: "music",
+    label: "Always Something Playing",
+    motifKeys: ["music"],
+    placement: {
+      xPercent: 44,
+      yPercent: 54,
+      widthPercent: 16,
+      heightPercent: 14,
+      side: "right",
     },
   },
 ] as const satisfies readonly DeskHotspotDefinition[];

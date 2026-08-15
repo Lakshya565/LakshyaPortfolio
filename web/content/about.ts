@@ -65,14 +65,14 @@ export const personalMotifs = [
   {
     key: "maker-origin",
     label: "Maker origin",
-    detail: "I documented more than fifty Arduino builds and lessons while learning electronics on Youtube and a personal website",
+    detail: "I started my electronics journey off with Arduino, documenting more than fifty Arduino builds and lessons on Youtube and a personal website.",
     group: "engineering",
     displayOrder: 10,
   },
   {
     key: "quackta",
     label: "A debugging duck",
-    detail: "QuackTA turned rubber-duck debugging into a physical ECE teaching assistant during the IEEE hardware hackathon at UIUC. We 3D-printed the duck in green filament with a hollow belly and an opening in its side, which took the wing mount and let us seat the board and wiring inside the body.",
+    detail: "QuackTA turned rubber-duck debugging into a physical ECE teaching assistant during the IEEE hardware hackathon at UIUC. We 3D-printed the duck in green filament with a hollow belly and an opening in its side, which let us seat the board and wiring inside the body.",
     group: "engineering",
     displayOrder: 20,
   },
@@ -100,7 +100,7 @@ export const personalMotifs = [
   {
     key: "food-favorites",
     label: "Always looking for good food",
-    detail: "Right now, I love sushi, Thai and Indian food, ramen, froyo, and any variation of Hot Cheetos, among other things.",
+    detail: "I love food! Right now, sushi, Thai and Indian food, ramen, froyo, and any variation of Hot Cheetos are some of my favorites, among other things.",
     group: "life",
     displayOrder: 60,
   },
@@ -121,22 +121,29 @@ export const personalMotifs = [
   {
     key: "anime",
     label: "Anime nights",
-    detail: "Current Favorites include Attack on Titan, Code Geass, Jujustu Kaisen, and Blue Lock. I love strategic decisions, mind-bending plots, and aurafarming moments equally as much. ",
+    detail: "Current favorites include Attack on Titan, Code Geass, Jujustu Kaisen, and Blue Lock. I love strategic decisions, mind-bending plots, and aurafarming moments equally as much. ",
     group: "life",
     displayOrder: 90,
   },
   {
     key: "kirby",
     label: "A cute puffball",
-    detail: "Kirby is a cute puffball I got attached to in high school, and now my desk is covered in different Kirbys — the mousepad, the plushies, the figurines. Kirby is also my Smash main, and I have enjoyed the games.",
+    detail: "Kirby is a cute puffball I got attached to in high school, and now my desk is covered in different Kirbys - my mousepad, numerous plushies & figurines, and video games featuring him! I love that cheerful attitude and the ability to adapt to any situation by eating it.",
     group: "life",
     displayOrder: 100,
   },
   {
     key: "triforce",
     label: "The Legend of Zelda",
-    detail: "The Legend of Zelda is my favourite game series.",
+    detail: "Breath of the Wild is my favorite game of all time, and I love the Legend of Zelda series in general. I fell in love with the music, the story, the exploration of Hyrule throughout different games, and the sense of adventure & discovery that comes with it.",
     group: "life",
     displayOrder: 110,
+  },
+  {
+    key: "music",
+    label: "Always something playing",
+    detail: "There is almost always something in my ears while I study, work out, and/or drive, and Don Toliver gets more of those hours than anyone else. I primarily listen to rap and R&B, but I love listening to new music and exploring different genres.",
+    group: "life",
+    displayOrder: 120,
   },
 ] as const satisfies readonly PersonalMotif[];

@@ -79,18 +79,18 @@ describe("page data projections", () => {
     expect(luckyArduino).not.toHaveProperty("metrics");
   });
 
-  it("builds twelve desk hotspots covering all eleven motifs one-to-one", () => {
+  it("builds thirteen desk hotspots covering all twelve motifs one-to-one", () => {
     const home = buildHomePageData(portfolioContent);
     const projectedMotifKeys = home.personalHotspots.flatMap((hotspot) =>
       hotspot.motifs.map(({ key }) => key),
     );
 
-    // Eleven motif hotspots plus the colophon, which carries authored facts
+    // Twelve motif hotspots plus the colophon, which carries authored facts
     // rather than a motif. `leadership` used to hold two motifs and one object,
     // and the object read as neither; splitting it into `taekwondo` and
     // `scouting` left every motif mapped to exactly one hotspot.
-    expect(home.personalHotspots).toHaveLength(12);
-    expect(projectedMotifKeys).toHaveLength(11);
+    expect(home.personalHotspots).toHaveLength(13);
+    expect(projectedMotifKeys).toHaveLength(12);
     expect(new Set(projectedMotifKeys)).toEqual(
       new Set(portfolioContent.personalMotifs.map(({ key }) => key)),
     );

@@ -2,8 +2,8 @@
  * The scene as data: objects standing on an open isometric field.
  *
  * There is no desk and no slab. guochen.design — the reference this follows — has
- * neither: his objects sit directly on a grid, mixed with trees, small figures,
- * and a plain cube. Three earlier builds put a piece
+ * neither: his objects sit directly on a grid, mixed with trees and small
+ * figures. Three earlier builds put a piece
  * of furniture under everything (a corner desk, then a shelf hutch, then a bare
  * slab) and each one fought the composition rather than helping it.
  *
@@ -39,7 +39,9 @@ const hotspotLayout = [
   // second body behind the board, and it was crowding the duck.
   { key: "maker", build: objects.devBoard, place: { x: 20, y: 52 } },
   { key: "quackta", build: objects.duck, place: { x: 92, y: 62 } },
-  { key: "climbing", build: objects.climbingHold, place: { x: 174, y: 54 } },
+  // Moved out and forward when the panel went from 24 units tall to 30: a taller
+  // wall reaches further up the screen, and it was reaching into the mouse.
+  { key: "climbing", build: objects.climbingHold, place: { x: 182, y: 64 } },
   { key: "gym", build: objects.dumbbell, place: { x: 228, y: 44 } },
   // Front rank, nearest the eye.
   { key: "anime", build: objects.animeScreen, place: { x: 6, y: 92 } },
@@ -50,9 +52,14 @@ const hotspotLayout = [
   { key: "taekwondo", build: objects.belt, place: { x: 56, y: 140 } },
   { key: "scouting", build: objects.compass, place: { x: 98, y: 120 } },
   { key: "food-favorites", build: objects.sushiPlate, place: { x: 194, y: 102 } },
+  // Standing where the plain cube used to. That slot was already the one gap in
+  // the middle of the field wide enough for something that runs along +x.
+  { key: "music", build: objects.headphones, place: { x: 148, y: 96 } },
   // Both new, in the front-centre ground, which was the only gap left with room
   // for two objects that must not touch.
-  { key: "kirby", build: objects.kirby, place: { x: 134, y: 128 } },
+  // Nudged out from the compass when Kirby's arms and feet were turned to follow
+  // their own directions — tilting an ellipse widens its bounding box.
+  { key: "kirby", build: objects.kirby, place: { x: 138, y: 130 } },
   { key: "triforce", build: objects.triforce, place: { x: 168, y: 132 } },
 ] as const satisfies readonly Readonly<{
   key: DeskHotspotKey;
@@ -82,9 +89,11 @@ const workspaceLayout = [
  * read were outnumbered better than two to one. Reviewed side by side in the
  * workbench the imbalance was impossible to miss.
  *
- * Now eight, four and one. They sit around the rim of the field and leave the
- * middle to the objects that mean something. Heights still vary: a stand of
- * identical lollipops reads as wallpaper rather than as planting.
+ * Now eight trees and four figures, and no cubes at all: the last one stood in
+ * the middle of the field, which is the one place nothing meaningless should be,
+ * and a pair of headphones took its slot. Trees and figures sit around the rim
+ * and leave the centre to the objects that mean something. Heights still vary: a
+ * stand of identical lollipops reads as wallpaper rather than as planting.
  */
 const treePlaces: readonly (Placement &
   Readonly<{ height: number; canopy: number }>)[] = [
@@ -103,10 +112,13 @@ const figurePlaces: readonly Placement[] = [
   { x: 210, y: 22 },
   { x: 130, y: 88 },
   { x: 250, y: 104 },
-  { x: 100, y: 150 },
+  // Moved out from the belt when its loose end grew from 18 units to 28. The
+  // overlap validator passed it — scenery is allowed a third of its own box —
+  // but the tail's tip corner was genuinely inside this figure's silhouette,
+  // which is the case the budget exists to tolerate and the eye does not.
+  { x: 116, y: 166 },
 ];
 
-const cubePlaces: readonly Placement[] = [{ x: 158, y: 96 }];
 
 /**
  * The four objects a recruiter should read first. `tier` only changes
@@ -151,9 +163,6 @@ export const deskObjects: readonly DeskObject[] = [
   ),
   ...figurePlaces.map((place, index) =>
     scenery(`figure-${index}`, objects.figure, place),
-  ),
-  ...cubePlaces.map((place, index) =>
-    scenery(`cube-${index}`, (anchor) => objects.cube(anchor), place),
   ),
   ...workspaceLayout.map((item) => scenery(item.id, item.build, item.place)),
   ...hotspotLayout.map((item) => ({

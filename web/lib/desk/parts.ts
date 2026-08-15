@@ -91,13 +91,13 @@ export const palette = {
    */
   connector: { line: "#a8a294", wash: "#4a463d" },
   /** Matcha. */
-  matcha: { line: "#8ecf5c", wash: "#467a2c" },
+  matcha: { line: "#a6e86a", wash: "#4f9128" },
   /** Thai tea, and the warmer of the two climbing holds. */
-  thaiTea: { line: "#eb9a45", wash: "#8a5620" },
+  thaiTea: { line: "#ffa947", wash: "#a86117" },
   /** Cup lids. */
   lid: { line: "#63a8ec", wash: "#2c5f96" },
   /** Straws, and anything else in kraft brown. */
-  cocoa: { line: "#b07a4e", wash: "#6b4527" },
+  cocoa: { line: "#a06a3c", wash: "#5a3618" },
   /**
    * Tapioca pearls. Deliberately the one thing left dark, because that is both
    * true to life and necessary: they sit inside the tea, and a pearl at the
@@ -112,6 +112,17 @@ export const palette = {
   rice: { line: "#dcd3bd", wash: "#bdb49b" },
   /** Kirby. */
   kirbyPink: { line: "#f79ac4", wash: "#c96a99" },
+  /**
+   * The receding side of Kirby's sphere.
+   *
+   * This name existed once before and was deleted, because the first attempt
+   * painted a dark crescent freehand across his face and drew a scythe through
+   * his right eye. It is back because the crescent is no longer freehand: it is
+   * the lune between his own circle and a larger circle pushed toward the key
+   * light, so it can only ever hug the rim away from the light. Everything the
+   * face occupies sits well inside the lit circle.
+   */
+  kirbyShade: { line: "#f79ac4", wash: "#9c4a73" },
   /** His eyes: dark navy under a bright rim, which is how they are drawn. */
   kirbyBlue: { line: "#5b86e0", wash: "#22366b" },
   /** His feet and cheeks. */
@@ -125,11 +136,41 @@ export const palette = {
    * fold, not the belt's colour: a genuinely black outline draws nothing here.
    */
   beltBlack: { line: "#c3c9d6", wash: "#16191f" },
-  /** Climbing holds. */
+  /** Climbing holds. A set wall is never one colour; a real one is graded. */
   holdGreen: { line: "#5fc784", wash: "#2e7a4c" },
   holdBlue: { line: "#5aa8d8", wash: "#2a6488" },
-  /** The duck's printed PLA. */
-  filament: { line: "#57d18f", wash: "#2a7d55" },
+  holdRed: { line: "#e2685f", wash: "#8c352f" },
+  holdYellow: { line: "#e8c25c", wash: "#8f6f22" },
+  /**
+   * The duck's printed PLA, and the dumbbell's plates.
+   *
+   * The `line` is `matcha`'s exactly — same spool, same green, and the duck now
+   * belongs to the same family as the drink rather than sitting a hue apart. The
+   * `wash` is a good deal darker than matcha's, and that is the point: at a
+   * matching value the fill carried the whole object and a voxel duck built from
+   * six boxes came out as one loud green mass. Dropping the fill and keeping the
+   * outline bright puts the drawing back in the edges, which is where a
+   * line-art object's shape lives.
+   */
+  filament: { line: "#a6e86a", wash: "#2c5520" },
+  /** Bar stock, machined steel, anything raw metal. */
+  steel: { line: "#c2c8d2", wash: "#454c58" },
+  /**
+   * Headphone housing: the slate navy of moulded plastic.
+   *
+   * Paired with `steel` rather than given a second entry of its own. Real
+   * over-ears are two materials — a dark shell and a pale metal slider — and
+   * borrowing the existing metal for the second one keeps the object honest
+   * without adding a near-duplicate to the palette.
+   */
+  headphone: { line: "#9db6c6", wash: "#243c4a" },
+  /**
+   * The compass's glass. Two entries, like the Triforce's two faces and for the
+   * same reason: one value cannot say *transparent*. `glass` is the dial seen
+   * through it; `glassSheen` is the reflection lying on top.
+   */
+  glass: { line: "#7fc4e8", wash: "#1d4a68" },
+  glassSheen: { line: "#7fc4e8", wash: "#356f92" },
   /** The Triforce's lit faces. */
   triforce: { line: "#f2c94c", wash: "#9c7a1c" },
   /**

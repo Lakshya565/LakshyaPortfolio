@@ -53,10 +53,22 @@ function ovalOffsets(
   rx: number,
   ry: number,
   segments = 20,
+  /**
+   * Rotation in screen space, radians, positive turning `+x` toward `+y`.
+   *
+   * Limbs need this. An axis-aligned ellipse reads as a shape stuck on a form;
+   * the same ellipse turned to follow the limb's direction reads as the limb.
+   */
+  tilt = 0,
 ): readonly Point2[] {
+  const cos = Math.cos(tilt);
+  const sin = Math.sin(tilt);
+
   return Array.from({ length: segments }, (_, index) => {
     const angle = (index / segments) * Math.PI * 2;
-    return { x: cx + Math.cos(angle) * rx, y: cy + Math.sin(angle) * ry };
+    const x = Math.cos(angle) * rx;
+    const y = Math.sin(angle) * ry;
+    return { x: cx + x * cos - y * sin, y: cy + x * sin + y * cos };
   });
 }
 
@@ -129,6 +141,12 @@ function plate(
   // close the silhouette without either arc doubling back on itself. A flush far
   // end replaces that first arc with the chord between its two tangent points —
   // a straight edge that sits inside whatever the bar disappears into.
+  // Two points, not a densified run. Interior points along the chord were tried
+  // to stop the smoothing bowing the bar's buried end into a rounded boss; they
+  // made it far worse. The last chord point's tangent then runs along the chord,
+  // and the curve leaving it into the far arc — a jump of the whole bar's length
+  // in `x` — overshoots into a visible barb. Two endpoints let the smoothing
+  // ease straight into the arc, which is the shape that actually reads.
   const far =
     farEnd === "flush"
       ? [rim(fromX, tangent.left), rim(fromX, tangent.right)]
@@ -189,13 +207,179 @@ export function figure(at: At): readonly DeskPart[] {
   ];
 }
 
-/** Guo has a plain cube in his field. It sets the isometric language. */
-export function cube(at: At, size = 14): readonly DeskPart[] {
+/**
+ * music: a pair of over-ear headphones, set down on the grid.
+ *
+ * This replaces the plain cube that used to stand here. The cube was borrowed
+ * from Guo's field, where it sets the isometric language for a scene that is
+ * otherwise all soft objects — but every other thing on this grid means
+ * something, and one shape that meant nothing was the odd one out rather than
+ * the anchor.
+ *
+ * Both cups are `plate()` discs on the shared `+x` axis, which is what real
+ * over-ears are: two discs on one line with a hoop over the top. `+x` projects
+ * down-right, so the pair separates on the diagonal and the near cup shows its
+ * outer housing while the far cup shows its pad — the same three-quarter read a
+ * photograph of them gives.
+ *
+ * The band is a flat ribbon in the cups' own centre plane. It needs no thickness
+ * in `y`: a plane of constant `y` projects to a full region here, so a zero-depth
+ * ribbon is a shape rather than an edge, and giving it depth would only add
+ * outlines competing with the two discs that carry the object.
+ *
+ * That ribbon is laid out in *screen* coordinates and mapped back into the plane,
+ * which is the one unusual thing in this file and the fix for a band that read as
+ * tilted at a strange angle. A circular arc in a vertical world plane cannot
+ * project to a symmetric arch here. Screen height along the arc goes as
+ * `½R·cosθ − R·sinθ`, so its highest point sits at `tan θ = −2` rather than at
+ * the top of the circle — about `0.45R` to one side of the midpoint between the
+ * two ends. The arch came out visibly lopsided, leaning toward its higher cup,
+ * and no change of radius or sweep could move the apex back, because the lean is
+ * the projection and not the arc.
+ *
+ * The plane `y = at.y` maps to the screen one-to-one, though, and inverts in
+ * closed form: `x = at.x + sx`, `z = at.z + sx/2 − sy`. So the arch is built as a
+ * true circle through both cup centres *on screen* and pushed back through that
+ * inverse. What lands in the scene is still an honest planar object standing in
+ * the cups' plane — just not a circular one, which is exactly right, since the
+ * thing that has to look circular is the drawing.
+ */
+export function headphones(at: At): readonly DeskPart[] {
+  const shell = hue("headphone");
+  const metal = hue("steel");
+  const cupR = 6.4;
+  const cupThick = 3.2;
+  /** Distance between the two cups' near faces, along the shared axis. */
+  const span = 19;
+  const axis = { y: at.y, z: at.z + cupR };
+  const farX = at.x;
+  const nearX = at.x + span;
+
+  /** A circle drawn on a cup's `+x` cap — pad openings, housing plates. */
+  const onCap = (x: number, radius: number, options: Parameters<typeof face>[1]) =>
+    face(
+      Array.from({ length: 25 }, (_, step) => {
+        const angle = (step / 24) * Math.PI * 2;
+        return {
+          x,
+          y: axis.y + Math.cos(angle) * radius,
+          z: axis.z + Math.sin(angle) * radius,
+        };
+      }),
+      { smooth: true, ...options },
+    );
+
+  /** Back out of screen space into the cups' plane. See the header. */
+  const inPlane = (sx: number, sy: number) => ({
+    x: at.x + sx,
+    y: at.y,
+    z: at.z + sx / 2 - sy,
+  });
+
+  /**
+   * Where a cup's centre lands on screen, as an offset from the anchor.
+   *
+   * Both cups sit at the same height, so both satisfy `sy = sx/2 − cupR`; the
+   * arch is fitted to these two points rather than to any world-space centre.
+   */
+  const capScreen = (dx: number) => ({ sx: dx, sy: dx / 2 - cupR });
+  const from = capScreen(-cupThick / 2);
+  const to = capScreen(span + cupThick / 2);
+
+  // A circle through both cup centres, bulging `rise` above their chord. A rise
+  // close to the half-chord makes the arch very nearly a semicircle, which is
+  // what a headband is.
+  const rise = 12;
+  const chord = { sx: to.sx - from.sx, sy: to.sy - from.sy };
+  const chordLength = Math.hypot(chord.sx, chord.sy);
+  const half = chordLength / 2;
+  const bandR = (half ** 2 + rise ** 2) / (2 * rise);
+  // The chord's normal, pointing toward the top of the screen.
+  const up = { sx: chord.sy / chordLength, sy: -chord.sx / chordLength };
+  const hub = {
+    sx: (from.sx + to.sx) / 2 - up.sx * (bandR - rise),
+    sy: (from.sy + to.sy) / 2 - up.sy * (bandR - rise),
+  };
+  const bearing = (point: { sx: number; sy: number }) =>
+    Math.atan2(point.sy - hub.sy, point.sx - hub.sx);
+  const startAt = bearing(from);
+  const endAt = bearing(to);
+  // Increasing from the far cup to the near one runs over the top of the screen.
+  const sweepFrom = startAt > endAt ? startAt - Math.PI * 2 : startAt;
+  const sweep = endAt - sweepFrom;
+  /** How far past each cup centre the band runs, so its ends are buried. */
+  const bite = 0.25;
+
+  /**
+   * A slice of the headband, between two screen radii and two bearings.
+   *
+   * The band and its two sliders are the same figure at different extents, so
+   * one helper builds all three and there is no chance of the sliders sitting
+   * off the band they are supposed to be clamped around.
+   */
+  const arcBand = (
+    inner: number,
+    outer: number,
+    fromAngle: number,
+    toAngle: number,
+    options: Parameters<typeof face>[1],
+  ) => {
+    const steps = Math.max(5, Math.round((toAngle - fromAngle) / 0.07));
+    const at3 = (radius: number, angle: number) =>
+      inPlane(
+        hub.sx + Math.cos(angle) * radius,
+        hub.sy + Math.sin(angle) * radius,
+      );
+    const run = (radius: number, a: number, b: number) =>
+      Array.from({ length: steps + 1 }, (_, step) =>
+        at3(radius, a + ((b - a) * step) / steps),
+      );
+
+    // Sampled every four degrees and left unsmoothed. Curving through these
+    // points put a barb on the band's upper end: the two arcs meet in a square
+    // corner, and Catmull-Rom rounding that corner overshoots outward — far
+    // enough to escape the cup that was supposed to be hiding the joint. It is
+    // the same failure as the dumbbell's flush chord, and the same answer. At
+    // four degrees a polyline is already smoother than the stroke is wide.
+    return face(
+      [...run(outer, fromAngle, toAngle), ...run(inner, toAngle, fromAngle)],
+      options,
+    );
+  };
+
+  /** A slider, centred at `along` of the way round the arch. */
+  const slider = (along: number) =>
+    arcBand(
+      bandR - 1.5,
+      bandR + 1.5,
+      sweepFrom + sweep * along - 0.12,
+      sweepFrom + sweep * along + 0.12,
+      metal,
+    );
+
   return [
-    box(
-      { x: at.x, y: at.y, z: at.z },
-      { width: size, depth: size, height: size },
-    ),
+    // The hoop, first, so both cups paint over the ends.
+    arcBand(bandR - 1.3, bandR + 1.3, sweepFrom - bite, endAt + bite, shell),
+    // The sliders, where a real pair adjusts. Two pale marks on a dark hoop are
+    // most of what separates headphones from a handle. Placed symmetrically
+    // *along the arch* rather than at mirrored world angles: a cup's silhouette
+    // reaches about seven units in every direction, and at 30% in from each end
+    // both sliders clear their own cup by a comfortable margin.
+    slider(0.29),
+    slider(0.71),
+    // Far cup. Its `+x` cap is the ear side, so it gets the pad: a metal ring
+    // around an opening back in the shell colour.
+    ...plate(axis, cupR, farX - cupThick, farX, shell),
+    onCap(farX + 0.02, cupR * 0.78, metal),
+    onCap(farX + 0.04, cupR * 0.5, shell),
+    // Near cup. Its `+x` cap is the outer housing, which is a plate, not a pad —
+    // so one disc and a small ring rather than the far cup's two.
+    ...plate(axis, cupR, nearX, nearX + cupThick, shell),
+    onCap(nearX + cupThick + 0.02, cupR * 0.74, metal),
+    onCap(nearX + cupThick + 0.04, cupR * 0.38, {
+      outlineOnly: true,
+      ...hueLine("headphone"),
+    }),
   ];
 }
 
@@ -435,18 +619,28 @@ export function devBoard(at: At): readonly DeskPart[] {
   // put the breadboard on top of the board last time.
   const digitalRow = at.y + 1;
   const powerRow = at.y + depth - 2.6;
-  const breadboardY = at.y - 9;
-  const breadboardZ = at.z + 2.4;
+  const breadboardDepth = 8.5;
+  const breadboardHeight = 2.4;
+  // Butted against the board's far face rather than floating behind it. At
+  // `at.y - 9` the two were separated by a visible sliver of ground and the
+  // breadboard's right end hung past the board's corner into empty air, which is
+  // what stopped the pair reading as one build.
+  const breadboardY = at.y - breadboardDepth;
+  const breadboardZ = at.z + breadboardHeight;
   const railY = breadboardY + 4.25;
 
   return [
-    // The breadboard first and furthest back, overlapping the board's far edge
-    // so the two read as one build rather than as a board and a separate white
-    // tray beside it.
-    rounded({ x: at.x + 3, y: breadboardY }, 18, 8.5, at.z, 2.4, {
-      radius: 0.8,
-      ...hue("silkscreen"),
-    }),
+    // The breadboard first and furthest back.
+    //
+    // A plain `box`, not a `rounded` extrusion. Rounded corners on a solid this
+    // small turned the two ends into soft wedges, and a breadboard is the most
+    // rectangular object on any desk — three flat faces meeting at hard corners
+    // is the whole of what it looks like.
+    box(
+      { x: at.x + 3, y: breadboardY, z: at.z },
+      { width: 18, depth: breadboardDepth, height: breadboardHeight },
+      hue("silkscreen"),
+    ),
     // The centre channel, which is the one mark that says breadboard.
     face(
       [
@@ -531,13 +725,18 @@ export function devBoard(at: At): readonly DeskPart[] {
     // just turned the mark into a pair of loose squiggles. The curve
     // `(cos t, sin t·cos t) / (1 + sin²t)` is the figure eight itself, so there
     // is nothing to cross and nothing to clip.
+    //
+    // Silkscreen is printed on bare board, so the mark has to sit in bare board:
+    // the only clear span is between the USB shell's right edge and the DIP's
+    // left one. At its old width it ran straight across the USB connector, which
+    // read as the mark floating over the port rather than being under it.
     face(
       Array.from({ length: 41 }, (_, step) => {
         const t = (step / 40) * Math.PI * 2;
         const k = 1 + Math.sin(t) ** 2;
         return {
-          x: at.x + 8 + (Math.cos(t) / k) * 4.4,
-          y: at.y + 8 + ((Math.sin(t) * Math.cos(t)) / k) * 4.4,
+          x: at.x + 9.6 + (Math.cos(t) / k) * 2.7,
+          y: at.y + 8.2 + ((Math.sin(t) * Math.cos(t)) / k) * 2.7,
           z: boardZ + 0.02,
         };
       }),
@@ -584,190 +783,288 @@ export function devBoard(at: At): readonly DeskPart[] {
  * plain green duck would say nothing that the yellow one did not.
  */
 export function duck(at: At): readonly DeskPart[] {
-  const anchor = { x: at.x, y: at.y, z: at.z };
+  const green = hue("filament");
+
+  // Body, head and beak all run along +x, which projects down and to the right —
+  // so the duck faces the camera's right and the `+x` faces of head and body are
+  // both turned toward the viewer. Its flank is the `+y` face, the widest
+  // unobstructed surface on the object and therefore where the cavity goes.
+  // The body is wider than it is tall and the head is a clear step smaller, set
+  // forward so a good span of the body's top face still shows behind it. Made
+  // the same size and stacked square, the two cubes read as one tower.
+  const body = { x: 0, y: 0, z: 5, width: 14, depth: 13, height: 11 };
+  const head = { x: 8, y: 2.5, size: 8 };
+  const flankY = at.y + body.y + body.depth;
+  const headZ = at.z + body.z + body.height;
+  const headTop = body.z + body.height + head.size;
+  const faceX = at.x + head.x + head.size;
+
+  /** A rectangle lying on the flank, in the body's own x–z coordinates. */
+  const onFlank = (
+    x0: number,
+    z0: number,
+    x1: number,
+    z1: number,
+    lift: number,
+    options: Parameters<typeof face>[1] = {},
+  ) =>
+    face(
+      [
+        { x: at.x + x0, y: flankY + lift, z: at.z + z0 },
+        { x: at.x + x1, y: flankY + lift, z: at.z + z0 },
+        { x: at.x + x1, y: flankY + lift, z: at.z + z1 },
+        { x: at.x + x0, y: flankY + lift, z: at.z + z1 },
+      ],
+      options,
+    );
+
+  /** A rectangle on the head's forward face, in that face's y–z coordinates. */
+  const onFace = (
+    y0: number,
+    z0: number,
+    y1: number,
+    z1: number,
+    options: Parameters<typeof face>[1] = {},
+  ) =>
+    face(
+      [
+        { x: faceX + 0.04, y: at.y + y0, z: at.z + z0 },
+        { x: faceX + 0.04, y: at.y + y1, z: at.z + z0 },
+        { x: faceX + 0.04, y: at.y + y1, z: at.z + z1 },
+        { x: faceX + 0.04, y: at.y + y0, z: at.z + z1 },
+      ],
+      options,
+    );
 
   return [
-    // One continuous profile: tail, back, head, bill, breast, belly. Smoothed,
-    // because the previous version's flat segments were the whole complaint —
-    // it drew a duck-shaped polygon rather than a duck.
-    silhouette(
-      anchor,
-      [
-        { x: -18, y: -16 },
-        { x: -12, y: -13 },
-        { x: -6, y: -17 },
-        { x: 1, y: -20 },
-        { x: 2, y: -26 },
-        { x: 5, y: -31 },
-        { x: 10, y: -32 },
-        { x: 15, y: -29 },
-        { x: 16, y: -26 },
-        { x: 23, y: -24 },
-        { x: 15, y: -21 },
-        { x: 13, y: -18 },
-        { x: 12, y: -12 },
-        { x: 9, y: -4 },
-        { x: 3, y: -1 },
-        { x: -6, y: -1 },
-        { x: -13, y: -4 },
-        { x: -17, y: -9 },
-      ],
-      { smooth: true, ...hue("filament") },
+    // Legs and feet first, so the body's flank paints over their tops and they
+    // emerge from under it rather than being stuck onto it. Both stand near the
+    // body's front-bottom corner and are offset along ±y, which projects roughly
+    // horizontally — that is what splays them apart on screen instead of
+    // stacking one behind the other.
+    ...[
+      { x: 8, y: 10.5 },
+      { x: 11, y: 5.5 },
+    ].flatMap(({ x, y }) => [
+      box(
+        { x: at.x + x, y: at.y + y, z: at.z + 1.2 },
+        { width: 1.8, depth: 1.8, height: 4.2 },
+        green,
+      ),
+      box(
+        { x: at.x + x, y: at.y + y, z: at.z },
+        { width: 4.2, depth: 1.8, height: 1.2 },
+        green,
+      ),
+    ]),
+    // The tail: longer than it is tall, and reaching back off the body rather
+    // than standing on top of it. At six units high it was a chimney.
+    box(
+      { x: at.x - 5, y: at.y + 4, z: at.z + 11.5 },
+      { width: 5.5, depth: 5, height: 4.5 },
+      green,
     ),
-    // The cutaway in the flank. Filled with the page ground rather than a colour
-    // so it reads as a hole into a hollow body — anything lighter here and it
-    // becomes a sticker on the outside.
-    silhouette(anchor, ovalOffsets(-3, -11, 7.6, 6), {
-      smooth: true,
+    box(
+      { x: at.x + body.x, y: at.y + body.y, z: at.z + body.z },
+      { width: body.width, depth: body.depth, height: body.height },
+      green,
+    ),
+    // The cutaway in the flank, and what is inside it.
+    //
+    // This is the most specific thing about the object — a printed duck with its
+    // belly opened up and a board wired in — so it survives the rebuild
+    // unchanged in content. Only the shape moved: a rectangular port cut square
+    // into a flat face, rather than an oval hole in a curved one.
+    //
+    // Filled with the page ground rather than a colour, so it reads as a hole
+    // into a hollow body. Anything lighter and it becomes a sticker.
+    onFlank(2.2, 6, 11.8, 13.6, 0.02, {
       stroke: palette.filament.line,
       fill: ink.ground,
     }),
-    // The module seated inside, with its own header strip along the top edge.
-    silhouette(
-      anchor,
+    // The module seated inside, with its header strip along the top edge.
+    onFlank(3.2, 10.4, 10.8, 12.8, 0.04, hue("arduino")),
+    face(
       [
-        { x: -7.4, y: -14 },
-        { x: 1.4, y: -14 },
-        { x: 1.4, y: -10.6 },
-        { x: -7.4, y: -10.6 },
-      ],
-      hue("arduino"),
-    ),
-    silhouette(
-      anchor,
-      [
-        { x: -6.8, y: -13.4 },
-        { x: 0.8, y: -13.4 },
+        { x: at.x + 3.9, y: flankY + 0.06, z: at.z + 11.9 },
+        { x: at.x + 10.1, y: flankY + 0.06, z: at.z + 11.9 },
       ],
       { outlineOnly: true, open: true, ...hueLine("silkscreen") },
     ),
-    // The terminal block the wiring lands on, at the floor of the cavity.
-    //
-    // Its whole job is to give the three wires somewhere to end. They used to
-    // run down from the module and simply stop, and a line that stops in mid-air
-    // does not read as a wire — it reads as a scratch on the drawing.
-    silhouette(
-      anchor,
-      [
-        { x: -6.6, y: -7.4 },
-        { x: 0.6, y: -7.4 },
-        { x: 0.6, y: -5.6 },
-        { x: -6.6, y: -5.6 },
-      ],
-      hue("connector"),
-    ),
-    // Three jumper wires, each leaving a pin on the module and landing on the
-    // block. Both endpoints sit inside a solid, so neither end is loose.
+    // The terminal block the wiring lands on, at the floor of the cavity. Its
+    // whole job is to give the three wires somewhere to end: a line that stops
+    // in mid-air does not read as a wire, it reads as a scratch on the drawing.
+    onFlank(3.4, 6.6, 10.6, 8.1, 0.04, hue("connector")),
+    // Three jumper wires, each leaving the module and landing on the block. Both
+    // endpoints sit inside a solid, so neither end is loose.
     ...[
-      { colour: "wireWarm", from: -5.6, to: -5.2, bend: -1.2 },
-      { colour: "led", from: -3, to: -3, bend: 0.9 },
-      { colour: "wireCool", from: -0.4, to: -0.8, bend: 1.4 },
+      { colour: "wireWarm", from: 4.6, to: 4.3, bend: -0.9 },
+      { colour: "led", from: 7, to: 7, bend: 0.7 },
+      { colour: "wireCool", from: 9.4, to: 9.7, bend: 1.1 },
     ].map(({ colour, from, to, bend }) =>
-      silhouette(
-        anchor,
+      face(
         Array.from({ length: 9 }, (_, step) => {
           const t = step / 8;
           return {
-            x: from + (to - from) * t + Math.sin(Math.PI * t) * bend,
-            y: -10.6 + t * 4.4,
+            x: at.x + from + (to - from) * t + Math.sin(Math.PI * t) * bend,
+            y: flankY + 0.06,
+            z: at.z + 10.4 - t * 2.3,
           };
         }),
-        { outlineOnly: true, open: true, ...hueLine(colour as PaletteName) },
+        {
+          outlineOnly: true,
+          open: true,
+          smooth: true,
+          ...hueLine(colour as PaletteName),
+        },
       ),
     ),
-    // The eye. Dark against the lifted body wash, which is what makes it an eye
-    // rather than a bump — it used to be a twelve-sided outline with the page
-    // ground showing through, and at magnification that is a punched hole.
-    circle(anchor, 1.5, {
-      cx: 11,
-      cy: -27,
-      stroke: palette.filament.line,
-      fill: ink.ground,
-    }),
+    // The head, overlapping the body's top-front corner so the two masses
+    // interlock. Eleven earlier attempts built this duck from smooth solids and
+    // every one fused head into body, because two adjacent curved masses in the
+    // same tone have no edge between them. Voxels do: every box contributes
+    // three outlined faces, and the step from body to head is a drawn corner.
+    box(
+      { x: at.x + head.x, y: at.y + head.y, z: headZ },
+      { width: head.size, depth: head.size, height: head.size },
+      green,
+    ),
+    // The bill, off the head's forward face.
+    box(
+      { x: faceX, y: at.y + head.y + 1.4, z: at.z + headTop - 6.4 },
+      { width: 4.6, depth: 5.2, height: 2.8 },
+      green,
+    ),
+    // Two eyes on that same forward face, above the bill. Square, because every
+    // other edge on this duck is square, and dark because the body wash is not.
+    ...[head.y + 1, head.y + 4.6].map((y) =>
+      onFace(y, headTop - 3.2, y + 1.6, headTop - 1.6, {
+        stroke: palette.filament.line,
+        fill: ink.ground,
+      }),
+    ),
   ];
 }
 
 /**
- * taekwondo: a fourth-degree black belt, rolled.
+ * taekwondo: a fourth-degree black belt, rolled and set down flat.
  *
- * This is the fifth arrangement and the previous four are worth recording so
+ * Seven arrangements have been tried and the six rejects are worth recording so
  * none of them comes back. A coil with a trailing strip read as something
- * obscene. A bare coil read as a tin. A knot with a strap running out to both
- * sides and two tails hanging below is anatomically a torso with arms and legs,
- * and every upright attempt read as a creature no matter how the proportions
- * were tuned — the symmetry was the problem, not the drawing. Laying that same
- * arrangement flat fixed the creature and produced a frying pan.
+ * obscene. A bare coil read as a tin. An upright knot with a strap out to both
+ * sides and two tails below is anatomically a torso with limbs, and no tuning
+ * fixed that — the symmetry was the problem. A tied hoop with a hole through it
+ * read, but read as a tyre. A roll standing on edge read correctly and was still
+ * wrong: nobody stands a belt up, and balancing one on its rim is a pose.
  *
- * A belt is rolled when it is not being worn, so this is a roll: a disc on a
- * horizontal axis, spiral layers on the face turned toward the camera, and the
- * loose end running out onto the grid carrying the four rank stripes. The face
- * is what says *rolled cloth* rather than *wheel*, and the stripes are what say
- * fourth degree.
+ * So it lies down, the way a rolled belt actually sits in a bag. That flips the
+ * axis from `plate()`'s horizontal one back to `cylinder`'s vertical one, and
+ * turns the wound face from the near cap into the *top* — which is the face the
+ * eye gets most of in this projection, so the winding is now the thing you see
+ * first rather than something read edge-on.
  *
- * `plate()` does the solid — the same helper the dumbbell uses, for the same
- * reason: `cylinder` only builds vertical axes, and a squashed one gives a coin
- * lying down rather than a roll standing on edge.
+ * The winding is one spiral, not a stack of rings. Rings were the safe drawing:
+ * a closed curve has no ends to place, whereas a spiral has two and the outer
+ * one has to land somewhere believable. Here it lands on the tail — the spiral
+ * leaves the roll at the exact bearing the loose end runs out along, so the
+ * strip you can see wound is the same strip you can see unwound.
  */
 export function belt(at: At): readonly DeskPart[] {
   const black = { stroke: palette.beltBlack.line, fill: palette.beltBlack.wash };
-  const outer = 9.5;
-  const width = 5.5;
-  const axis = { y: at.y, z: at.z + outer };
-  const faceX = at.x + width;
-  const cloth = 1.6;
+  const center = { x: at.x, y: at.y };
+  const outer = 12;
+  /** The cloth's width, which on a roll lying flat is the roll's height. */
+  const width = 5.6;
+  const topZ = at.z + width;
+  /** How thin the loose end is: one thickness of cloth, and it should look it. */
+  const cloth = 0.9;
 
-  /** An arc on the roll's near face, at `radius`, spanning `from` to `to`. */
-  const layer = (radius: number, from: number, to: number) =>
-    face(
-      // Thirty-three points, not seventeen: these arcs sweep most of a full turn,
-      // so at seventeen each segment covers twenty degrees and the spiral comes
-      // out visibly faceted even with `smooth` on.
-      Array.from({ length: 33 }, (_, step) => {
-        const angle = from + ((to - from) * step) / 32;
-        return {
-          x: faceX + 0.03,
-          y: axis.y + Math.cos(angle) * radius,
-          z: axis.z + Math.sin(angle) * radius,
-        };
-      }),
-      { outlineOnly: true, open: true, smooth: true, ...hueLine("beltBlack") },
-    );
+  /**
+   * The loose end leaves the roll *tangentially*, not radially.
+   *
+   * This is the whole reason the previous two tails were wrong. A strip wound in
+   * a spiral does not come off a coil pointing away from its centre — it comes
+   * off along the outer turn's own direction, which is at right angles to the
+   * radius. Run it radially and the coil grows a handle: a disc with a stick out
+   * of the middle is a frying pan or a magnifying glass, and no amount of
+   * changing the stick's length or thickness fixes what its *bearing* is saying.
+   *
+   * So the strap leaves the `+x` rim — down-right, the roll's right side — and
+   * runs along `+y`, down-left across the front. Those are the only two bearings
+   * available: the tangent is perpendicular to the radius, and the two bearings
+   * that project degenerately, `(1, 1)` and `(1, −1)`, are perpendicular to each
+   * other, so choosing either one for the radius forces the other on the tangent
+   * and flattens the strap into an axis-aligned screen rectangle. `+x` radius
+   * with `+y` tangent avoids both.
+   */
+  /**
+   * The strap's outer edge rides the tangent line exactly; its width lies
+   * *inward*, under the roll.
+   *
+   * Tangency is preserved by projection, so a line touching the footprint circle
+   * at one world point touches the screen ellipse at that same point — which
+   * means the roll's own silhouette hides the strap's start with no seam to
+   * draw. Laying the width outward instead leaves a square end floating clear of
+   * the roll on the right, and it cannot be tucked away by running the strap
+   * further back: `−y` projects *up-right*, faster than the roll widens, so
+   * every unit of extra length pushes that corner further into the open.
+   */
+  const tailOuter = center.x + outer;
+  const tailInner = tailOuter - width;
+  const tailFrom = 0;
+  const tailTo = 25;
 
   return [
-    // The roll itself: band plus the cap turned toward the camera.
-    ...plate(axis, outer, at.x, faceX, black),
-    // Three layers spiralling in. Each starts and ends at a different angle and
-    // sits a little off centre, because concentric closed rings are a roll of
-    // tape — a spiral is what tells you this is a long strip wound up.
-    layer(7.1, -0.35, Math.PI * 1.75),
-    layer(4.8, 0.15, Math.PI * 1.6),
-    layer(2.4, 0.5, Math.PI * 1.45),
-    // The loose end, running out of the bottom of the roll toward the viewer.
-    // Drawn after the roll: the run nearest the camera passes in front of it,
-    // which is what makes the strip continue *out from under* the coil rather
-    // than start beside it.
+    // The loose end, drawn *before* the roll so the roll's own body is what ends
+    // it. Unwound webbing does not stop at the coil, it disappears under it.
     slab(
       [
-        { x: at.x + 0.7, y: at.y + 4 },
-        { x: faceX - 0.7, y: at.y + 4 },
-        { x: faceX - 1.6, y: at.y + 19 },
-        { x: at.x + 1.6, y: at.y + 19 },
+        { x: tailInner, y: center.y + tailFrom },
+        { x: tailInner, y: center.y + tailTo },
+        { x: tailOuter, y: center.y + tailTo },
+        { x: tailOuter, y: center.y + tailFrom },
       ],
       at.z,
       cloth,
       black,
     ),
-    // The four rank stripes, across the loose end. Each spans the full width of
-    // the strip at its own point along the run, so all four read as one rank
-    // rather than as four marks of different lengths.
+    // The roll: a squat cylinder, cloth-width tall.
+    cylinder(center, outer, at.z, width, { segments: 32, ...black }),
+    // The winding, as a single Archimedean spiral on the top face. Four turns at
+    // an even pitch, because cloth of one thickness wound on itself is evenly
+    // spaced, and that even spacing is what reads as *wound* rather than as a
+    // target. Densely sampled and left unsmoothed: Catmull-Rom through a
+    // tightening spiral overshoots inward near the middle, and at four turns
+    // there is no room for it to.
+    //
+    // It stops 1.2 units short of the rim. At 0.7 the outer turn ran within half
+    // a unit of the top face's near edge, and on the front of the roll — where
+    // that edge is the silhouette — it crossed onto the wall and read as a loose
+    // thread hanging down the side.
+    face(
+      Array.from({ length: 145 }, (_, step) => {
+        const t = step / 144;
+        const radius = 1.6 + (outer - 1.6 - 1.2) * t;
+        // Ends at the tail's bearing, so the loose end is the spiral continuing.
+        const angle = (t - 1) * 4 * Math.PI * 2;
+        return {
+          x: center.x + Math.cos(angle) * radius,
+          y: center.y + Math.sin(angle) * radius,
+          z: topZ + 0.03,
+        };
+      }),
+      { outlineOnly: true, open: true, ...hueLine("beltBlack") },
+    ),
+    // The four rank stripes, set in from the tip the way a dan belt carries
+    // them. Each spans the full width of the strip, so the four read as one
+    // rank rather than as four marks of different lengths.
     ...Array.from({ length: 4 }, (_, index) => {
-      const t = 0.52 + index * 0.11;
-      const inset = 0.7 + 0.9 * t;
-      const y = at.y + 4 + 15 * t;
+      const y = center.y + tailTo - 8 + index * 1.6;
+      const stripeZ = at.z + cloth + 0.02;
       return face(
         [
-          { x: at.x + inset + 0.5, y, z: at.z + cloth + 0.02 },
-          { x: faceX - inset - 0.5, y, z: at.z + cloth + 0.02 },
+          { x: tailInner + 0.55, y, z: stripeZ },
+          { x: tailOuter - 0.55, y, z: stripeZ },
         ],
         { outlineOnly: true, open: true, ...hueLine("beltGold") },
       );
@@ -800,11 +1097,95 @@ export function compass(at: At): readonly DeskPart[] {
   // on a clock instead of an arrow lying on a dial.
   const north = Math.PI * 1.25;
 
+  // Where the steel bezel stops and the glass begins.
+  const glassEdge = 0.78;
+  const glassRadius = radius * glassEdge;
+
+  /**
+   * The sheen lying on the glass.
+   *
+   * The same two-circle lune Kirby's terminator uses, mirrored: there the sliver
+   * is what the light misses, here it is what the light catches, so the second
+   * circle is pushed *away* from the light instead of toward it. A ground-plane
+   * step of `(dx, dy)` moves `(dx − dy, ½(dx + dy))` on screen, so `(+x, +y)`
+   * both small and positive puts the sliver up and to the left, under the key
+   * light, which is where a reflection belongs.
+   */
+  const sheen = () => {
+    const away = { x: 2.2, y: 0.4 };
+    const sheenRadius = 9;
+    const d = Math.hypot(away.x, away.y);
+    const along = (glassRadius ** 2 - sheenRadius ** 2 + d ** 2) / (2 * d);
+    const across = Math.sqrt(glassRadius ** 2 - along ** 2);
+    const unit = { x: away.x / d, y: away.y / d };
+    const mid = { x: along * unit.x, y: along * unit.y };
+    const hit = (sign: number) => ({
+      x: mid.x + sign * across * unit.y,
+      y: mid.y - sign * across * unit.x,
+    });
+
+    const near = hit(-1);
+    const far = hit(1);
+
+    /**
+     * An arc taking the *shortest* signed sweep between two angles.
+     *
+     * Both boundary arcs of a thin lune are minor arcs, so this is the whole
+     * rule — but `atan2` returns values in `(−π, π]`, and if the pair straddles
+     * that branch cut the naive `to − from` is the major arc instead. Here it
+     * did: the sheen came out on the wrong side of the dial and its second
+     * boundary swung outside the glass entirely, over the case.
+     */
+    const arc = (
+      origin: Point2,
+      r: number,
+      from: number,
+      to: number,
+    ): readonly Point2[] => {
+      const turn = Math.PI * 2;
+      const delta =
+        ((((to - from + Math.PI) % turn) + turn) % turn) - Math.PI;
+
+      return Array.from({ length: 15 }, (_, step) => {
+        const angle = from + (delta * step) / 14;
+        return {
+          x: origin.x + Math.cos(angle) * r,
+          y: origin.y + Math.sin(angle) * r,
+        };
+      });
+    };
+
+    return face(
+      [
+        ...arc(
+          { x: 0, y: 0 },
+          glassRadius,
+          Math.atan2(near.y, near.x),
+          Math.atan2(far.y, far.x),
+        ),
+        ...arc(
+          away,
+          sheenRadius,
+          Math.atan2(far.y - away.y, far.x - away.x),
+          Math.atan2(near.y - away.y, near.x - away.x),
+        ),
+      ].map((point) => ({
+        x: center.x + point.x,
+        y: center.y + point.y,
+        z: dialZ + 0.3,
+      })),
+      { smooth: true, stroke: "none", fill: palette.glassSheen.wash },
+    );
+  };
+
   return [
     // No `rings` here. A ring on the top face draws a second ellipse exactly
     // concentric with the silhouette, and stacked with the wall seam below it
     // the whole object came out as three parallel curves — a stack of pancakes.
-    cylinder(center, radius, at.z, caseHeight, { segments: 24 }),
+    cylinder(center, radius, at.z, caseHeight, {
+      segments: 24,
+      ...hue("steel"),
+    }),
     // The case seam, on the side wall rather than across the top face — it runs
     // round the body of a real compass, so it has to follow the wall's curve and
     // stop at the two silhouette edges. Cutting it across the dial instead was
@@ -818,17 +1199,23 @@ export function compass(at: At): readonly DeskPart[] {
           z: at.z + caseHeight * 0.62,
         };
       }),
-      { outlineOnly: true, open: true, smooth: true },
+      { outlineOnly: true, open: true, smooth: true, ...hueLine("steel") },
     ),
-    // Bezel ticks. Twelve of them, the cardinals longer, drawn inside the rim
-    // rather than as a ring on it — this is the mark that says the dial is
-    // graduated, and it costs nothing that a concentric circle was costing.
+    // The glass over the dial, inset so the steel bezel shows as a ring around
+    // it. Two tones, borrowed from the Triforce's two faces and used for the
+    // same reason: a single flat value cannot say *transparent*. This one is the
+    // dial seen through the glass.
+    flatDisc(center, glassRadius, dialZ + 0.02, hue("glass")),
+    // Bezel ticks, twelve of them with the cardinals longer. They sit on the
+    // steel ring outside the glass, which is where a compass is graduated —
+    // inside, they were graduations floating in the liquid.
     ...Array.from({ length: 12 }, (_, index) => {
       const angle = (index / 12) * Math.PI * 2;
-      const inner = index % 3 === 0 ? 0.74 : 0.83;
-      return face([onDial(angle, inner), onDial(angle, 0.92)], {
+      const inner = index % 3 === 0 ? glassEdge + 0.02 : glassEdge + 0.07;
+      return face([onDial(angle, inner), onDial(angle, 0.95)], {
         outlineOnly: true,
         open: true,
+        ...hueLine("steel"),
       });
     }),
     // The needle, as two halves meeting at the pivot: red north, white south.
@@ -862,6 +1249,8 @@ export function compass(at: At): readonly DeskPart[] {
       }),
       { smooth: true, ...hue("connector") },
     ),
+    // Last, over the needle: a reflection lies on the glass, not under it.
+    sheen(),
   ];
 }
 
@@ -890,7 +1279,10 @@ export function twoCups(at: At): readonly DeskPart[] {
   ): readonly DeskPart[] => {
     const center = { x: at.x + offset.x, y: at.y + offset.y };
     const base = 5.4 * scale;
-    const body = 13 * scale;
+    // Height is not scaled. Both cups come out of the same machine, so both are
+    // the same height; `scale` now varies only the footprint, which is enough to
+    // keep the pair from reading as one traced twice.
+    const body = 17;
     const flare = 1.28;
     const lidZ = at.z + body;
     // The lid clears the cup's rim by a lip, not by a brim. At `+0.9` it stood
@@ -909,11 +1301,15 @@ export function twoCups(at: At): readonly DeskPart[] {
       // that is where tapioca goes and because a pearl floating at mid-height
       // reads as a bubble in the drink rather than a solid in it.
       ...[
-        { dx: -0.56, dy: 0.86 },
-        { dx: -0.19, dy: 0.62 },
-        { dx: 0.2, dy: 0.9 },
-        { dx: 0.55, dy: 0.66 },
-        { dx: -0.02, dy: 1.06 },
+        { dx: -0.62, dy: 0.68 },
+        { dx: -0.22, dy: 0.6 },
+        { dx: 0.18, dy: 0.66 },
+        { dx: 0.58, dy: 0.72 },
+        { dx: -0.44, dy: 0.94 },
+        { dx: -0.04, dy: 0.88 },
+        { dx: 0.38, dy: 0.98 },
+        { dx: -0.2, dy: 1.2 },
+        { dx: 0.22, dy: 1.24 },
       ].map((spot) =>
         circle({ x: center.x, y: center.y, z: at.z }, 1.4 * scale, {
           cx: spot.dx * base * 1.35,
@@ -1004,9 +1400,13 @@ export function sushiPlate(at: At): readonly DeskPart[] {
  * wedge. The bolt hole is what settles it as climbing gear rather than a rock.
  */
 export function climbingHold(at: At): readonly DeskPart[] {
-  const width = 16;
-  const depth = 2.6;
-  const height = 24;
+  // Tall, thin, and set densely: that is what a bouldering panel looks like, and
+  // two big holds on a squat board looked like signage. A wall is read from its
+  // route — the scatter of small holds *is* the object, and no single one of
+  // them has to carry it.
+  const width = 13;
+  const depth = 2.4;
+  const height = 30;
   // Holds bolt to the face turned toward the camera.
   const wallY = at.y + depth;
 
@@ -1028,6 +1428,7 @@ export function climbingHold(at: At): readonly DeskPart[] {
     stand: number,
     colour: PaletteName,
     offsets: readonly Point2[],
+    bolt: boolean,
   ) => {
     const scaled = offsets.map((point) => ({
       x: point.x * size,
@@ -1046,44 +1447,78 @@ export function climbingHold(at: At): readonly DeskPart[] {
       }),
       // The crown, standing proud. Barely smaller, so what shows of the base is
       // an even rim of thickness. Taper it harder and the base reappears as a
-      // second whole shape behind the first, which is the misregistered-print
-      // look this was meant to get rid of.
+      // second whole shape behind the first, which reads as print
+      // misregistration rather than as projection.
       silhouette(
         crown,
         scaled.map((point) => ({ x: point.x * 0.94, y: point.y * 0.94 })),
         { smooth: true, ...hue(colour) },
       ),
-      // The bolt. A fixed radius rather than one scaled off the hold — every
-      // bolt through a climbing hold is the same size, and scaling it by `size`
-      // put the smaller hold's bolt at 0.28 square units, which the degenerate
-      // silhouette test correctly refused as sub-pixel at scene scale.
-      circle(crown, 0.9, hue("connector")),
+      // The bolt, on the larger holds only. Every bolt through a hold is the
+      // same size in life, so it cannot be scaled down with the hold — below
+      // about 0.5 units of radius it falls under the degenerate-silhouette
+      // threshold and is sub-pixel at scene scale anyway. On the small holds it
+      // is simply left off, which is also what they look like across a room.
+      ...(bolt ? [circle(crown, 0.5, hue("connector"))] : []),
     ];
   };
 
+  /**
+   * Two moulded outlines, reused at different sizes and colours.
+   *
+   * Every hold on a real wall comes out of a mould and there are only ever a few
+   * moulds in a set, so repeating two shapes is truer than drawing eleven unique
+   * blobs — and eleven unique blobs at this size would be eleven pieces of
+   * noise.
+   */
+  const jug: readonly Point2[] = [
+    { x: -4, y: -2.5 },
+    { x: -1, y: -4.5 },
+    { x: 3, y: -3 },
+    { x: 4, y: 1 },
+    { x: 0, y: 3 },
+    { x: -4, y: 1.5 },
+  ];
+  const crimp: readonly Point2[] = [
+    { x: -4, y: -3 },
+    { x: 2, y: -4 },
+    { x: 4.5, y: 0 },
+    { x: 1, y: 3.5 },
+    { x: -4, y: 2 },
+  ];
+
   return [
-    box(
-      { x: at.x, y: at.y, z: at.z },
-      { width, depth, height },
+    box({ x: at.x, y: at.y, z: at.z }, { width, depth, height }),
+    // A set route: graded colours, mixed sizes, and no two at the same height.
+    //
+    // Small, and well clear of the edges. The first pass at this scattered
+    // eleven holds at the size the old pair had been, and they filled the face
+    // edge to edge, overlapped each other, and spilled past the panel's left
+    // silhouette — smoothing overshoots its control points, so a blob that fits
+    // on paper still crosses the line. What makes a wall read is the *scatter*:
+    // holds want empty panel around them far more than they want to be legible
+    // one at a time.
+    //
+    // Positions are constrained by the panel rather than chosen freely. A hold
+    // of screen radius `r` centred `up` from the floor stays on the face only
+    // while `1.5r ≤ up ≤ height − 1.5r`, because the top and bottom edges each
+    // slope by half a unit for every unit across.
+    ...(
+      [
+        { across: 4.4, up: 26, size: 0.45, stand: 0.55, colour: "holdRed", shape: jug, bolt: false },
+        { across: 8.8, up: 23.4, size: 0.4, stand: 0.5, colour: "holdBlue", shape: crimp, bolt: false },
+        { across: 4.6, up: 20.8, size: 0.35, stand: 0.45, colour: "holdYellow", shape: crimp, bolt: false },
+        { across: 9.4, up: 18.2, size: 0.45, stand: 0.55, colour: "holdRed", shape: crimp, bolt: true },
+        { across: 3.8, up: 16, size: 0.4, stand: 0.5, colour: "holdBlue", shape: jug, bolt: false },
+        { across: 7, up: 13, size: 0.5, stand: 0.6, colour: "holdGreen", shape: jug, bolt: true },
+        { across: 9.2, up: 9.6, size: 0.4, stand: 0.5, colour: "holdBlue", shape: jug, bolt: false },
+        { across: 3.6, up: 9, size: 0.4, stand: 0.5, colour: "holdYellow", shape: crimp, bolt: false },
+        { across: 5.6, up: 5.8, size: 0.45, stand: 0.55, colour: "holdRed", shape: jug, bolt: false },
+        { across: 9.4, up: 4.2, size: 0.35, stand: 0.45, colour: "holdGreen", shape: crimp, bolt: false },
+      ] as const
+    ).flatMap(({ across, up, size, stand, colour, shape, bolt }) =>
+      hold(across, up, size, stand, colour, shape, bolt),
     ),
-    // Two holds, not three, and the panel cut down to a frame around them. At
-    // 25×39 with three small blobs the object was mostly blank slab, and the
-    // blank slab is what the eye reads first.
-    ...hold(8, 16.5, 1.5, 1.2, "holdGreen", [
-      { x: -4, y: -2.5 },
-      { x: -1, y: -4.5 },
-      { x: 3, y: -3 },
-      { x: 4, y: 1 },
-      { x: 0, y: 3 },
-      { x: -4, y: 1.5 },
-    ]),
-    ...hold(8, 6, 1, 1, "holdBlue", [
-      { x: -4, y: -3 },
-      { x: 2, y: -4 },
-      { x: 4.5, y: 0 },
-      { x: 1, y: 3.5 },
-      { x: -4, y: 2 },
-    ]),
   ];
 }
 
@@ -1100,10 +1535,11 @@ export function climbingHold(at: At): readonly DeskPart[] {
  * to paint over the one behind it.
  */
 export function dumbbell(at: At): readonly DeskPart[] {
-  const plateRadius = 6.5;
+  const plateRadius = 7;
   const plateWidth = 4;
   const barRadius = 1.9;
   const reach = 9;
+  const nearFace = at.x + reach + plateWidth;
   // Plates rest on the ground, so the axis sits one radius up.
   const axis = { y: at.y, z: at.z + plateRadius };
 
@@ -1130,12 +1566,33 @@ export function dumbbell(at: At): readonly DeskPart[] {
   const visible = { from: -Math.PI / 4, to: (Math.PI * 3) / 4 };
   const grip = 5.2;
 
+  const iron = hue("filament");
+  const bar = hue("steel");
+
+  /** A full circle drawn flat on a plate's outer face, at `x`. */
+  const faceRing = (x: number, radius: number) =>
+    face(
+      Array.from({ length: 25 }, (_, step) => {
+        const angle = (step / 24) * Math.PI * 2;
+        return {
+          x,
+          y: axis.y + Math.cos(angle) * radius,
+          z: axis.z + Math.sin(angle) * radius,
+        };
+      }),
+      { outlineOnly: true, smooth: true, ...hueLine("filament") },
+    );
+
   return [
     // No collars. They were two more concentric rims stacked on a face that
     // already had the plate's own rim and the bar's flush end on it, and that
     // pile-up is the whole reason the far plate looked like a mistake.
-    ...plate(axis, plateRadius, at.x - reach - plateWidth, at.x - reach),
-    ...plate(axis, barRadius, at.x - reach, at.x + reach, {}, {
+    // Plates in cast green, bar in steel grey. Two materials, and the split does
+    // the work the extra rings used to: the eye separates weight from handle on
+    // colour alone and no longer needs a stack of concentric curves to be told
+    // where one ends and the other begins.
+    ...plate(axis, plateRadius, at.x - reach - plateWidth, at.x - reach, iron),
+    ...plate(axis, barRadius, at.x - reach, at.x + reach, bar, {
       farEnd: "flush",
       capped: false,
     }),
@@ -1148,6 +1605,7 @@ export function dumbbell(at: At): readonly DeskPart[] {
         outlineOnly: true,
         open: true,
         smooth: true,
+        ...hueLine("steel"),
       }),
     ),
     // Five short dashes over the crown, not seven long ones. Ticks that sweep
@@ -1161,23 +1619,20 @@ export function dumbbell(at: At): readonly DeskPart[] {
           Math.PI * 0.34,
           3,
         ),
-        { outlineOnly: true, open: true, smooth: true },
+        { outlineOnly: true, open: true, smooth: true, ...hueLine("steel") },
       ),
     ),
-    ...plate(axis, plateRadius, at.x + reach, at.x + reach + plateWidth),
-    // The hub on the near plate's outer face — the one mark that says the plate
-    // is bored for a bar rather than being a solid puck.
-    face(
-      Array.from({ length: 25 }, (_, step) => {
-        const angle = (step / 24) * Math.PI * 2;
-        return {
-          x: at.x + reach + plateWidth + 0.02,
-          y: axis.y + Math.cos(angle) * barRadius * 1.15,
-          z: axis.z + Math.sin(angle) * barRadius * 1.15,
-        };
-      }),
-      { outlineOnly: true, smooth: true },
-    ),
+    ...plate(axis, plateRadius, at.x + reach, nearFace, iron),
+    // One rib on the near plate's outer face, not two. With two ribs plus the
+    // rim, the collar's rim and the collar's cap, the near face carried six
+    // concentric curves inside a circle forty pixels wide at scene scale, and
+    // they merged into a target. One rib says *cast* and costs one curve.
+    faceRing(nearFace + 0.02, plateRadius * 0.72),
+    // The spin-lock collar and the threaded stub it screws down onto — steel,
+    // like the bar it clamps to. This is what makes the object an adjustable
+    // dumbbell rather than a fixed one.
+    ...plate(axis, 2.8, nearFace, nearFace + 1.8, bar),
+    ...plate(axis, 1.05, nearFace + 1.8, nearFace + 3.4, bar),
   ];
 }
 
@@ -1333,10 +1788,13 @@ export function mouse(at: At): readonly DeskPart[] {
  * cylinders standing clear of the body with a visible gap under it, which read
  * as two hockey pucks parked beneath a balloon.
  *
- * There is deliberately no shading. A dark crescent for the receding side was
- * tried and it drew a scythe straight through his right eye. On a form whose
- * whole silhouette is a circle there is no contour to shade that is not simply a
- * line across the face.
+ * The volume comes from three things and no others: limbs turned to follow their
+ * own direction, limbs that overlap the body rather than abutting it, and one
+ * terminator — the lune between his circle and a larger circle displaced toward
+ * the key light. That last one is a second attempt. The first was drawn freehand
+ * and put a scythe through his right eye, which is why it is now *derived*: the
+ * lune can only ever hug the rim on the side away from the light, and the whole
+ * face sits deep inside the lit circle where the construction cannot reach it.
  */
 export function kirby(at: At): readonly DeskPart[] {
   const anchor = { x: at.x, y: at.y, z: at.z };
@@ -1346,8 +1804,12 @@ export function kirby(at: At): readonly DeskPart[] {
     rx: number,
     ry: number,
     options: Parameters<typeof silhouette>[2] = {},
+    tilt = 0,
   ) =>
-    silhouette(anchor, ovalOffsets(cx, cy, rx, ry), { smooth: true, ...options });
+    silhouette(anchor, ovalOffsets(cx, cy, rx, ry, 24, tilt), {
+      smooth: true,
+      ...options,
+    });
 
   const bodyY = -12;
   const bodyR = 11;
@@ -1355,44 +1817,118 @@ export function kirby(at: At): readonly DeskPart[] {
   // the camera's left rather than staring dead ahead.
   const turn = -0.8;
 
+  /**
+   * The lune between the body circle and a larger circle pushed toward the key
+   * light — the shaded side of a sphere, constructed rather than eyeballed.
+   *
+   * Both intersection points come out of the standard two-circle solve, so the
+   * two arcs meet exactly and the shape closes with no seam. `litRadius` larger
+   * than `bodyR` is what keeps the crescent thin: the bigger the lit circle, the
+   * flatter its arc across the body and the narrower the sliver left over.
+   */
+  const terminator = () => {
+    const toLight = { x: -3.2, y: -3.2 };
+    const litRadius = 13.2;
+    // Held a hair inside the silhouette and drawn with no stroke of its own, so
+    // the step from lit to shaded is a change of tone and nothing else. Given a
+    // stroke it draws a bright line clean across the sphere, which is the exact
+    // failure this construction was built to make impossible.
+    const shadeR = bodyR - 0.3;
+    const d = Math.hypot(toLight.x, toLight.y);
+    const along = (shadeR ** 2 - litRadius ** 2 + d ** 2) / (2 * d);
+    const across = Math.sqrt(shadeR ** 2 - along ** 2);
+    const unit = { x: toLight.x / d, y: toLight.y / d };
+    const mid = { x: along * unit.x, y: along * unit.y };
+    const hit = (sign: number) => ({
+      x: mid.x + sign * across * unit.y,
+      y: mid.y - sign * across * unit.x,
+    });
+
+    const near = hit(-1);
+    const far = hit(1);
+    const arc = (
+      centre: Point2,
+      radius: number,
+      from: number,
+      to: number,
+      steps: number,
+    ) =>
+      Array.from({ length: steps + 1 }, (_, step) => {
+        const angle = from + ((to - from) * step) / steps;
+        return {
+          x: centre.x + Math.cos(angle) * radius,
+          y: centre.y + Math.sin(angle) * radius,
+        };
+      });
+
+    const body = { x: 0, y: 0 };
+    return silhouette(
+      anchor,
+      [
+        ...arc(
+          body,
+          shadeR,
+          Math.atan2(near.y, near.x),
+          Math.atan2(far.y, far.x),
+          14,
+        ),
+        ...arc(
+          toLight,
+          litRadius,
+          Math.atan2(far.y - toLight.y, far.x - toLight.x),
+          Math.atan2(near.y - toLight.y, near.x - toLight.x),
+          14,
+        ),
+      ].map((point) => ({ x: point.x, y: point.y + bodyY })),
+      { smooth: true, stroke: "none", fill: palette.kirbyShade.wash },
+    );
+  };
+
   return [
-    // Feet, then arms — both behind the body. Each is placed so its inner half
-    // falls inside the body circle and gets painted over.
-    ...[-7.6, 7.6].map((cx) => oval(cx, -2.4, 5.4, 3.1, hue("kirbyRed"))),
-    ...[
-      { cx: -11.2, cy: -11 },
-      { cx: 11.2, cy: -11 },
-    ].map(({ cx, cy }) => oval(cx, cy, 3.8, 5, hue("kirbyPink"))),
+    // Feet, then arms — both behind the body, each tilted along its own
+    // direction and pushed far enough in that its inner half falls inside the
+    // body circle and is painted over. That overlap is the difference between a
+    // limb attached to a ball and an ellipse parked beside one.
+    oval(-7.8, -3, 5.5, 3.1, hue("kirbyRed"), -0.26),
+    oval(7.6, -2.4, 5.5, 3.1, hue("kirbyRed"), 0.22),
+    oval(-11.2, -12.5, 3.6, 5.2, hue("kirbyPink"), -0.5),
+    oval(11.4, -13.5, 3.6, 5.2, hue("kirbyPink"), 0.45),
     oval(0, bodyY, bodyR, bodyR, hue("kirbyPink")),
+    terminator(),
     // Eyes: tall and narrow, which is the whole face — round eyes make a bear.
     // Each carries a highlight in its upper third, the single most identifying
     // mark he has and the one thing the first version left out.
-    ...[
-      { cx: -4.2 + turn, rx: 1.9, ry: 4 },
-      { cx: 2.8 + turn, rx: 1.8, ry: 3.8 },
-    ].flatMap(({ cx, rx, ry }) => [
-      oval(cx, -15.6, rx, ry, hue("kirbyBlue")),
-      oval(cx, -17.8, rx * 0.68, ry * 0.4, {
+    // Both eyes are the same size and sit symmetrically about `turn`. They used
+    // to differ by a tenth in each radius and their midpoint fell 0.7 left of
+    // the mouth's, which is small enough to look like a mistake rather than a
+    // turn of the head — the head's turn is already carried by `turn` itself.
+    ...[turn - 3.4, turn + 3.4].flatMap((cx) => [
+      oval(cx, -15.6, 1.85, 3.9, hue("kirbyBlue")),
+      oval(cx, -17.8, 1.26, 1.56, {
         stroke: palette.silkscreen.line,
         fill: palette.silkscreen.line,
       }),
     ]),
     // Cheeks, filled rather than outlined. As unfilled ellipses they read as two
     // small red rings — a donut on each side of his face, not a blush.
-    oval(-8.6 + turn, -10.4, 2.2, 1.3, hue("kirbyRed")),
-    oval(7 + turn, -10.4, 2, 1.2, hue("kirbyRed")),
-    // The smile. Screen y grows downward, so the curve has to bow toward +y —
-    // subtracting the bulge gave a very sad Kirby.
+    //
+    // The left one has to clear the silhouette: at 8.6 out with a 2.2 radius its
+    // far edge landed 0.7 past the body circle and hung off his face.
+    oval(-7.2 + turn, -10.4, 2, 1.2, hue("kirbyRed")),
+    oval(7.2 + turn, -10.4, 2, 1.2, hue("kirbyRed")),
+    // An open smile rather than a drawn line: flat along the top lip, arced
+    // below. A single stroke reads as a scratch at this size, and the dark
+    // interior is what gives the face any depth at all.
     silhouette(
       anchor,
-      Array.from({ length: 9 }, (_, step) => {
-        const t = step / 8;
+      Array.from({ length: 11 }, (_, step) => {
+        const angle = (step / 10) * Math.PI;
         return {
-          x: -2.4 + turn + t * 4.8,
-          y: -10.6 + Math.sin(Math.PI * t) * 1.5,
+          x: turn + Math.cos(angle) * 2.6,
+          y: -10.9 + Math.sin(angle) * 2.6,
         };
       }),
-      { smooth: true, outlineOnly: true, open: true, ...hueLine("kirbyRed") },
+      hue("kirbyRed"),
     ),
   ];
 }

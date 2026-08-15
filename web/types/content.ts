@@ -90,6 +90,7 @@ export const personalMotifKeys = [
   "anime",
   "kirby",
   "triforce",
+  "music",
 ] as const;
 export type PersonalMotifKey = (typeof personalMotifKeys)[number];
 
