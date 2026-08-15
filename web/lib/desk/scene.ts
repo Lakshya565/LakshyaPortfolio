@@ -2,8 +2,8 @@
  * The scene as data: objects standing on an open isometric field.
  *
  * There is no desk and no slab. guochen.design — the reference this follows — has
- * neither: his objects sit directly on a grid with their own cast shadows, mixed
- * with trees, small figures, and a plain cube. Three earlier builds put a piece
+ * neither: his objects sit directly on a grid, mixed with trees, small figures,
+ * and a plain cube. Three earlier builds put a piece
  * of furniture under everything (a corner desk, then a shelf hutch, then a bare
  * slab) and each one fought the composition rather than helping it.
  *

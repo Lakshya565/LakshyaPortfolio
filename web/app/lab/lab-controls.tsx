@@ -12,13 +12,11 @@ import { useState, type ReactNode } from "react";
  */
 export function LabControls({ children }: Readonly<{ children: ReactNode }>) {
   const [grid, setGrid] = useState(true);
-  const [shadows, setShadows] = useState(true);
   const [wireframe, setWireframe] = useState(false);
   const [labels, setLabels] = useState(true);
 
   const toggles = [
     { id: "grid", label: "Grid", value: grid, set: setGrid },
-    { id: "shadows", label: "Shadows", value: shadows, set: setShadows },
     { id: "wireframe", label: "Wireframe", value: wireframe, set: setWireframe },
     { id: "labels", label: "Labels", value: labels, set: setLabels },
   ];
@@ -41,7 +39,6 @@ export function LabControls({ children }: Readonly<{ children: ReactNode }>) {
       <div
         data-grid={grid ? "on" : "off"}
         data-labels={labels ? "on" : "off"}
-        data-shadows={shadows ? "on" : "off"}
         data-wireframe={wireframe ? "on" : "off"}
       >
         {children}

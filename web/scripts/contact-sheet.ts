@@ -15,8 +15,8 @@
  *   npm run contact-sheet                       # /lab at 1600px wide
  *   npm run contact-sheet -- --width 2200
  *   npm run contact-sheet -- --path /           # any route, e.g. the real scene
- *   npm run contact-sheet -- --toggle Shadows   # flip /lab switches before capture
- *   npm run contact-sheet -- --toggle Shadows,Grid --name no-shadows
+ *   npm run contact-sheet -- --toggle Grid      # flip /lab switches before capture
+ *   npm run contact-sheet -- --toggle Grid,Labels --name bare
  */
 
 import { spawn } from "node:child_process";
@@ -48,7 +48,7 @@ const name = arg("name", routePath === "/lab" ? "contact-sheet" : "page");
  * `/lab` switches to click before capturing, by their visible label.
  *
  * The toggles are React state behind checkboxes, so there is no URL that renders
- * the workbench without shadows — the only way to capture that view is to drive
+ * the workbench without its grid — the only way to capture that view is to drive
  * the control the way a person would.
  */
 const toggles = arg("toggle", "")
@@ -189,7 +189,7 @@ async function main(): Promise<void> {
     const missed = result?.result?.value;
     if (missed) {
       throw new Error(
-        `No such /lab toggle: ${missed}. Available: Grid, Shadows, Wireframe, Labels.`,
+        `No such /lab toggle: ${missed}. Available: Grid, Wireframe, Labels.`,
       );
     }
     // React has to commit the state change and the browser has to repaint.

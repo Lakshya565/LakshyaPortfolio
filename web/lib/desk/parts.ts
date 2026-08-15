@@ -16,7 +16,7 @@
  */
 
 import type { Point2, Size3, Vec3 } from "@/lib/desk/projection";
-import { polygonFootprint, roundedFootprint } from "@/lib/desk/projection";
+import { roundedFootprint } from "@/lib/desk/projection";
 
 /**
  * Four tones, mirroring Guo's four. Contrast cannot be inverted arithmetically —
@@ -42,8 +42,6 @@ export const ink = {
    * a category. In this field colour means one thing: the object responds.
    */
   accent: "#62d691",
-  /** Flat cast shadows. Guo's #E8E8E8 — one polygon, no stroke. */
-  shadow: "#242a36",
   /**
    * Claude's orange, for the mark on the monitor screen.
    *
@@ -167,15 +165,11 @@ export function hueLine(name: PaletteName): Readonly<{ stroke: string }> {
 }
 
 type PartCommon = Readonly<{
-  /** Cast-shadow spread in scene units. Omit for objects that sit on another. */
-  shadow?: number;
   /**
    * Draw the outline without a fill. This is how Guo draws interior detail — the
    * pencil's facets are unfilled stroked paths laid over its filled faces.
    */
   outlineOnly?: boolean;
-  /** Fill flat in the shadow tone with no stroke, like Guo's `cube-shadow`. */
-  tone?: "shadow";
   /**
    * Draw a curve through the points instead of straight segments between them.
    *
@@ -356,13 +350,10 @@ type SolidOptions = PartCommon &
  * the paint fields in one place is what stops that from recurring per helper.
  */
 function paintOf(options: PartCommon): PartCommon {
-  const { shadow, outlineOnly, tone, smooth, accent, stroke, fill, open } =
-    options;
+  const { outlineOnly, smooth, accent, stroke, fill, open } = options;
 
   return {
-    ...(shadow === undefined ? {} : { shadow }),
     ...(outlineOnly ? { outlineOnly } : {}),
-    ...(tone === undefined ? {} : { tone }),
     ...(smooth ? { smooth } : {}),
     ...(accent === undefined ? {} : { accent }),
     ...(stroke === undefined ? {} : { stroke }),
@@ -520,30 +511,6 @@ export function face(
 /** An unfilled polyline in 3D — Guo's interior detail lines. */
 export function detail(points: readonly Vec3[]): FacePart {
   return { shape: "face", points, outlineOnly: true };
-}
-
-/**
- * An explicit cast shadow lying on the ground. Screen-space silhouettes cannot
- * derive one from a footprint they do not have, so they declare it directly.
- */
-export function groundShadow(
-  center: Point2,
-  radiusX: number,
-  radiusY: number,
-  z = 0,
-): FacePart {
-  return {
-    shape: "face",
-    points: polygonFootprint(center, radiusX, radiusY, 16).map((point) => ({
-      ...point,
-      z,
-    })),
-    // Smoothed for the same reason `circle` is: sixteen segments around a small
-    // footprint projects to a visibly angular blob, and a hard-cornered shadow
-    // under a round object is the one thing in the scene with no excuse for it.
-    smooth: true,
-    tone: "shadow",
-  };
 }
 
 /** An arbitrary silhouette drawn in screen space at a world anchor. */

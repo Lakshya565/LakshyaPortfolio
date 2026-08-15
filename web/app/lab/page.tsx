@@ -49,10 +49,6 @@ function Tile({ entry }: Readonly<{ entry: DeskCatalogEntry }>) {
         viewBox={entry.viewBox}
       >
         <g className="lab-grid" dangerouslySetInnerHTML={{ __html: entry.grid }} />
-        <g
-          className="lab-shadow"
-          dangerouslySetInnerHTML={{ __html: entry.shadow }}
-        />
         {/* Paths inherit their stroke from here, exactly as they do from the
             object group in the real scene, so a tile shows the object's real
             colour rather than a monochrome stand-in. */}
@@ -148,7 +144,6 @@ export default function LabPage() {
         }
         .lab-tile figcaption span { opacity: 0.5; }
         [data-grid="off"] .lab-grid { display: none; }
-        [data-shadows="off"] .lab-shadow { display: none; }
         [data-labels="off"] .lab-tile figcaption { visibility: hidden; }
         /* Presentation attributes lose to CSS, so this reliably strips the
            fills that hide overlapping construction inside an object. */

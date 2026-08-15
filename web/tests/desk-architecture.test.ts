@@ -133,29 +133,10 @@ describe("desk SVG boundary", () => {
     expect(svg).toContain('<desc id="desk-description">');
     expect(svg).not.toMatch(/<script\b/i);
     expect(svg).not.toMatch(/<foreignObject\b/i);
-    // Soft shadows are stacked polygons, not a blur: the hero must stay cheap.
+    // The scene is flat paths only — no blur, no gradient. The hero stays cheap.
     expect(svg).not.toMatch(/<filter\b/i);
     expect(svg).not.toMatch(/\son[a-z]+\s*=/i);
     expect(svg).not.toMatch(/(?:href|xlink:href)\s*=\s*["'](?:https?:|\/\/|data:|javascript:)/i);
-  });
-
-  it("draws every shadow as a bare fill with no outline", async () => {
-    const svg = await readFile(
-      path.join(process.cwd(), "public", "media", "site", "lakshya-desk-v2.svg"),
-      "utf8",
-    );
-
-    // Stroke is inherited from the object group, so a shadow that does not opt
-    // out is outlined in whatever colour its object draws in — `ink.line` under
-    // the desk lamp, accent green under the monitor. Both shipped.
-    const shadows = [...svg.matchAll(/<path\b[^>]*\/>/g)]
-      .map((match) => match[0])
-      .filter((tag) => tag.includes(`fill="${ink.shadow}"`));
-
-    expect(shadows.length).toBeGreaterThan(0);
-    for (const tag of shadows) {
-      expect(tag, tag.slice(0, 80)).toContain('stroke="none"');
-    }
   });
 
   it("declares a frame matching the generated geometry", async () => {

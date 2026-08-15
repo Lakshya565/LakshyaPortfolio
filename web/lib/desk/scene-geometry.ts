@@ -3,20 +3,20 @@
 // cannot drift away from the illustration.
 
 export const deskSceneGeometry = {
-  viewBox: { x: -195.52, y: -38.5, width: 495.04, height: 246.83 },
+  viewBox: { x: -193.96, y: -38.5, width: 491.92, height: 245.28 },
   aspectRatio: 2.0056,
   hotspots: {
-    "maker": { tier: "hero", xPercent: 29.92, yPercent: 28.09, widthPercent: 9.079999999999998, heightPercent: 9.669999999999998 },
-    "colophon": { tier: "detail", xPercent: 56.46, yPercent: 20.05, widthPercent: 10.100000000000001, heightPercent: 22.98 },
-    "anime": { tier: "detail", xPercent: 21.11, yPercent: 29.98, widthPercent: 4.850000000000001, heightPercent: 10.529999999999998 },
-    "quackta": { tier: "hero", xPercent: 41.92, yPercent: 33.83, widthPercent: 8.280000000000001, heightPercent: 15.25 },
-    "shared-food": { tier: "hero", xPercent: 70.58, yPercent: 43.35, widthPercent: 8.25, heightPercent: 11.659999999999997 },
-    "taekwondo": { tier: "detail", xPercent: 19.01, yPercent: 47.17, widthPercent: 6.549999999999997, heightPercent: 12.299999999999997 },
-    "scouting": { tier: "detail", xPercent: 32.19, yPercent: 55.05, widthPercent: 5.719999999999999, heightPercent: 7.57 },
-    "climbing": { tier: "detail", xPercent: 63.21, yPercent: 52.06, widthPercent: 3.759999999999998, heightPercent: 13.489999999999995 },
-    "kirby": { tier: "detail", xPercent: 37.68, yPercent: 59.35, widthPercent: 6.060000000000002, heightPercent: 12.139999999999993 },
-    "gym": { tier: "detail", xPercent: 72.73, yPercent: 62.5, widthPercent: 7.86999999999999, heightPercent: 11.39 },
-    "food-favorites": { tier: "detail", xPercent: 55.31, yPercent: 71.85, widthPercent: 5.479999999999997, heightPercent: 6.6000000000000085 },
-    "triforce": { tier: "detail", xPercent: 46.57, yPercent: 70.19, widthPercent: 5.530000000000001, heightPercent: 10.840000000000003 },
+    "maker": { tier: "hero", xPercent: 29.79, yPercent: 28.27, widthPercent: 9.14, heightPercent: 9.73 },
+    "colophon": { tier: "detail", xPercent: 56.51, yPercent: 20.18, widthPercent: 10.160000000000004, heightPercent: 23.130000000000003 },
+    "anime": { tier: "detail", xPercent: 20.93, yPercent: 30.17, widthPercent: 4.879999999999999, heightPercent: 10.600000000000001 },
+    "quackta": { tier: "hero", xPercent: 41.87, yPercent: 34.04, widthPercent: 8.330000000000005, heightPercent: 12.64 },
+    "shared-food": { tier: "hero", xPercent: 70.71, yPercent: 43.63, widthPercent: 8.300000000000011, heightPercent: 11.729999999999997 },
+    "taekwondo": { tier: "detail", xPercent: 18.82, yPercent: 47.47, widthPercent: 6.579999999999998, heightPercent: 12.380000000000003 },
+    "scouting": { tier: "detail", xPercent: 32.08, yPercent: 55.4, widthPercent: 5.75, heightPercent: 7.6200000000000045 },
+    "climbing": { tier: "detail", xPercent: 63.29, yPercent: 52.39, widthPercent: 3.789999999999999, heightPercent: 13.579999999999998 },
+    "kirby": { tier: "detail", xPercent: 37.6, yPercent: 59.73, widthPercent: 6.100000000000001, heightPercent: 9.660000000000004 },
+    "gym": { tier: "detail", xPercent: 72.88, yPercent: 62.89, widthPercent: 7.920000000000002, heightPercent: 11.209999999999994 },
+    "food-favorites": { tier: "detail", xPercent: 55.35, yPercent: 72.31, widthPercent: 5.509999999999998, heightPercent: 6.640000000000001 },
+    "triforce": { tier: "detail", xPercent: 46.75, yPercent: 70.63, widthPercent: 5.159999999999997, heightPercent: 10.710000000000008 },
   },
 } as const;

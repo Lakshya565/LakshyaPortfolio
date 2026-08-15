@@ -23,7 +23,6 @@ import {
   boundsOf,
   boxFaces,
   centroidOf,
-  contactShadow,
   ellipseArc,
   extrude,
   project,
@@ -99,13 +98,10 @@ function convexHull(points: readonly Point[]): readonly Point[] {
 
 type Painted = Pick<
   DeskPart,
-  "outlineOnly" | "tone" | "smooth" | "accent" | "stroke" | "fill" | "open"
+  "outlineOnly" | "smooth" | "accent" | "stroke" | "fill" | "open"
 >;
 
 function fillOf(part: Painted): string {
-  if (part.tone === "shadow") {
-    return ink.shadow;
-  }
   // An unfilled path is unfilled whatever colour it was handed — this is Guo's
   // interior-detail style, and a fill would hide the faces underneath it.
   if (part.outlineOnly) {
@@ -122,11 +118,6 @@ function fillOf(part: Painted): string {
  * per-object colour possible with a single attribute.
  */
 function strokeOf(part: Painted): string {
-  // Shadows must opt out explicitly now that stroke is inherited rather than
-  // set per path — otherwise every shadow picks up an outline.
-  if (part.tone === "shadow") {
-    return ` stroke="none"`;
-  }
   const colour = part.stroke ?? part.accent;
   return colour ? ` stroke="${colour}"` : "";
 }
@@ -415,95 +406,6 @@ function emitPart(part: DeskPart): Emitted {
   };
 }
 
-/**
- * How a declared `shadow: n` becomes geometry. These two numbers are the entire
- * shadow model for derived shadows, and they exist as constants so the answer to
- * "why is that shadow so big" is one line rather than four call sites.
- *
- * `GROW` — how far the patch reaches past the footprint, as a fraction of `n`.
- * It used to be the whole of `n` on every side, which made every shadow larger
- * than its object and turned a grounding cue into a halo.
- * `DRIFT` — how far it slides along `+x`/`+y`, away from the upper-left light.
- * This is what makes the patch visible, so it is now the larger of the two.
- */
-const SHADOW_GROW = 0.3;
-const SHADOW_DRIFT = 0.45;
-
-/**
- * One flat polygon, no stroke — Guo's `cube-shadow` is a single `#E8E8E8`
- * diamond. The previous build stacked three rings to fake a soft falloff, which
- * has no place in line art.
- *
- * `stroke="none"` is not optional. Stroke is inherited from the object group, so
- * without it a shadow picks up whatever colour that object draws in: the desk
- * lamp's came out ringed in `ink.line`, and every interactive object's — the
- * monitor most visibly — came out ringed in accent green. A shadow is a fill.
- */
-function emitShadow(part: DeskPart): Emitted | null {
-  if (
-    part.shadow === undefined ||
-    part.shape === "face" ||
-    part.shape === "screen"
-  ) {
-    return null;
-  }
-
-  const grow = part.shadow * SHADOW_GROW;
-  const drift = part.shadow * SHADOW_DRIFT;
-
-  // Round forms cast a round shadow, drawn as a real ellipse. A polygonal
-  // shadow under a curved object is a tell, and this scene has enough of those.
-  if (part.shape === "round" || part.shape === "dome") {
-    const radiusY = part.radius * (part.squash ?? 1);
-    const polygon = fullEllipse(
-      { x: part.center.x + drift, y: part.center.y + drift },
-      part.radius + grow,
-      radiusY + grow,
-      part.z,
-    );
-
-    return {
-      markup: `<path d="${toSegmentPath([{ points: polygon, curved: true }])}" fill="${ink.shadow}" stroke="none"/>`,
-      points: polygon,
-    };
-  }
-
-  const polygon =
-    part.shape === "pyramid"
-      ? expandFootprint(part.base, grow, drift).map((point) =>
-          project({ ...point, z: part.z }),
-        )
-      : part.shape === "extrude"
-        ? expandFootprint(part.footprint, grow, drift).map((point) =>
-            project({ ...point, z: part.z }),
-          )
-        : contactShadow(part.origin, part.size, grow, drift);
-
-  return {
-    markup: `<path d="${toPath(polygon)}" fill="${ink.shadow}" stroke="none"/>`,
-    points: polygon,
-  };
-}
-
-/** Grows a footprint about its centroid and drifts it away from the key light. */
-function expandFootprint(
-  footprint: readonly Point2[],
-  grow: number,
-  drift: number,
-): readonly Point2[] {
-  const centroid = centroidOf(footprint);
-
-  return footprint.map((point) => {
-    const dx = point.x - centroid.x;
-    const dy = point.y - centroid.y;
-    const length = Math.hypot(dx, dy) || 1;
-    return {
-      x: point.x + (dx / length) * grow + drift,
-      y: point.y + (dy / length) * grow + drift,
-    };
-  });
-}
-
 // ---------------------------------------------------------------------------
 // Ground
 // ---------------------------------------------------------------------------
@@ -735,38 +637,18 @@ type BuiltObject = Readonly<{
   /** Labelled objects are drawn in the accent: colour means "this responds". */
   interactive: boolean;
   tier: string;
-  shadowMarkup: string;
   bodyMarkup: string;
   points: readonly Point[];
   bounds: Bounds;
 }>;
 
 function buildObject(object: DeskObject): BuiltObject {
-  const shadows: string[] = [];
   const bodies: string[] = [];
   const points: Point[] = [];
 
-  // Shadows first within the group, so nothing casts over its own object.
-  for (const part of object.parts) {
-    const shadow = emitShadow(part);
-    if (shadow) {
-      shadows.push(shadow.markup);
-      points.push(...shadow.points);
-    }
-  }
-
   for (const part of object.parts) {
     const emitted = emitPart(part);
-    // A part declared `tone: "shadow"` is a shadow too, and belongs in the same
-    // bucket as the ones `emitShadow` derives from a `shadow: n` spread.
-    //
-    // `emitShadow` only fires for solids that can have a footprint expanded, so
-    // it skips `face` and `screen` parts by design — which is exactly what
-    // `groundShadow()` produces, since a screen-space silhouette has no
-    // footprint to derive one from. The result was that every hand-declared
-    // shadow ended up in the body: `/lab`'s Shadows switch left the duck, Kirby,
-    // the belt, the dumbbell and all fourteen trees still casting.
-    (part.tone === "shadow" ? shadows : bodies).push(emitted.markup);
+    bodies.push(emitted.markup);
     points.push(...emitted.points);
   }
 
@@ -776,7 +658,6 @@ function buildObject(object: DeskObject): BuiltObject {
     scenery: object.scenery === true,
     interactive: object.hotspot !== undefined,
     tier: object.tier ?? "detail",
-    shadowMarkup: shadows.join(""),
     bodyMarkup: bodies.join(""),
     points,
     bounds: boundsOf(object.parts.flatMap(partPoints)),
@@ -791,7 +672,7 @@ function buildObject(object: DeskObject): BuiltObject {
  * entries come from the same `BuiltObject` records the scene is assembled from,
  * so a tile can never show something the artwork does not.
  *
- * Shadow, body, and grid stay separate so the workbench can toggle them.
+ * Body and grid stay separate so the workbench can toggle the grid.
  */
 function emitCatalog(built: readonly BuiltObject[], scene: View): string {
   const spacing = scene.width * 0.0205;
@@ -823,7 +704,6 @@ function emitCatalog(built: readonly BuiltObject[], scene: View): string {
         `${round(view.originX)} ${round(view.originY)} ${round(view.width)} ${round(view.height)}`,
       )},`,
       `    grid: ${JSON.stringify(emitGrid(view, spacing, weight))},`,
-      `    shadow: ${JSON.stringify(item.shadowMarkup)},`,
       `    body: ${JSON.stringify(item.bodyMarkup)},`,
       "  },",
     ].join("\n");
@@ -854,7 +734,7 @@ async function main() {
   // page hover the object itself rather than a rectangle floated over it.
   const groups = built.map(
     (item) =>
-      `<g data-object="${item.key}"${item.interactive ? ` stroke="${ink.accent}"` : ""}>${item.shadowMarkup}${item.bodyMarkup}</g>`,
+      `<g data-object="${item.key}"${item.interactive ? ` stroke="${ink.accent}"` : ""}>${item.bodyMarkup}</g>`,
   );
 
   const screenBoxes: ScreenBox[] = built.map((item) => ({

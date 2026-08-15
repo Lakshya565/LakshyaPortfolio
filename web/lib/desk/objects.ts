@@ -31,7 +31,6 @@ import {
   detail,
   disc,
   face,
-  groundShadow,
   hue,
   hueLine,
   ink,
@@ -158,7 +157,6 @@ function plate(
  */
 export function tree(at: At, height = 22, canopy = 7): readonly DeskPart[] {
   return [
-    groundShadow({ x: at.x, y: at.y }, canopy * 0.55, canopy * 0.55, at.z),
     cylinder({ x: at.x, y: at.y }, 1.1, at.z, height, { segments: 6 }),
     circle({ x: at.x, y: at.y, z: at.z + height }, canopy, { segments: 20 }),
   ];
@@ -175,7 +173,6 @@ export function figure(at: At): readonly DeskPart[] {
   const rise = 3;
 
   return [
-    groundShadow({ x: at.x, y: at.y }, 3.4, 3.4, at.z),
     // Hexagonal silhouette of a small upright box, drawn in one path.
     silhouette({ x: at.x, y: at.y, z: at.z }, [
       { x: half, y: -rise - body },
@@ -198,7 +195,6 @@ export function cube(at: At, size = 14): readonly DeskPart[] {
     box(
       { x: at.x, y: at.y, z: at.z },
       { width: size, depth: size, height: size },
-      { shadow: size * 0.3 },
     ),
   ];
 }
@@ -227,7 +223,6 @@ export function monitor(at: At): readonly DeskPart[] {
   return [
     rounded({ x: at.x + 14, y: at.y + 2 }, 18, 10, at.z, 1.4, {
       radius: 3,
-      shadow: 3,
     }),
     box(
       { x: at.x + 20, y: at.y + 4, z: at.z + 1.4 },
@@ -295,7 +290,6 @@ export function keyboard(at: At): readonly DeskPart[] {
   return [
     rounded({ x: at.x, y: at.y }, width, depth, at.z, 1.6, {
       radius: 1.6,
-      shadow: 2,
     }),
     ...Array.from({ length: 4 }, (_, row) =>
       detail([
@@ -318,7 +312,7 @@ export function deskLamp(at: At): readonly DeskPart[] {
   const shadeZ = postZ + postHeight;
 
   return [
-    disc({ x: at.x, y: at.y }, 6, at.z, 1.4, { shadow: 2.5 }),
+    disc({ x: at.x, y: at.y }, 6, at.z, 1.4),
     cylinder({ x: at.x, y: at.y }, 1.3, postZ, postHeight, { segments: 6 }),
     // Cone opening downward: `taper` scales the top, so it stays below 1.
     cylinder({ x: at.x, y: at.y }, 7.5, shadeZ, 7, { segments: 14, taper: 0.34 }),
@@ -356,7 +350,6 @@ export function clockTower(at: At): readonly DeskPart[] {
     box(
       { x: at.x, y: at.y, z: at.z },
       { width: baseWidth, depth: baseDepth, height: baseHeight },
-      { shadow: 3 },
     ),
     // Dial, then twelve ticks around it.
     face(
@@ -452,7 +445,6 @@ export function devBoard(at: At): readonly DeskPart[] {
     // tray beside it.
     rounded({ x: at.x + 3, y: breadboardY }, 18, 8.5, at.z, 2.4, {
       radius: 0.8,
-      shadow: 1.6,
       ...hue("silkscreen"),
     }),
     // The centre channel, which is the one mark that says breadboard.
@@ -490,7 +482,6 @@ export function devBoard(at: At): readonly DeskPart[] {
     }),
     rounded({ x: at.x, y: at.y }, width, depth, at.z, boardHeight, {
       radius: 1,
-      shadow: 1.8,
       ...hue("arduino"),
     }),
     // Digital headers along the far edge, power and analog along the near one —
@@ -596,7 +587,6 @@ export function duck(at: At): readonly DeskPart[] {
   const anchor = { x: at.x, y: at.y, z: at.z };
 
   return [
-    groundShadow({ x: at.x, y: at.y }, 8, 8, at.z),
     // One continuous profile: tail, back, head, bill, breast, belly. Smoothed,
     // because the previous version's flat segments were the whole complaint —
     // it drew a duck-shaped polygon rather than a duck.
@@ -744,7 +734,6 @@ export function belt(at: At): readonly DeskPart[] {
     );
 
   return [
-    groundShadow({ x: at.x + width / 2, y: at.y }, outer * 1.15, outer * 0.42, at.z),
     // The roll itself: band plus the cap turned toward the camera.
     ...plate(axis, outer, at.x, faceX, black),
     // Three layers spiralling in. Each starts and ends at a different angle and
@@ -815,7 +804,7 @@ export function compass(at: At): readonly DeskPart[] {
     // No `rings` here. A ring on the top face draws a second ellipse exactly
     // concentric with the silhouette, and stacked with the wall seam below it
     // the whole object came out as three parallel curves — a stack of pancakes.
-    cylinder(center, radius, at.z, caseHeight, { segments: 24, shadow: 2 }),
+    cylinder(center, radius, at.z, caseHeight, { segments: 24 }),
     // The case seam, on the side wall rather than across the top face — it runs
     // round the body of a real compass, so it has to follow the wall's curve and
     // stop at the two silhouette edges. Cutting it across the dial instead was
@@ -883,9 +872,6 @@ export function compass(at: At): readonly DeskPart[] {
  * pair, so this is the one hotspot that keeps a second object, drawn as a single
  * grouped composition rather than two separated things.
  *
- * Both are screen-space profiles now. As projected round solids their convex
- * hulls merged with their own cast shadows and they appeared to melt into the
- * floor; a profile with an explicit base curve sits on the ground instead.
  */
 export function twoCups(at: At): readonly DeskPart[] {
   /**
@@ -916,7 +902,6 @@ export function twoCups(at: At): readonly DeskPart[] {
       cylinder(center, base, at.z, body, {
         segments: 24,
         taper: flare,
-        shadow: 1.8,
         ...hue(tea),
       }),
       // Pearls first, then the lid: they sit inside the cup, so the body's own
@@ -984,7 +969,6 @@ export function sushiPlate(at: At): readonly DeskPart[] {
   return [
     disc({ x: at.x, y: at.y }, 9.5, at.z, 0.8, {
       segments: 18,
-      shadow: 2,
       ...hue("silkscreen"),
     }),
     // Each roll: a nori wall, a bed of rice on top, and the filling at the
@@ -1081,7 +1065,6 @@ export function climbingHold(at: At): readonly DeskPart[] {
     box(
       { x: at.x, y: at.y, z: at.z },
       { width, depth, height },
-      { shadow: 2 },
     ),
     // Two holds, not three, and the panel cut down to a frame around them. At
     // 25×39 with three small blobs the object was mostly blank slab, and the
@@ -1148,7 +1131,6 @@ export function dumbbell(at: At): readonly DeskPart[] {
   const grip = 5.2;
 
   return [
-    groundShadow({ x: at.x, y: at.y }, 15, 5, at.z),
     // No collars. They were two more concentric rims stacked on a face that
     // already had the plate's own rim and the bar's flush end on it, and that
     // pile-up is the whole reason the far plate looked like a mistake.
@@ -1241,7 +1223,6 @@ export function animeScreen(at: At): readonly DeskPart[] {
       ],
       bodyZ + 2.5,
       height - 5,
-      { shadow: 2 },
     ),
     box({ x: at.x, y: at.y + 1, z: bodyZ }, { width, depth: front - 1, height }),
     // The screen, lit. A dark rectangle inset in a grey box is an appliance door
@@ -1322,10 +1303,6 @@ export function mouse(at: At): readonly DeskPart[] {
     cylinder({ x: at.x, y: at.y }, radius, at.z, height, {
       squash,
       taper,
-      // A tighter spread than most objects get. The mouse is the smallest solid
-      // in the scene, so the usual 1.6 put a dark halo all the way round it and
-      // the pair read as a mouse sitting in a puddle.
-      shadow: 0.8,
     }),
     // The seam between the two buttons, running the length of the top face.
     detail([onTop(0, -0.9), onTop(0, 0.05)]),
@@ -1379,7 +1356,6 @@ export function kirby(at: At): readonly DeskPart[] {
   const turn = -0.8;
 
   return [
-    groundShadow({ x: at.x, y: at.y }, 13, 5, at.z),
     // Feet, then arms — both behind the body. Each is placed so its inner half
     // falls inside the body circle and gets painted over.
     ...[-7.6, 7.6].map((cx) => oval(cx, -2.4, 5.4, 3.1, hue("kirbyRed"))),
@@ -1496,17 +1472,6 @@ export function triforce(at: At): readonly DeskPart[] {
   };
 
   return [
-    // The footprint on the grid: the whole figure is `half * 2` across and
-    // `depth` deep, so the shadow is that rectangle rather than a blob.
-    face(
-      [
-        point(-0.5, 0, -0.5),
-        point(half * 2 + 0.5, 0, -0.5),
-        point(half * 2 + 0.5, 0, depth + 0.5),
-        point(-0.5, 0, depth + 0.5),
-      ],
-      { tone: "shadow" },
-    ),
     // Bottom pair first, then the crown, which rests on both and must paint
     // over them. Within the pair the right one is nearer the camera.
     ...prism(0, 0),
