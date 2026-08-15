@@ -416,9 +416,28 @@ function emitPart(part: DeskPart): Emitted {
 }
 
 /**
+ * How a declared `shadow: n` becomes geometry. These two numbers are the entire
+ * shadow model for derived shadows, and they exist as constants so the answer to
+ * "why is that shadow so big" is one line rather than four call sites.
+ *
+ * `GROW` — how far the patch reaches past the footprint, as a fraction of `n`.
+ * It used to be the whole of `n` on every side, which made every shadow larger
+ * than its object and turned a grounding cue into a halo.
+ * `DRIFT` — how far it slides along `+x`/`+y`, away from the upper-left light.
+ * This is what makes the patch visible, so it is now the larger of the two.
+ */
+const SHADOW_GROW = 0.3;
+const SHADOW_DRIFT = 0.45;
+
+/**
  * One flat polygon, no stroke — Guo's `cube-shadow` is a single `#E8E8E8`
  * diamond. The previous build stacked three rings to fake a soft falloff, which
  * has no place in line art.
+ *
+ * `stroke="none"` is not optional. Stroke is inherited from the object group, so
+ * without it a shadow picks up whatever colour that object draws in: the desk
+ * lamp's came out ringed in `ink.line`, and every interactive object's — the
+ * monitor most visibly — came out ringed in accent green. A shadow is a fill.
  */
 function emitShadow(part: DeskPart): Emitted | null {
   if (
@@ -429,36 +448,39 @@ function emitShadow(part: DeskPart): Emitted | null {
     return null;
   }
 
+  const grow = part.shadow * SHADOW_GROW;
+  const drift = part.shadow * SHADOW_DRIFT;
+
   // Round forms cast a round shadow, drawn as a real ellipse. A polygonal
   // shadow under a curved object is a tell, and this scene has enough of those.
   if (part.shape === "round" || part.shape === "dome") {
     const radiusY = part.radius * (part.squash ?? 1);
     const polygon = fullEllipse(
-      { x: part.center.x + part.shadow * 0.35, y: part.center.y + part.shadow * 0.35 },
-      part.radius + part.shadow,
-      radiusY + part.shadow,
+      { x: part.center.x + drift, y: part.center.y + drift },
+      part.radius + grow,
+      radiusY + grow,
       part.z,
     );
 
     return {
-      markup: `<path d="${toSegmentPath([{ points: polygon, curved: true }])}" fill="${ink.shadow}"/>`,
+      markup: `<path d="${toSegmentPath([{ points: polygon, curved: true }])}" fill="${ink.shadow}" stroke="none"/>`,
       points: polygon,
     };
   }
 
   const polygon =
     part.shape === "pyramid"
-      ? expandFootprint(part.base, part.shadow).map((point) =>
+      ? expandFootprint(part.base, grow, drift).map((point) =>
           project({ ...point, z: part.z }),
         )
       : part.shape === "extrude"
-        ? expandFootprint(part.footprint, part.shadow).map((point) =>
+        ? expandFootprint(part.footprint, grow, drift).map((point) =>
             project({ ...point, z: part.z }),
           )
-        : contactShadow(part.origin, part.size, part.shadow);
+        : contactShadow(part.origin, part.size, grow, drift);
 
   return {
-    markup: `<path d="${toPath(polygon)}" fill="${ink.shadow}"/>`,
+    markup: `<path d="${toPath(polygon)}" fill="${ink.shadow}" stroke="none"/>`,
     points: polygon,
   };
 }
@@ -466,18 +488,18 @@ function emitShadow(part: DeskPart): Emitted | null {
 /** Grows a footprint about its centroid and drifts it away from the key light. */
 function expandFootprint(
   footprint: readonly Point2[],
-  spread: number,
+  grow: number,
+  drift: number,
 ): readonly Point2[] {
   const centroid = centroidOf(footprint);
-  const drift = spread * 0.35;
 
   return footprint.map((point) => {
     const dx = point.x - centroid.x;
     const dy = point.y - centroid.y;
     const length = Math.hypot(dx, dy) || 1;
     return {
-      x: point.x + (dx / length) * spread + drift,
-      y: point.y + (dy / length) * spread + drift,
+      x: point.x + (dx / length) * grow + drift,
+      y: point.y + (dy / length) * grow + drift,
     };
   });
 }

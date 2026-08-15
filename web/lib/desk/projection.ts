@@ -250,24 +250,29 @@ export function boxFaces(origin: Vec3, size: Size3): BoxFaces {
 }
 
 /**
- * A soft rhombus on the surface an object rests on. Nothing in the scene is
- * allowed to float: this is the cheapest and most convincing grounding cue.
+ * The patch of ground an object sits on. Nothing in the scene is allowed to
+ * float: this is the cheapest and most convincing grounding cue.
+ *
+ * `grow` and `drift` are separate because they do different jobs, and the
+ * previous single `spread` conflated them — it pushed every edge outward,
+ * including the edge facing the light, so a shadow was always wider than the
+ * thing casting it. Growth is contact softness and stays small; drift is the
+ * light direction and is the reason the patch is visible at all.
  */
 export function contactShadow(
   origin: Vec3,
   size: Size3,
-  spread = 1.5,
+  grow = 0.5,
+  drift = 0.6,
 ): readonly Point[] {
   const { x, y, z } = origin;
   const { width, depth } = size;
-  // Offset away from the upper-left key light.
-  const drift = spread * 0.35;
 
   return [
-    project({ x: x - spread + drift, y: y - spread + drift, z }),
-    project({ x: x + width + spread + drift, y: y - spread + drift, z }),
-    project({ x: x + width + spread + drift, y: y + depth + spread + drift, z }),
-    project({ x: x - spread + drift, y: y + depth + spread + drift, z }),
+    project({ x: x - grow + drift, y: y - grow + drift, z }),
+    project({ x: x + width + grow + drift, y: y - grow + drift, z }),
+    project({ x: x + width + grow + drift, y: y + depth + grow + drift, z }),
+    project({ x: x - grow + drift, y: y + depth + grow + drift, z }),
   ];
 }
 
