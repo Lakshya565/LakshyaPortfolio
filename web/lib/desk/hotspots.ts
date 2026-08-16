@@ -176,7 +176,7 @@ export const deskHotspotDefinitions = [
   },
   {
     key: "kirby",
-    label: "Smash Main",
+    label: "Kirby Lover",
     motifKeys: ["kirby"],
     placement: {
       xPercent: 34,

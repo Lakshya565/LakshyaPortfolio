@@ -490,7 +490,7 @@ function emitFade(view: View): Readonly<{ defs: string; markup: string }> {
 // Layout guarantees
 // ---------------------------------------------------------------------------
 
-type ScreenBox = Readonly<{ key: string; scenery: boolean; bounds: Bounds }>;
+type ScreenBox = Readonly<{ key: string; bounds: Bounds }>;
 
 function overlapRatio(left: Bounds, right: Bounds): number {
   const width = Math.min(left.maxX, right.maxX) - Math.max(left.minX, right.minX);
@@ -510,26 +510,63 @@ function overlapRatio(left: Bounds, right: Bounds): number {
 
 /**
  * "Nothing overlaps" was the loudest complaint about the shelf-hutch desk, and
- * it is not something to re-judge by eye every time the layout moves. Two
- * labelled objects may not collide; scenery may sit close, because a mouse
- * beside a keyboard is correct.
+ * it is not something to re-judge by eye every time the layout moves.
+ *
+ * The budget used to allow a labelled pair 2% and any pair involving scenery
+ * 34%, on the argument that a mouse beside a keyboard is correct. In practice
+ * the allowance did not buy adjacency, it bought collisions: a figure stood
+ * inside the boba cups at 24%, another inside the dumbbell, and a tree grew out
+ * of the compass — every one of them under budget and every one of them plainly
+ * wrong on screen. The scene now separates cleanly with zero, so nothing is
+ * gained by leaving a tolerance that only ever hid defects.
+ *
+ * If a future object genuinely has to sit inside another's box, raise this
+ * deliberately and say which pair needs it. Do not widen it to make a move
+ * compile.
  */
-const overlapBudget = { labelled: 0.02, scenery: 0.34 } as const;
+const overlapBudget = 0;
+
+/**
+ * The pairs allowed to overlap anyway, by key.
+ *
+ * There is exactly one, and it is the case a rectangle cannot express: **a
+ * monitor's screen box contains the near edge of its own desk.** The box runs
+ * down past the stand to `y = 77.7`, so a keyboard drawn in front of the
+ * monitor — with clear daylight between the two shapes — still reports an
+ * overlap of about 13%. Nothing is drawn on top of anything; the boxes are
+ * simply the wrong instrument for a group of objects that belong together.
+ *
+ * This is deliberately a list of named pairs rather than a raised budget. The
+ * budget stayed at zero for the other 405 pairs, and the reason it is zero is
+ * that every tolerance ever granted here went on to hide a real collision — a
+ * figure standing inside the boba cups, a tree growing out of the compass.
+ * Adding a pair means saying which two objects and why. Do not add one to make
+ * a move compile.
+ */
+const overlapExemptions: readonly (readonly [string, string])[] = [
+  ["colophon", "keyboard"],
+];
+
+function isExempt(left: string, right: string): boolean {
+  return overlapExemptions.some(
+    ([a, b]) => (a === left && b === right) || (a === right && b === left),
+  );
+}
 
 function assertNoOverlaps(boxes: readonly ScreenBox[]): void {
   const problems: string[] = [];
 
   for (let i = 0; i < boxes.length; i += 1) {
     for (let j = i + 1; j < boxes.length; j += 1) {
-      const budget =
-        boxes[i].scenery || boxes[j].scenery
-          ? overlapBudget.scenery
-          : overlapBudget.labelled;
+      if (isExempt(boxes[i].key, boxes[j].key)) {
+        continue;
+      }
+
       const ratio = overlapRatio(boxes[i].bounds, boxes[j].bounds);
 
-      if (ratio > budget) {
+      if (ratio > overlapBudget) {
         problems.push(
-          `  ${boxes[i].key} / ${boxes[j].key}: ${Math.round(ratio * 100)}% (budget ${Math.round(budget * 100)}%)`,
+          `  ${boxes[i].key} / ${boxes[j].key}: ${Math.round(ratio * 100)}%`,
         );
       }
     }
@@ -739,7 +776,6 @@ async function main() {
 
   const screenBoxes: ScreenBox[] = built.map((item) => ({
     key: item.key,
-    scenery: item.scenery,
     bounds: item.bounds,
   }));
 
