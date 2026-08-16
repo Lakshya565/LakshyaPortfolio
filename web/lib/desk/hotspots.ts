@@ -92,7 +92,7 @@ export const deskHotspotDefinitions = [
   },
   {
     key: "taekwondo",
-    label: "Master Instructor & Fourth-Degree Black Belt",
+    label: "Martial Artist",
     motifKeys: ["taekwondo"],
     placement: {
       xPercent: 12,
