@@ -130,12 +130,20 @@ export const palette = {
   /** The belt's rank stripes. */
   beltGold: { line: "#dbb45f", wash: "#8a6d28" },
   /**
-   * Black webbing — the one entry that stays dark on purpose, because the belt's
-   * colour *is* black and lifting it would make it a grey belt. It still clears
-   * `ink.ground` enough to punch out the grid. The `line` is the sheen along a
-   * fold, not the belt's colour: a genuinely black outline draws nothing here.
+   * Black webbing. The `line` is the sheen along a fold, not the belt's colour:
+   * a genuinely black outline draws nothing here.
+   *
+   * Held at `#16191f` for a long time on the theory that a black belt lifted is
+   * a grey belt. That was true of the roll and false of everything thinner: at
+   * that value the wash cleared `ink.ground` by a ratio of 1.17, which a large
+   * outlined disc survives on its silhouette alone but an upright strap two
+   * units wide does not — the strap was almost entirely fill, so it read as a
+   * transparent frame and its rank stripes as four free-standing rods. Lifted to
+   * clear the page by 1.45, which now passes the contrast test on its own
+   * instead of sitting on that test's exemption list, and is still the darkest
+   * thing on the desk by a wide margin.
    */
-  beltBlack: { line: "#c3c9d6", wash: "#16191f" },
+  beltBlack: { line: "#c3c9d6", wash: "#282c34" },
   /** Climbing holds. A set wall is never one colour; a real one is graded. */
   holdGreen: { line: "#5fc784", wash: "#2e7a4c" },
   holdBlue: { line: "#5aa8d8", wash: "#2a6488" },
@@ -156,14 +164,42 @@ export const palette = {
   /** Bar stock, machined steel, anything raw metal. */
   steel: { line: "#c2c8d2", wash: "#454c58" },
   /**
+   * Cast iron: dumbbell plates, and anything heavier than the bar it sits on.
+   *
+   * A stop darker than `steel`, which is the whole point — a plate and the
+   * handle through it are two different metals, and with one grey for both the
+   * object needs extra concentric rings to say where one ends. Two values do
+   * that with no rings at all.
+   *
+   * The wash cannot go much darker. `tests/desk-objects.test.ts` requires every
+   * wash to clear `ink.ground` by a contrast ratio above 1.4, which puts the
+   * floor near a luminance of 0.0225; this sits at roughly 0.034.
+   */
+  iron: { line: "#8f97a5", wash: "#2e343e" },
+  /**
    * Headphone housing: the slate navy of moulded plastic.
    *
-   * Paired with `steel` rather than given a second entry of its own. Real
-   * over-ears are two materials — a dark shell and a pale metal slider — and
-   * borrowing the existing metal for the second one keeps the object honest
-   * without adding a near-duplicate to the palette.
+   * Lifted from `#243c4a`, and the direction matters more than the amount. The
+   * reference photograph is a pale body with near-black foam, so the housing has
+   * to be the *light* half of the pair — at the old value it was only a shade off
+   * `earPad` and the cup's three contours had no tonal story between them, which
+   * is what made a bullseye read as a stack of rings.
    */
-  headphone: { line: "#9db6c6", wash: "#243c4a" },
+  headphone: { line: "#9db6c6", wash: "#33505d" },
+  /**
+   * Headphone foam: the ear pads and the strip under the headband.
+   *
+   * A stop *darker* than `headphone`, and that direction is the point. The first
+   * pass used `steel` for the pads, which made them lighter than the shell they
+   * sit in — the opposite of every photograph of the things, where the foam is
+   * the darkest part and the housing reads as the light body around it. With the
+   * order inverted the concentric contours on a cup had no tonal story to tell
+   * and collapsed into a swirl of rings.
+   *
+   * Same floor as `iron`: the wash has to clear `ink.ground` by a ratio above
+   * 1.4, near a luminance of 0.0225. This sits at roughly 0.029.
+   */
+  earPad: { line: "#7f9aab", wash: "#1e3140" },
   /**
    * The compass's glass. Two entries, like the Triforce's two faces and for the
    * same reason: one value cannot say *transparent*. `glass` is the dial seen

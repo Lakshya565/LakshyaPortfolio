@@ -206,10 +206,16 @@ describe("part colour", () => {
    * see.
    */
   it("keeps every wash clear of the page ground", () => {
-    // Two entries are deliberately near-black, and both would be wrong lifted:
-    // a black belt lifted is a grey belt, and a tapioca pearl at the value of
-    // the tea it sits in is invisible.
-    const intentionallyDark = new Set<PaletteName>(["beltBlack", "pearl"]);
+    // One entry is deliberately near-black: a tapioca pearl at the value of the
+    // tea it sits in is invisible.
+    //
+    // `beltBlack` used to be exempt too, on the theory that a black belt lifted
+    // is a grey belt. The exemption hid a real failure. At its old value the
+    // wash cleared the page by 1.17 — enough for a big outlined roll, which
+    // reads on its silhouette, and not nearly enough for the thin upright strap
+    // that leaves it, which is almost all fill and came out looking like an
+    // empty frame. It now clears on its own and is checked like everything else.
+    const intentionallyDark = new Set<PaletteName>(["pearl"]);
 
     const luminance = (colour: string) => {
       const channel = (from: number) => {
