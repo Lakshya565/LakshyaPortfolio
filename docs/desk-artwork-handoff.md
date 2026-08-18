@@ -290,6 +290,24 @@ answers both; the whole block is 1.95.
 `y = -106.5` is a long way back, which is the point: `depthOrder` gives it the
 lowest order in the scene, so it paints before everything else.
 
+### The slabs are thin, and that is the whole readability story
+
+`depth` is `0.4 * cell`. It started at a full cell — the depth the upright wall
+had, carried over unchanged when the letters were laid down — and carrying it
+over was the mistake that made the flat version hard to read.
+
+Upright, a stroke's wall was hidden behind the stroke above it. Lying down it is
+stacked directly under the lid, so a horizontal bar of a glyph became one cell of
+lid plus one cell of wall: **every stroke in the phrase rendered at twice its
+real weight**, every counter looked half its real size, and the words collapsed
+into texture at scene scale. At 0.4 a bar reads as 1.4 cells instead of 2, which
+is a third off the apparent weight of the whole phrase, and the slabs still sit
+visibly up off the field.
+
+It is a fraction of `cell` rather than its own number so the two cannot drift
+apart. Together with the unstroked rim below, these two changes are what took the
+flat lettering from unreadable to readable; neither one alone was enough.
+
 ### Three things laying it down changed, and all three bit
 
 1. **The block got wider for the same letter size.** Standing up, a line ran
@@ -328,11 +346,20 @@ in both cases the neighbour's slab is pressed flat against it.
 
 What is left is merged along its own axis: every horizontal span of lit cells in
 a row becomes one `+z` quad, every vertical span with nothing to its right one
-`+x` wall, every horizontal span with nothing below it one `+y` wall. The `+z`
-quads are drawn with `accent`, which fills *and* strokes in one colour, so a
-letter's lid is a single unbroken green shape with no cell divisions in it. The
-walls keep `letteringSide`'s outline and are the only place the lattice still
-shows — which is what says the letters are solid and not paint on the floor.
+`+x` wall, every horizontal span with nothing below it one `+y` wall. Both the
+lid and the walls are drawn with `accent`, which fills *and* strokes in one
+colour, so neighbouring quads close over their shared edges instead of drawing
+them: a letter's lid is a single unbroken green shape with no cell divisions in
+it, and its rim is a single dark edge under it.
+
+**The rim is unstroked, and that is a readability fix rather than a style
+choice.** It used to take `hue("letteringSide")`, whose `line` is `ink.accent` —
+the same green as the lid. Every stroke of every letter therefore showed *two*
+bright green lines, one along the top of the lid and one along the bottom of the
+rim, and at scene scale the eye could not tell which of the two was the letter.
+With the rim solid `letteringSide.wash` there is exactly one bright silhouette
+per letter and the rim reads as the shadow under a tile. **Do not put the stroke
+back.**
 
 **Walls first, then the lids.** Paint order is array order and there is no depth
 buffer. A cell on the down-right diagonal of another is nearer and its lid covers
@@ -367,7 +394,7 @@ changing any of these numbers.
 
 | | before lettering | upright | flat |
 |---|---:|---:|---:|
-| `lakshya-desk-v2.svg` | 180,782 | 212,819 | **215,656 — 86.3% of the 250 KB cap** |
+| `lakshya-desk-v2.svg` | 180,782 | 212,819 | **215,973 — 86.4% of the 250 KB cap** |
 | paths | 484 | 861 | 869 |
 
 `validate-content` fails the build above 250 KB. Flat costs slightly more than

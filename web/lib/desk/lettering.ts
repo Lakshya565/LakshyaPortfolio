@@ -26,7 +26,7 @@
  * are load-bearing rather than tidy. See the notes on each.
  */
 
-import { face, hue, ink, type DeskPart } from "@/lib/desk/parts";
+import { face, ink, palette, type DeskPart } from "@/lib/desk/parts";
 import type { Vec3 } from "@/lib/desk/projection";
 
 /**
@@ -51,11 +51,22 @@ const cell = 2.25;
 /**
  * How thick the slabs are, in world `z`.
  *
- * Equal to a cell, so a letter is exactly as deep as it is granular and the two
- * cannot drift apart. This is the same depth the upright wall had; only its
- * direction changed, from "back into the picture" to "up off the ground".
+ * It was a full cell — the depth the upright wall had, carried over unchanged
+ * when the letters were laid down — and carrying it over was the mistake. A
+ * horizontal stroke of a glyph is one cell of lid, and standing a full cell of
+ * wall under it doubles the bar: the eye reads a two-cell striped band, every
+ * counter looks half the size it is, and at scene scale the words turn to
+ * texture. Upright that never happened, because the wall of a stroke was hidden
+ * behind the stroke above it rather than stacked under it.
+ *
+ * At 0.4 the wall is a rim rather than a second band. A bar reads as 1.4 cells
+ * instead of 2, which is a third off the apparent weight of every stroke in the
+ * phrase, and the slabs still sit up off the field.
+ *
+ * A fraction of `cell` rather than its own number, so the two cannot drift
+ * apart. If `cell` moves, this moves with it.
  */
-const depth = cell;
+const depth = cell * 0.4;
 
 /** Glyph cells across and down. See `font` for why five is as small as it goes. */
 const glyphWidth = 5;
@@ -257,7 +268,7 @@ function glyphParts(
   baseZ: number,
 ): readonly DeskPart[] {
   const lid = { accent: ink.accent };
-  const wall = hue("letteringSide");
+  const wall = { accent: palette.letteringSide.wash };
   const top = baseZ + depth;
   const columnX = (column: number) => originX + column * cell;
   const rowY = (row: number) => originY + row * cell;
