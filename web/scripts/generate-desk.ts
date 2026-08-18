@@ -819,7 +819,7 @@ async function main() {
     ` viewBox="${viewBox}" fill="none" stroke-width="${strokeWidth(view.width)}"`,
     ` role="img" aria-labelledby="desk-title desk-description">`,
     `<title id="desk-title">Things on my desk</title>`,
-    `<desc id="desk-description">An isometric line drawing of a workspace: a monitor showing code, a keyboard and mouse, a teal dev board, a rubber duck, a coiled martial-arts belt, a compass, two drinks, a plate of sushi, a climbing wall panel with coloured holds, a dumbbell, a screen paused mid-episode, a clock tower, and scattered trees and figures.</desc>`,
+    `<desc id="desk-description">An isometric line drawing of a workspace, with "Walk through my workbench!" spelled out in green blocks across the top right: a monitor showing code, a keyboard and mouse, a teal dev board, a rubber duck, a coiled martial-arts belt, a compass, two drinks, a plate of sushi, a climbing wall panel with coloured holds, a dumbbell, a screen paused mid-episode, a clock tower, and scattered trees and figures.</desc>`,
     inner,
     `</svg>`,
   ].join("");

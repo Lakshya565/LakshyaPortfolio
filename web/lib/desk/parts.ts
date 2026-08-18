@@ -227,6 +227,30 @@ export const palette = {
   /** Jumper wires. Outline-only, so the wash is never asked for. */
   wireWarm: { line: "#e8b34a", wash: "#7a5c1c" },
   wireCool: { line: "#5a8ed0", wash: "#28477a" },
+  /**
+   * The lettering's face — the flat side of the wall that carries the words.
+   *
+   * The one entry here that is not a material. Its line is `ink.accent` exactly,
+   * because Lakshya asked for the software green, and its wash is what makes the
+   * words legible at all: drawn on `ink.ground` like every other solid, the
+   * letterforms disappeared into a lattice of cube edges with no figure and no
+   * ground. Filling the face turns each letter back into a mass, and the strokes
+   * become the cube divisions the style is built on rather than the letter
+   * itself. Wash luminance is roughly 0.088, clearing the page by 2.67.
+   */
+  lettering: { line: "#62d691", wash: "#1f5f3f" },
+  /**
+   * The lettering's extrusion. Same argument as `triforceSide`, which is the
+   * precedent: a real face at a real angle, not shading painted onto a curve.
+   * Both the top and the right face take this one value — two values would be a
+   * light model, and the scene does not have one.
+   *
+   * It has to clear the page as well as sit clearly under the face, which is a
+   * narrow gap: at `#0e2b1e` it read correctly and failed the contrast floor at
+   * 1.34. This sits at a luminance near 0.033, clearing by 1.60, and still a
+   * 2.7x step below the face.
+   */
+  letteringSide: { line: "#62d691", wash: "#123a28" },
 } as const;
 
 export type PaletteName = keyof typeof palette;

@@ -1,3 +1,5 @@
+import { Fragment } from "react";
+
 import { DeskExperience } from "@/components/desk/desk-experience";
 import type { DeskHotspotData } from "@/lib/desk/hotspots";
 import {
@@ -25,19 +27,31 @@ export function IsometricDesk({
     <DeskExperience
       hotspots={hotspots}
       scene={
-        <svg
-          aria-hidden="true"
-          className="desk-art"
-          fill="none"
-          // Carried as a prop into a multi-child position in `DeskExperience`,
-          // so React validates it as a list item and wants a key even though
-          // there is only ever one of it.
-          key="desk-scene"
-          preserveAspectRatio="xMidYMid meet"
-          strokeWidth={deskSceneStrokeWidth}
-          viewBox={deskSceneViewBox}
-          dangerouslySetInnerHTML={{ __html: deskSceneMarkup }}
-        />
+        // Carried as a prop into a multi-child position in `DeskExperience`, so
+        // React validates it as a list item and wants a key even though there is
+        // only ever one of it. That is also why this is `Fragment` written out
+        // rather than `<>`, which cannot take one.
+        <Fragment key="desk-scene">
+          {/*
+           * The artwork spells "Walk through my workbench!" out of cubes, and
+           * the SVG below is `aria-hidden`, so without this the invitation
+           * reaches nobody using a screen reader. It is also the only form of
+           * the phrase that survives a phone: the field renders at about a
+           * quarter scale there, where a cube is under three pixels.
+           *
+           * If the lettering ever leaves the scene, this goes with it.
+           */}
+          <p className="sr-only">Walk through my workbench.</p>
+          <svg
+            aria-hidden="true"
+            className="desk-art"
+            fill="none"
+            preserveAspectRatio="xMidYMid meet"
+            strokeWidth={deskSceneStrokeWidth}
+            viewBox={deskSceneViewBox}
+            dangerouslySetInnerHTML={{ __html: deskSceneMarkup }}
+          />
+        </Fragment>
       }
     />
   );

@@ -258,6 +258,98 @@ see the workstation section above.
 If a future object genuinely needs to sit inside another's box, raise the budget
 deliberately and name the pair. Do not widen it to make a move compile.
 
+## The lettering
+
+`lib/desk/lettering.ts` fills the reserved block with "WALK / THROUGH / MY
+WORKBENCH!" — a 5×5 bitmap font rasterised onto the world lattice as cubes,
+standing in a wall one cell deep. One `DeskObject`, id `lettering`, anchored at
+`(48, -60)`. Screen box x 90..238, y −36..76.
+
+**It is one object on purpose.** The overlap budget is zero between objects, so
+per-word objects would collide with each other, and `desk-objects.test.ts`
+requires every catalog entry to satisfy `0.35 < width/height < 3`. One object
+answers both; the whole block is 1.32.
+
+`y = -60` puts it a long way back, so `depthOrder` gives it −120 — the lowest in
+the scene. It paints first and sits behind everything, which is what a backdrop
+should do.
+
+### It is drawn filled, and that is not a style choice
+
+The first build gave every cube face `ink.ground` like every other solid in the
+scene. **The words were unreadable.** With no figure and no ground, twenty-six
+cube outlines per glyph dissolve into a lattice and the letterform disappears
+into it — legible in the geometry, invisible in the picture. It is the clearest
+case yet of the rule at the bottom of this file: geometric fit is not visual fit,
+and the only way it was found was by rendering it and looking.
+
+Two palette entries fix it. `lettering` fills the `+y` face — the letterform —
+and `letteringSide` fills the extrusion. Both take `ink.accent` as their line.
+The precedent for two values of one hue is `triforce` / `triforceSide`: a real
+face at a real angle, not shading painted onto a curve. Both faces of the
+extrusion take the *same* value; two would be a light model, and the scene does
+not have one.
+
+`letteringSide` is squeezed. It has to sit clearly below the face and still clear
+`ink.ground` by the test's 1.4. At `#0e2b1e` it looked right and failed at 1.34.
+`#123a28` clears at 1.60 and is still a 2.7× step below the face.
+
+### Culling and paint order
+
+Only `+x`, `+y`, `+z` face the camera. Of those, `+z` is dropped when the cell
+above is lit and `+x` when the cell to the right is lit — they are exactly
+covered. `+y` is never dropped; nothing in a one-cell wall can stand in front of
+the letterform. That takes 822 faces down to **616**.
+
+**The loops run rows bottom-to-top and columns left-to-right, and that is
+load-bearing.** A cube on the up-right diagonal covers half of this one's top and
+half of its right face and cannot be culled, because the two only share an edge.
+Running the loops this way puts every such diagonal later in the array, so it
+paints over cleanly. Reverse either and strokes cut through the faces in front of
+them.
+
+### Why the cell is 2 and the font is 5×5
+
+Not taste — bytes. `s = 2` is the largest cell that fits the block *and* is an
+integer, so every projected coordinate is whole and the generator writes
+`M238 -30` rather than `M237.6 -29.55`. That is about 8 bytes on each of 616
+paths. 5×7 forces `s ≈ 1.85`, costs those bytes, adds 35% more cells, and lands
+at 98% of the size cap.
+
+`W`, `M`, `N` and `G` are weak at 5×5 — `W`'s top two rows are identical to `H`,
+`M`, `N` and `U`, so three cells carry the whole letter. Checked at 5× and
+accepted. Six rows would fix them and blow the budget.
+
+### The budget, which is now the tight one
+
+| | before | after |
+|---|---:|---:|
+| `lakshya-desk-v2.svg` | 180,782 | **225,960 — 90.4% of the 250 KB cap** |
+| paths | 484 | 1,100 |
+| `scene-markup.ts` (ships inline on the hero) | 182,952 | 231,744 |
+
+`validate-content` fails the build above 250 KB, so there is about 24 KB left for
+everything else the artwork might ever gain. **The lever, if it is ever
+breached:** merge collinear runs of `+x` faces per column and `+z` faces per row
+— 464 paths, roughly 34 KB, SVG near 215 KB. Not taken, because it strips the
+cube divisions from the sides while leaving them on the front, which is the
+opposite of what the lettering is for.
+
+`scene-markup.ts` has no budget and no test, and it is the one a visitor actually
+downloads. Repetitive path data gzips well, but `docs/release-audit.md` was
+already stale before this and is worth re-running.
+
+### What it does not do
+
+The scene is `aria-hidden`, so the words reach no screen reader, and at a 375px
+phone the field renders at about a quarter scale where a cube is under three
+pixels. `components/desk/isometric-desk.tsx` carries an `sr-only` paragraph with
+the phrase for both reasons. **If the lettering leaves the scene, that goes with
+it.**
+
+The frame did not move — the block sits inside the existing bounds on every side,
+and `scene-geometry.ts` regenerated with a zero diff. Nothing else rescaled.
+
 ## The one unfixed bug you will hit
 
 **`footprintWinding` in `web/lib/desk/projection.ts` returns the inward

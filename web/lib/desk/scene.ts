@@ -11,6 +11,7 @@
  */
 
 import { deskHotspotKeys, type DeskHotspotKey } from "@/lib/desk/hotspots";
+import { lettering } from "@/lib/desk/lettering";
 import * as objects from "@/lib/desk/objects";
 import type { DeskObject, DeskPart } from "@/lib/desk/parts";
 
@@ -250,7 +251,23 @@ function scenery(
   };
 }
 
+/**
+ * Where the lettering stands, and why it is first in the array.
+ *
+ * This is the block `hotspotLayout` and `treePlaces` have been keeping empty:
+ * its screen box is x 90..238, y −36..76, which clears the monitor by 28 units
+ * on the left, the cups by 11 below, and the right anchor tree by 21.5. All of
+ * that sits inside the scene's existing bounds, so the frame does not move and
+ * no other object changes size.
+ *
+ * `y = -60` is a long way back, which is the point: `depthOrder` gives it −120,
+ * the lowest in the scene, so it paints before everything else. It is a backdrop
+ * standing behind the field, not an object standing among the objects.
+ */
+const letteringPlace = { x: 48, y: -60 } as const;
+
 export const deskObjects: readonly DeskObject[] = [
+  scenery("lettering", lettering, letteringPlace),
   ...treePlaces.map((place, index) =>
     scenery(
       `tree-${index}`,
