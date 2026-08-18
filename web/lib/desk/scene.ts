@@ -254,17 +254,21 @@ function scenery(
 /**
  * Where the lettering stands, and why it is first in the array.
  *
- * This is the block `hotspotLayout` and `treePlaces` have been keeping empty:
- * its screen box is x 90..238, y −36..76, which clears the monitor by 28 units
- * on the left, the cups by 11 below, and the right anchor tree by 21.5. All of
- * that sits inside the scene's existing bounds, so the frame does not move and
- * no other object changes size.
+ * This is the block `hotspotLayout` and `treePlaces` have been keeping empty.
+ * The anchor is the phrase's **centre column**, not a corner — all three lines
+ * are centred on it — so nudging it moves the whole block without changing how
+ * the lines sit against each other.
  *
- * `y = -60` is a long way back, which is the point: `depthOrder` gives it −120,
- * the lowest in the scene, so it paints before everything else. It is a backdrop
- * standing behind the field, not an object standing among the objects.
+ * Screen box x 70..255, y −30..79. It clears the monitor by 8 on the left, the
+ * cups by 8 below, and stops 17 short of the right anchor tree. It also stays 8
+ * below the frame's top edge, which the tree at `(-58, 48)` sets: pushing past
+ * that would grow the frame and shrink every other object in the scene.
+ *
+ * `y = -70` is a long way back, which is the point: `depthOrder` gives it the
+ * lowest order in the scene, so it paints before everything else. It is a
+ * backdrop standing behind the field, not an object standing among the objects.
  */
-const letteringPlace = { x: 48, y: -60 } as const;
+const letteringPlace = { x: 115, y: -70 } as const;
 
 export const deskObjects: readonly DeskObject[] = [
   scenery("lettering", lettering, letteringPlace),

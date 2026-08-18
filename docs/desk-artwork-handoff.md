@@ -261,9 +261,16 @@ deliberately and name the pair. Do not widen it to make a move compile.
 ## The lettering
 
 `lib/desk/lettering.ts` fills the reserved block with "WALK / THROUGH / MY
-WORKBENCH!" — a 5×5 bitmap font rasterised onto the world lattice as cubes,
-standing in a wall one cell deep. One `DeskObject`, id `lettering`, anchored at
-`(48, -60)`. Screen box x 90..238, y −36..76.
+WORKBENCH!" — a 5×5 bitmap font rasterised onto the world lattice, standing in a
+wall one cell deep. One `DeskObject`, id `lettering`, anchored at `(115, -70)`.
+Screen box x 70..255, y −30..79.
+
+**The anchor is the phrase's centre column, not a corner.** All three lines are
+centred on it, so each line's midpoint sits on one axis running down-left and
+"WALK" is the nearest thing to the frame's top-right corner. Left-aligned it hung
+off a vertical edge nothing else in the scene shares and read as a list. Centring
+is also what made room to grow: the short first line no longer has to reach as
+far right as the long last one, which took 20% off the width.
 
 **It is one object on purpose.** The overlap budget is zero between objects, so
 per-word objects would collide with each other, and `desk-objects.test.ts`
@@ -274,10 +281,10 @@ answers both; the whole block is 1.32.
 the scene. It paints first and sits behind everything, which is what a backdrop
 should do.
 
-### The letterform is solid, and it took two tries to get there
+### The letterform is solid, and it took three tries to get there
 
-**This is the part to not undo.** It took two failed builds, and both of them
-looked fine in the geometry.
+**This is the part to not undo.** Three builds, and every one of them looked
+correct in the geometry.
 
 1. Every face `ink.ground` with an accent outline, like every other solid in the
    scene. Unreadable — with no figure and no ground, twenty-six cube outlines per
@@ -285,63 +292,85 @@ looked fine in the geometry.
 2. Front face filled dark green, extrusion filled darker, both outlined in the
    accent. Better, and still wrong: the cube grid stayed louder than the letters,
    so the words read as texture.
+3. Front faces merged into one mass, cubes still drawn one by one. Readable at
+   last, but every letter was visibly a stack of boxes.
 
-What works is the **front faces merging into one mass**. The `+y` face is drawn
-with `accent`, which fills *and* strokes it in a single colour, so neighbouring
-cubes in a letter stroke have no seam between them and the letter becomes a
-solid green shape. The cubes are not lost by it: the extrusion and the stepped
-silhouette still show every one, which is exactly how the reference reads.
+The current build drops the cube divisions entirely. Two things do it:
 
-So there is only one palette entry, `letteringSide`, and it is the extrusion —
-the letterform itself is `ink.accent` flat and is not in the palette at all. The
+- **The `+y` face is drawn with `accent`**, which fills *and* strokes it in a
+  single colour, so neighbouring cubes in a letter stroke have no seam between
+  them and the letter becomes a solid green shape.
+- **Faces are merged along their own axis before they are emitted** — see below.
+  The divisions between neighbouring cubes were never edges of the letter, only
+  edges of the boxes it happened to be built from.
+
+What survives are the lines that outline the letter's real form: the steps in its
+silhouette and the inside corners where a stem meets a crossbar.
+
+There is one palette entry, `letteringSide`, and it is the extrusion — the
+letterform itself is `ink.accent` flat and is not in the palette at all. The
 precedent for a second value of one hue is `triforce` / `triforceSide`: a real
 face at a real angle, not shading painted onto a curve. Top and right take the
 *same* value; two would be a light model, and the scene does not have one.
 
 It is the clearest case yet of the rule at the bottom of this file — geometric
-fit is not visual fit, and every one of those three states was only told apart by
+fit is not visual fit, and every one of those four states was only told apart by
 shooting it at 5× and looking at it.
 
-### Culling and paint order
+### Culling, merging, and paint order
 
 Only `+x`, `+y`, `+z` face the camera. Of those, `+z` is dropped when the cell
 above is lit and `+x` when the cell to the right is lit — they are exactly
 covered. `+y` is never dropped; nothing in a one-cell wall can stand in front of
-the letterform. That takes 822 faces down to **616**.
+the letterform.
 
-**The loops run rows bottom-to-top and columns left-to-right, and that is
-load-bearing.** A cube on the up-right diagonal covers half of this one's top and
-half of its right face and cannot be culled, because the two only share an edge.
-Running the loops this way puts every such diagonal later in the array, so it
-paints over cleanly. Reverse either and strokes cut through the faces in front of
-them.
+What is left is then **merged along its own axis**: every horizontal span of
+cells in a row becomes one `+y` quad, every horizontal span with nothing above it
+one `+z` quad, every vertical span with nothing to its right one `+x` quad. That
+is what makes each letter a single solid, and it costs a quarter fewer paths than
+drawing the cubes one by one — which is exactly what paid for the bigger `cell`.
 
-### Why the cell is 2 and the font is 5×5
+**Sides are emitted before fronts, and that ordering is load-bearing.** The only
+place two quads overlap is where a cube on the up-right diagonal of another
+covers half of its top and half of its right face; the two share an edge, so
+neither culling nor merging removes it, and the diagonal cube is always the
+nearer of the pair (`x + z` greater by two cells). Its `+y` face has to paint
+after. Emitting every side quad in a glyph before every front quad settles all of
+them at once. Nothing else overlaps — faces in one plane tile, and cells on the
+same anti-diagonal meet exactly at an edge.
 
-Not taste — bytes. `s = 2` is the largest cell that fits the block *and* is an
-integer, so every projected coordinate is whole and the generator writes
-`M238 -30` rather than `M237.6 -29.55`. That is about 8 bytes on each of 616
-paths. 5×7 forces `s ≈ 1.85`, costs those bytes, adds 35% more cells, and lands
-at 98% of the size cap.
+The older per-cube rule ("rows bottom-to-top, columns left-to-right") is gone
+with the merge. Do not reintroduce it; it cannot express a run.
+
+### Why the cell is 2.5 and the font is 5×5
+
+The cell is sized against the block, not chosen: the phrase is 76 cells wide and
+44 tall once centred, the block is about 204 by 118 screen units, and both divide
+out near 2.68. 2.5 leaves a margin without wasting the space.
+
+Growing it is nearly free in bytes — the path count comes from the letters, not
+their size — but not free in decimals. At 2.5 every coordinate lands on quarters
+at worst. **Keep it on a fraction that behaves; 2.68 does not.**
 
 `W`, `M`, `N` and `G` are weak at 5×5 — `W`'s top two rows are identical to `H`,
 `M`, `N` and `U`, so three cells carry the whole letter. Checked at 5× and
-accepted. Six rows would fix them and blow the budget.
+accepted. Six rows would fix them and cost about a third more geometry.
 
-### The budget, which is now the tight one
+### The budget
 
-| | before | after |
+| | before lettering | now |
 |---|---:|---:|
-| `lakshya-desk-v2.svg` | 180,782 | **225,960 — 90.4% of the 250 KB cap** |
-| paths | 484 | 1,100 |
-| `scene-markup.ts` (ships inline on the hero) | 182,952 | 231,744 |
+| `lakshya-desk-v2.svg` | 180,782 | **212,819 — 85.1% of the 250 KB cap** |
+| paths | 484 | 861 |
+| `scene-markup.ts` (ships inline on the hero) | 182,952 | ~218,600 |
 
-`validate-content` fails the build above 250 KB, so there is about 24 KB left for
-everything else the artwork might ever gain. **The lever, if it is ever
-breached:** merge collinear runs of `+x` faces per column and `+z` faces per row
-— 464 paths, roughly 34 KB, SVG near 215 KB. Not taken, because it strips the
-cube divisions from the sides while leaving them on the front, which is the
-opposite of what the lettering is for.
+`validate-content` fails the build above 250 KB. The merge is what bought the
+room: drawn cube by cube at the current size this would be over 1,100 paths and
+past 90%.
+
+**The lever if it is ever breached:** the front faces merge only along rows. A
+real rectangle decomposition of each glyph would cut them further, at the cost of
+code nobody can check by eye.
 
 `scene-markup.ts` has no budget and no test, and it is the one a visitor actually
 downloads. Repetitive path data gzips well, but `docs/release-audit.md` was

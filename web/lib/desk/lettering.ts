@@ -24,15 +24,18 @@ import type { Vec3 } from "@/lib/desk/projection";
 /**
  * The side of one cube, in world units.
  *
- * **Two is not a tuning knob.** It is the largest cell that fits the reserved
- * block, and it is an integer — which matters more than it looks. Every glyph
- * lands on multiples of this, so `project()` returns whole numbers and the
- * generator writes `M238 -30L242 -28` rather than `M237.6 -29.55L241.3 -28.63`.
- * That is about eight bytes on each of 616 paths, roughly 5 KB, and 5 KB is a
- * fifth of the headroom this object leaves behind. Move it off the integers and
- * the file grows for nothing anyone can see.
+ * Sized against the reserved block rather than chosen: the phrase is 76 cells
+ * wide and 44 tall once centred, and the block it has to sit in is about 204 by
+ * 118 screen units. Both divide out near 2.68, and 2.5 leaves a margin on each
+ * side without wasting the space.
+ *
+ * Growing this is nearly free in bytes — the path count comes from the letters,
+ * not their size — but it is not free in decimals. Every coordinate is a
+ * multiple of 2.5, so `project()` lands on quarters at worst and the generator
+ * writes `237.5` rather than `237.63`. Keep it on a fraction that behaves: 2.5
+ * and 2 both do, 2.68 does not.
  */
-const cell = 2;
+const cell = 2.5;
 
 /** Glyph cells across and down. See `font` for why five is as small as it goes. */
 const glyphWidth = 5;
@@ -151,79 +154,6 @@ if (lineClearance < 4) {
   );
 }
 
-/**
- * The faces of one cube that the camera can see and no neighbour is covering.
- *
- * The camera looks along (1, 1, 1), so of the six faces only `+x`, `+y` and `+z`
- * are turned toward it at all — the same test `extrude` and `emitPyramid` apply.
- * Of those three, two can be dropped whenever a lit neighbour is pressed against
- * them: a cube directly above shares its underside with this one's `+z` face
- * exactly, and a cube directly to `+x` shares its `-x` with this one's `+x`.
- * Drawing them anyway would be 206 extra paths across the phrase, all of them
- * hidden, and every one carrying a stroke that has to be painted over cleanly.
- *
- * The `+y` face is never dropped. It is the letterform — the flat side the wall
- * turns toward the viewer — and in a wall one cell deep nothing can stand in
- * front of it.
- *
- * It is drawn in `accent`, which fills *and* strokes it in one colour, so the
- * front faces of neighbouring cubes merge into a single solid green mass with no
- * seam between them. That merge is the entire reason the words are readable; see
- * the note on `letteringSide`. The cubes do not get lost by it — the extrusion
- * and the stepped silhouette still show every one.
- *
- * Vertex order matches `boxFaces` exactly: `+y` is its `left`, `+x` its `right`,
- * `+z` its `top`. Same winding, so these read as ordinary cubes.
- */
-function cubeFaces(
-  origin: Vec3,
-  showTop: boolean,
-  showRight: boolean,
-): readonly DeskPart[] {
-  const { x, y, z } = origin;
-  const far = { x: x + cell, y: y + cell, z: z + cell };
-  const front = { accent: ink.accent };
-  const side = hue("letteringSide");
-
-  return [
-    face(
-      [
-        { x, y: far.y, z: far.z },
-        { x: far.x, y: far.y, z: far.z },
-        { x: far.x, y: far.y, z },
-        { x, y: far.y, z },
-      ],
-      front,
-    ),
-    ...(showRight
-      ? [
-          face(
-            [
-              { x: far.x, y, z: far.z },
-              { x: far.x, y: far.y, z: far.z },
-              { x: far.x, y: far.y, z },
-              { x: far.x, y, z },
-            ],
-            side,
-          ),
-        ]
-      : []),
-    ...(showTop
-      ? [
-          face(
-            [
-              { x, y, z: far.z },
-              { x: far.x, y, z: far.z },
-              { x: far.x, y: far.y, z: far.z },
-              { x, y: far.y, z: far.z },
-            ],
-            side,
-          ),
-        ]
-      : []),
-  ];
-}
-
 /** Whether a glyph cell is ink. Out of range is air, which is what culls edges. */
 function isLit(glyph: Glyph, row: number, column: number): boolean {
   if (row < 0 || row >= glyphHeight || column < 0 || column >= glyphWidth) {
@@ -232,59 +162,191 @@ function isLit(glyph: Glyph, row: number, column: number): boolean {
   return glyph[row][column] === "#";
 }
 
+/** World `z` of a bitmap row's floor. Row 0 is the top, so `z` falls as `r` rises. */
+function rowZ(baseZ: number, row: number): number {
+  return baseZ + (glyphHeight - 1 - row) * cell;
+}
+
+/** Maximal spans of consecutive indices that pass `test`, as `[from, to]` pairs. */
+function runs(length: number, test: (index: number) => boolean): [number, number][] {
+  const found: [number, number][] = [];
+  let start: number | null = null;
+
+  for (let index = 0; index < length; index += 1) {
+    if (test(index)) {
+      start ??= index;
+    } else if (start !== null) {
+      found.push([start, index - 1]);
+      start = null;
+    }
+  }
+  if (start !== null) {
+    found.push([start, length - 1]);
+  }
+
+  return found;
+}
+
 /**
- * One glyph's cubes, in paint order.
+ * One glyph, as a handful of merged quads rather than a pile of cubes.
  *
- * Bottom row first and left column first, which is the order that makes the
- * scene's one drawing rule work. Paint order is array order and there is no
- * depth buffer, so anything nearer has to be emitted later — and "nearer" here
- * means larger `x + y + z`. Culling handles the cube directly above and the cube
- * directly right, but a cube on the *up-right diagonal* covers half of this
- * one's top and half of its right face and cannot be culled, because the two
- * only share an edge. Running rows bottom to top and columns left to right puts
- * every one of those diagonals later in the array, so they paint over cleanly.
+ * The camera looks along (1, 1, 1), so of the six faces of a cube only `+x`,
+ * `+y` and `+z` are turned toward it — the same test `extrude` and `emitPyramid`
+ * apply. Two of those three are then dropped whenever a lit neighbour is pressed
+ * against them: a cube directly above shares its underside with this one's `+z`
+ * exactly, and a cube directly to `+x` shares its `-x` with this one's `+x`.
  *
- * Reverse either loop and the covered halves are drawn last, which shows up as
- * stroke lines cutting through the faces standing in front of them.
+ * What is left is merged along its own axis. Every horizontal span of cells in a
+ * row becomes **one** `+y` quad; every horizontal span with nothing above it
+ * becomes one `+z` quad; every vertical span with nothing to its right becomes
+ * one `+x` quad. That is what turns each letter into a single solid instead of a
+ * stack of cubes: the divisions between neighbouring cubes were never real edges
+ * of the shape, only edges of the boxes it was built from. The lines that
+ * survive are the ones that outline the letter's actual form — the steps in its
+ * silhouette, and the inside corners where a stem meets a crossbar.
+ *
+ * It also costs a quarter fewer paths than drawing them cube by cube, which is
+ * what paid for the larger `cell`.
+ *
+ * **Sides first, then fronts, and that ordering is load-bearing.** Paint order
+ * is array order and there is no depth buffer. The only place two of these quads
+ * overlap is where a cube on the up-right diagonal of another covers half of its
+ * top and half of its right face — the two share an edge, so neither culling nor
+ * merging can remove it, and the diagonal cube is always the nearer of the pair
+ * (`x + z` is greater by two cells). Its `+y` face therefore has to be painted
+ * after. Emitting every side quad in the glyph before every front quad satisfies
+ * that for all of them at once. Nothing else overlaps: faces in one plane tile,
+ * and cells on the same anti-diagonal meet exactly at an edge.
+ *
+ * Vertex order matches `boxFaces`: `+y` is its `left`, `+x` its `right`, `+z`
+ * its `top`.
  */
-function glyphCubes(
+function glyphQuads(
   glyph: Glyph,
   originX: number,
   y: number,
   baseZ: number,
 ): readonly DeskPart[] {
-  const parts: DeskPart[] = [];
+  const front = { accent: ink.accent };
+  const side = hue("letteringSide");
+  const near = y + cell;
+  const columnX = (column: number) => originX + column * cell;
 
-  for (let row = glyphHeight - 1; row >= 0; row -= 1) {
-    for (let column = 0; column < glyphWidth; column += 1) {
-      if (!isLit(glyph, row, column)) {
-        continue;
-      }
+  const tops: DeskPart[] = [];
+  const rights: DeskPart[] = [];
+  const fronts: DeskPart[] = [];
 
-      parts.push(
-        ...cubeFaces(
-          {
-            x: originX + column * cell,
-            y,
-            z: baseZ + (glyphHeight - 1 - row) * cell,
-          },
-          !isLit(glyph, row - 1, column),
-          !isLit(glyph, row, column + 1),
+  for (let row = 0; row < glyphHeight; row += 1) {
+    const top = rowZ(baseZ, row) + cell;
+    const floor = rowZ(baseZ, row);
+
+    for (const [from, to] of runs(
+      glyphWidth,
+      (column) => isLit(glyph, row, column) && !isLit(glyph, row - 1, column),
+    )) {
+      tops.push(
+        face(
+          [
+            { x: columnX(from), y, z: top },
+            { x: columnX(to + 1), y, z: top },
+            { x: columnX(to + 1), y: near, z: top },
+            { x: columnX(from), y: near, z: top },
+          ],
+          side,
+        ),
+      );
+    }
+
+    for (const [from, to] of runs(glyphWidth, (column) =>
+      isLit(glyph, row, column),
+    )) {
+      fronts.push(
+        face(
+          [
+            { x: columnX(from), y: near, z: top },
+            { x: columnX(to + 1), y: near, z: top },
+            { x: columnX(to + 1), y: near, z: floor },
+            { x: columnX(from), y: near, z: floor },
+          ],
+          front,
         ),
       );
     }
   }
 
-  return parts;
+  for (let column = 0; column < glyphWidth; column += 1) {
+    const x = columnX(column + 1);
+
+    for (const [from, to] of runs(
+      glyphHeight,
+      (row) => isLit(glyph, row, column) && !isLit(glyph, row, column + 1),
+    )) {
+      rights.push(
+        face(
+          [
+            { x, y, z: rowZ(baseZ, from) + cell },
+            { x, y: near, z: rowZ(baseZ, from) + cell },
+            { x, y: near, z: rowZ(baseZ, to) },
+            { x, y, z: rowZ(baseZ, to) },
+          ],
+          side,
+        ),
+      );
+    }
+  }
+
+  return [...tops, ...rights, ...fronts];
+}
+
+/**
+ * Where a line's ink actually starts and ends, in world `x` from its own pen
+ * origin. Used to centre it.
+ *
+ * Measured rather than counted, because the advance and the ink are not the same
+ * width. "MY WORKBENCH!" ends on an exclamation mark whose only lit column is
+ * the middle one, so centring on the advance would push the whole line one and a
+ * half cells right of where it looks centred.
+ */
+function inkSpan(line: string): Readonly<{ start: number; end: number }> {
+  let pen = 0;
+  let start = Number.POSITIVE_INFINITY;
+  let end = Number.NEGATIVE_INFINITY;
+
+  for (const character of line) {
+    if (character === " ") {
+      pen += wordAdvance;
+      continue;
+    }
+
+    const glyph = font[character];
+    for (let row = 0; row < glyphHeight; row += 1) {
+      for (let column = 0; column < glyphWidth; column += 1) {
+        if (glyph[row][column] === "#") {
+          start = Math.min(start, pen + column * cell);
+          end = Math.max(end, pen + (column + 1) * cell);
+        }
+      }
+    }
+    pen += glyphAdvance;
+  }
+
+  return { start, end };
 }
 
 /**
  * The whole phrase, as one object's worth of parts.
  *
- * `at` is where the block *stands*: the ground corner of the last line's first
- * cube. The two lines above are stacked from there, so moving the anchor moves
- * all three together and nothing can separate them — the same reasoning as the
- * `workstation` anchor in `scene.ts`.
+ * `at` is the block's centre column on the ground, not its corner. **The three
+ * lines are centred on it, not left-aligned.** Left-aligned, the words hung off
+ * a vertical edge that nothing else in the scene shares and the block read as a
+ * list; centred, each line's midpoint sits on one line running down-left, so
+ * "WALK" is the nearest thing to the frame's top-right corner and the phrase
+ * steps away from it evenly. It is also 20% shorter that way, because the short
+ * first line no longer has to reach as far right as the long last one.
+ *
+ * Offsets are snapped to whole cells so the whole object stays on one lattice —
+ * a half-cell offset on one line would put its coordinates on different
+ * fractions from the rest and cost decimals in every path it owns.
  *
  * There is no cell-size parameter because there is one instance of this object
  * and no call site could justify a second value. See `cell`.
@@ -293,6 +355,9 @@ export function lettering(at: Vec3): readonly DeskPart[] {
   const lastLine = phrase.length - 1;
 
   return phrase.flatMap((line, index) => {
+    const span = inkSpan(line);
+    const centred =
+      at.x - Math.round((span.start + span.end) / 2 / cell) * cell;
     const y = at.y + index * lineIndent;
     const baseZ = at.z + (lastLine - index) * lineLeading;
     const parts: DeskPart[] = [];
@@ -304,7 +369,7 @@ export function lettering(at: Vec3): readonly DeskPart[] {
         continue;
       }
 
-      parts.push(...glyphCubes(font[character], at.x + pen, y, baseZ));
+      parts.push(...glyphQuads(font[character], centred + pen, y, baseZ));
       pen += glyphAdvance;
     }
 
