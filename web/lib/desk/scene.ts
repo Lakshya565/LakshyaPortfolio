@@ -252,23 +252,30 @@ function scenery(
 }
 
 /**
- * Where the lettering stands, and why it is first in the array.
+ * Where the lettering lies, and why it is first in the array.
  *
  * This is the block `hotspotLayout` and `treePlaces` have been keeping empty.
  * The anchor is the phrase's **centre column**, not a corner — all three lines
  * are centred on it — so nudging it moves the whole block without changing how
  * the lines sit against each other.
  *
- * Screen box x 70..255, y −30..79. It clears the monitor by 8 on the left, the
- * cups by 8 below, and stops 17 short of the right anchor tree. It also stays 8
- * below the frame's top edge, which the tree at `(-58, 48)` sets: pushing past
- * that would grow the frame and shrink every other object in the scene.
+ * Screen box x 72..228, y −15..65. It clears the monitor by 10 on the left and
+ * the cups by 22 below, and stops 32 short of the right anchor tree. It also
+ * stays 23 below the frame's top edge, which the tree at `(-58, 48)` sets:
+ * pushing past that would grow the frame and shrink every other object.
  *
- * `y = -70` is a long way back, which is the point: `depthOrder` gives it the
+ * **Moved up-right from `(115, -70)` when the letters were laid flat.** Lying
+ * down, the three lines stagger along `+y` instead of dropping in `z`, so the
+ * block became a parallelogram leaning down-left and its lower corner walked
+ * into the monitor. `x` and `y` move by different amounts here for that reason:
+ * the pair `(-13, -28)` is the one that slides the block 15 to the right and 20
+ * up on screen, since `screenX = x - y` and `screenY = (x + y) / 2`.
+ *
+ * `y = -98` is a long way back, which is the point: `depthOrder` gives it the
  * lowest order in the scene, so it paints before everything else. It is a
- * backdrop standing behind the field, not an object standing among the objects.
+ * backdrop lying behind the field, not an object standing among the objects.
  */
-const letteringPlace = { x: 115, y: -70 } as const;
+const letteringPlace = { x: 110.5, y: -106.5 } as const;
 
 export const deskObjects: readonly DeskObject[] = [
   scenery("lettering", lettering, letteringPlace),

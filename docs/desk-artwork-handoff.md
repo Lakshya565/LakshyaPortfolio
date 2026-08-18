@@ -261,116 +261,121 @@ deliberately and name the pair. Do not widen it to make a move compile.
 ## The lettering
 
 `lib/desk/lettering.ts` fills the reserved block with "WALK / THROUGH / MY
-WORKBENCH!" — a 5×5 bitmap font rasterised onto the world lattice, standing in a
-wall one cell deep. One `DeskObject`, id `lettering`, anchored at `(115, -70)`.
-Screen box x 70..255, y −30..79.
+WORKBENCH!" — a 5×5 bitmap font rasterised onto the world lattice, **lying flat
+on the field and extruded upward**. One `DeskObject`, id `lettering`, anchored at
+`(110.5, -106.5)`. Screen box x 73..248.5, y −17..73.
+
+**The letters lie down; they do not stand up.** A glyph's columns run along `+x`
+and its rows along `+y`, both in the ground plane, so the letterform is a shape
+drawn on the field and what the camera reads is the *top* of a slab. The words
+take the grid's shear with them, which is the whole point — they belong to the
+field the way the trees and the desk do, rather than being a sign hung behind it.
+
+This inverts which face does which job. It was built upright first: reading face
+`+y`, extrusion on the top and the right. Lying down the reading face is `+z` and
+the extrusion is the two walls hanging off the near edges. **The colours follow
+the job, not the axis** — the letterform stays `ink.accent` flat and the walls
+stay `letteringSide`.
 
 **The anchor is the phrase's centre column, not a corner.** All three lines are
 centred on it, so each line's midpoint sits on one axis running down-left and
 "WALK" is the nearest thing to the frame's top-right corner. Left-aligned it hung
-off a vertical edge nothing else in the scene shares and read as a list. Centring
-is also what made room to grow: the short first line no longer has to reach as
-far right as the long last one, which took 20% off the width.
+off an edge nothing else in the scene shares and read as a list.
 
 **It is one object on purpose.** The overlap budget is zero between objects, so
 per-word objects would collide with each other, and `desk-objects.test.ts`
 requires every catalog entry to satisfy `0.35 < width/height < 3`. One object
-answers both; the whole block is 1.32.
+answers both; the whole block is 1.95.
 
-`y = -60` puts it a long way back, so `depthOrder` gives it −120 — the lowest in
-the scene. It paints first and sits behind everything, which is what a backdrop
-should do.
+`y = -106.5` is a long way back, which is the point: `depthOrder` gives it the
+lowest order in the scene, so it paints before everything else.
 
-### The letterform is solid, and it took three tries to get there
+### Three things laying it down changed, and all three bit
 
-**This is the part to not undo.** Three builds, and every one of them looked
-correct in the geometry.
+1. **The block got wider for the same letter size.** Standing up, a line ran
+   along one screen axis and the block was as wide as its longest line. Lying
+   down, the line runs along `+x` and the *lines* stack along `+y` — 90° apart in
+   the world, 60° apart on screen — so the block is a parallelogram whose width
+   is the longest line **plus** the whole diagonal extent of the stagger. At the
+   upright build's `cell = 2.5` that came to about 195 screen units against 197.5
+   of clear space between the monitor and the right anchor tree. `cell = 2.25`
+   is the largest that fits with a margin worth having.
 
-1. Every face `ink.ground` with an accent outline, like every other solid in the
-   scene. Unreadable — with no figure and no ground, twenty-six cube outlines per
-   glyph dissolve into a lattice and the letterform disappears into it.
-2. Front face filled dark green, extrusion filled darker, both outlined in the
-   accent. Better, and still wrong: the cube grid stayed louder than the letters,
-   so the words read as texture.
-3. Front faces merged into one mass, cubes still drawn one by one. Readable at
-   last, but every letter was visibly a stack of boxes.
+   Note that the block's width does **not** depend on the leading: increasing
+   `lineStep` moves the far corner up-right by exactly as much as it moves the
+   near corner down-left. Only the height moves.
 
-The current build drops the cube divisions entirely. Two things do it:
+2. **The leading has to be measured on screen, not in the world.** There is no
+   `z` drop between lines any more, so `lineStep` along `+y` is the only thing
+   separating them — and a step of `g` in world `y` buys only `g / 2` of screen
+   `y`, out of which the line above is already hanging `depth` of wall. The first
+   flat build checked the world number, passed its own invariant, and shipped
+   about one screen unit of daylight: the three lines read as one block of
+   texture. `lineClearance` now states the number a reader actually sees.
 
-- **The `+y` face is drawn with `accent`**, which fills *and* strokes it in a
-  single colour, so neighbouring cubes in a letter stroke have no seam between
-  them and the letter becomes a solid green shape.
-- **Faces are merged along their own axis before they are emitted** — see below.
-  The divisions between neighbouring cubes were never edges of the letter, only
-  edges of the boxes it happened to be built from.
-
-What survives are the lines that outline the letter's real form: the steps in its
-silhouette and the inside corners where a stem meets a crossbar.
-
-There is one palette entry, `letteringSide`, and it is the extrusion — the
-letterform itself is `ink.accent` flat and is not in the palette at all. The
-precedent for a second value of one hue is `triforce` / `triforceSide`: a real
-face at a real angle, not shading painted onto a curve. Top and right take the
-*same* value; two would be a light model, and the scene does not have one.
-
-It is the clearest case yet of the rule at the bottom of this file — geometric
-fit is not visual fit, and every one of those four states was only told apart by
-shooting it at 5× and looking at it.
+3. **The block leans down-left, so it walked into the monitor.** It had to move
+   up-right, and `x` and `y` move by *different* amounts to do that — `(-13, -28)`
+   then `(+8.5, -8.5)`, because `screenX = x - y` and `screenY = (x + y) / 2`.
+   Changing them by the same amount only ever moves the block straight up or
+   straight sideways.
 
 ### Culling, merging, and paint order
 
-Only `+x`, `+y`, `+z` face the camera. Of those, `+z` is dropped when the cell
-above is lit and `+x` when the cell to the right is lit — they are exactly
-covered. `+y` is never dropped; nothing in a one-cell wall can stand in front of
-the letterform.
+Only `+x`, `+y`, `+z` face the camera. Lying down, `+z` is the letterform and can
+never be occluded by the glyph's own geometry; `+x` is dropped where the cell to
+the right is lit and `+y` where the cell below it in the bitmap is lit, because
+in both cases the neighbour's slab is pressed flat against it.
 
-What is left is then **merged along its own axis**: every horizontal span of
-cells in a row becomes one `+y` quad, every horizontal span with nothing above it
-one `+z` quad, every vertical span with nothing to its right one `+x` quad. That
-is what makes each letter a single solid, and it costs a quarter fewer paths than
-drawing the cubes one by one — which is exactly what paid for the bigger `cell`.
+What is left is merged along its own axis: every horizontal span of lit cells in
+a row becomes one `+z` quad, every vertical span with nothing to its right one
+`+x` wall, every horizontal span with nothing below it one `+y` wall. The `+z`
+quads are drawn with `accent`, which fills *and* strokes in one colour, so a
+letter's lid is a single unbroken green shape with no cell divisions in it. The
+walls keep `letteringSide`'s outline and are the only place the lattice still
+shows — which is what says the letters are solid and not paint on the floor.
 
-**Sides are emitted before fronts, and that ordering is load-bearing.** The only
-place two quads overlap is where a cube on the up-right diagonal of another
-covers half of its top and half of its right face; the two share an edge, so
-neither culling nor merging removes it, and the diagonal cube is always the
-nearer of the pair (`x + z` greater by two cells). Its `+y` face has to paint
-after. Emitting every side quad in a glyph before every front quad settles all of
-them at once. Nothing else overlaps — faces in one plane tile, and cells on the
-same anti-diagonal meet exactly at an edge.
+**Walls first, then the lids.** Paint order is array order and there is no depth
+buffer. A cell on the down-right diagonal of another is nearer and its lid covers
+part of that other cell's two walls; emitting every wall in a glyph before every
+lid settles all of those at once. The walls are additionally sorted far-to-near
+among themselves — `nearness` is `max(x + y)` over the quad — which costs nothing
+and removes the one case a lid cannot arbitrate: two walls from different strokes
+of the same letter crossing over open field.
 
-The older per-cube rule ("rows bottom-to-top, columns left-to-right") is gone
-with the merge. Do not reintroduce it; it cannot express a run.
+Glyphs advance along `+x` and lines along `+y`, both toward the viewer, so
+emitting them in reading order gives the painter's order across glyphs and across
+lines for free.
 
-### Why the cell is 2.5 and the font is 5×5
+### Why the cell is 2.25 and the font is 5×5
 
-The cell is sized against the block, not chosen: the phrase is 76 cells wide and
-44 tall once centred, the block is about 204 by 118 screen units, and both divide
-out near 2.68. 2.5 leaves a margin without wasting the space.
-
-Growing it is nearly free in bytes — the path count comes from the letters, not
-their size — but not free in decimals. At 2.5 every coordinate lands on quarters
-at worst. **Keep it on a fraction that behaves; 2.68 does not.**
+2.25 is the largest that fits the block once the stagger is counted — see above.
+It is the one number here that is not on a clean lattice: coordinates land on
+eighths after projection and the generator rounds them to two decimals, which is
+visually nothing and costs about 7 KB against `cell = 2`. If the budget ever gets
+tight, 2 is the fallback and it is a 12% size cut, not a redesign.
 
 `W`, `M`, `N` and `G` are weak at 5×5 — `W`'s top two rows are identical to `H`,
 `M`, `N` and `U`, so three cells carry the whole letter. Checked at 5× and
 accepted. Six rows would fix them and cost about a third more geometry.
 
+**Legibility survives the shear, but not by much.** A flat letter is sheared 2:1
+by the projection, which is exactly the look that was wanted and also the reason
+a smaller cell hurts more here than it did upright. Shoot it and read it before
+changing any of these numbers.
+
 ### The budget
 
-| | before lettering | now |
-|---|---:|---:|
-| `lakshya-desk-v2.svg` | 180,782 | **212,819 — 85.1% of the 250 KB cap** |
-| paths | 484 | 861 |
-| `scene-markup.ts` (ships inline on the hero) | 182,952 | ~218,600 |
+| | before lettering | upright | flat |
+|---|---:|---:|---:|
+| `lakshya-desk-v2.svg` | 180,782 | 212,819 | **215,656 — 86.3% of the 250 KB cap** |
+| paths | 484 | 861 | 869 |
 
-`validate-content` fails the build above 250 KB. The merge is what bought the
-room: drawn cube by cube at the current size this would be over 1,100 paths and
-past 90%.
+`validate-content` fails the build above 250 KB. Flat costs slightly more than
+upright at a slightly smaller cell, and all of it is decimals: 2.25 does not
+divide the projection cleanly the way 2.5 and 2 do.
 
-**The lever if it is ever breached:** the front faces merge only along rows. A
-real rectangle decomposition of each glyph would cut them further, at the cost of
-code nobody can check by eye.
+**The lever if it is ever breached:** drop `cell` to 2, which restores integer
+coordinates and takes roughly 7 KB back.
 
 `scene-markup.ts` has no budget and no test, and it is the one a visitor actually
 downloads. Repetitive path data gzips well, but `docs/release-audit.md` was
@@ -379,7 +384,7 @@ already stale before this and is worth re-running.
 ### What it does not do
 
 The scene is `aria-hidden`, so the words reach no screen reader, and at a 375px
-phone the field renders at about a quarter scale where a cube is under three
+phone the field renders at about a quarter scale where a cell is under two
 pixels. `components/desk/isometric-desk.tsx` carries an `sr-only` paragraph with
 the phrase for both reasons. **If the lettering leaves the scene, that goes with
 it.**
