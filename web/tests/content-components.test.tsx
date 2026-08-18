@@ -18,7 +18,7 @@ describe("project tree", () => {
     expect(html.match(/class="project-tree-node"/g)).toHaveLength(10);
     expect(html.match(/<details>/g)).toHaveLength(10);
     expect(html).toContain('href="/about"');
-    expect(html).toContain("Lakshya Agarwal");
+    expect(html).toContain(portfolioContent.siteProfile.name);
     expect(html).toContain('href="/projects/cisco-agentic-runbook-creator"');
     expect(html).toContain("Cisco Agentic Runbook Creator");
     expect(html).toContain("Lucky Arduino Collection");

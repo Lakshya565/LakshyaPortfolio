@@ -2,7 +2,7 @@
 
 ## Document purpose
 
-This document defines the product, content strategy, architecture, contracts, quality requirements, and unresolved decisions for Lakshya Agarwal's portfolio. The ordered delivery plan lives in [`portfolio-implementation-phases.md`](./portfolio-implementation-phases.md).
+This document defines the product, content strategy, architecture, contracts, quality requirements, and decisions for Lakshya Agarwal's portfolio. It is the *why*; [`operations.md`](operations.md) is the *how*, and the phased delivery plan it was written against was retired once its phases shipped.
 
 This document is not authorization to implement or deploy the site. Work begins only after the open questions are resolved and a specific phase is explicitly approved.
 

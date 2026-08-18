@@ -8,10 +8,10 @@ and introducing Software, Hybrid, and Hardware as the portfolio's semantic work
 modes.
 
 It temporarily supersedes the desk, project-system, work-mode, and archive
-presentation decisions in `portfolio-overview.md` and
-`portfolio-implementation-phases.md`. Those master documents remain authoritative
-for deployment, security, publication, and unrelated product decisions until they
-are reconciled in Phase 7.
+presentation decisions in [`portfolio-overview.md`](portfolio-overview.md), which
+remains authoritative for product decisions this plan does not touch.
+[`operations.md`](operations.md) is authoritative for deployment, security, and
+publication.
 
 Creating or approving this plan does not authorize later phases. Work stops at
 each approval gate.
@@ -83,162 +83,17 @@ Phase 7 — Cleanup, documentation reconciliation, and final audit
 The order validates data before presentation, presentation before interaction,
 interaction before decoration, and artwork before integration.
 
-## Phase 1 — Content, routes, and semantic color foundation
+## Phases 1 and 2 — complete
 
-**Status:** Complete on 2026-08-10. The ten-route content contract and semantic
-color foundation passed the Phase 1 automated gate.
+**Phase 1** (ten-route content contract and the semantic Software/Hybrid/Hardware
+colour foundation) and **Phase 2** (the static, accessible project tree) both
+landed on 2026-08-10 and passed their automated gates. Their full specifications
+were removed once they shipped; `git log` has them if the original wording is
+ever needed.
 
-### Objective
-
-Establish the final project taxonomy and route contract before building the tree.
-At completion, all ten projects are routed case studies and the site has an
-unambiguous three-color work-mode system.
-
-### Why this phase happens first
-
-The current implementation distinguishes five case studies from five archives
-and uses `systems`, `physical`, and `hybrid`. Building the tree against those
-contracts would create immediate rework. Color tokens also belong here because
-later components must be designed against final semantics rather than temporary
-green/purple styling.
-
-### Phase 1A — Project contract and routes
-
-- Replace `ProjectWorkMode` with `software | hardware | hybrid`.
-- Map Cisco, RepoFrame, and NuCurrent to Software.
-- Map SmartLift, BackBuddy, and RiseNRun to Hardware.
-- Map QuackTA, Lucky Arduino, Neurify, and AgriSense to Hybrid.
-- Remove the case-study/archive discriminated union, presentation field, archive
-  priority, nullable case-study key, and archive-only routing data.
-- Make every stable project slug a valid case-study key.
-- Give every project common links, metrics, assets, and videos arrays without
-  hardcoded media limits.
-- Generate `/projects/<slug>` for all ten published projects.
-- Include all ten in static parameters, metadata, previous/next navigation,
-  validation, tests, and release validation.
-- Keep `/work` as the complete project index until Phase 2 replaces its presentation.
-
-Add concise verified MDX stories for Lucky Arduino, BackBuddy, Neurify,
-AgriSense, and COSMOS RiseNRun. Each story should cover only defensible material:
-
-1. What I was trying to build or learn.
-2. My specific responsibility.
-3. How the system worked at the supported level of detail.
-4. The strongest known outcome or constraint.
-5. A lesson or improvement only when supported by existing evidence.
-
-A small story may contain two or three meaningful sections. It must not be
-stretched into flagship length with generic process language.
-
-Pause instead of inventing content when ownership, mechanisms, metrics, dates,
-or link provenance conflict. A deliberately concise route is acceptable when all
-rendered claims are verified.
-
-### Phase 1B — Semantic color foundation
-
-| Before | After |
-| --- | --- |
-| Systems green: `oklch(0.79 0.145 155)` | Software green: `oklch(0.79 0.145 155)` |
-| Physical purple: `oklch(0.76 0.13 305)` | Hardware purple: `oklch(0.78 0.13 305)` |
-| Hybrid mixes green and purple | Hybrid electric blue: `oklch(0.79 0.12 235)` |
-| Generic controls frequently inherit green | Generic controls use neutral foreground/surface tokens |
-| Page atmosphere has green and purple | Shared identity surfaces may use restrained green, blue, and purple |
-| Personal amber: `oklch(0.82 0.11 75)` | Personal amber remains unchanged |
-
-Create solid, faint, soft, border, text, and hover variants for all three modes.
-Green appears only with Software meaning, blue with Hybrid meaning, purple with
-Hardware meaning, and the tri-color sequence with Lakshya's combined identity.
-Generic navigation, controls, social links, and focus treatment remain neutral.
-
-Validate accents in sRGB. If a token clips, reduce chroma while retaining its
-lightness and hue. Check normal text to WCAG AA and required graphical objects to
-3:1. Never rely on hue without visible branch or category text.
-
-### Phase 1 verification
-
-```powershell
-npm.cmd run validate:content
-npm.cmd run validate:content:release
-npm.cmd run lint
-npm.cmd run typecheck
-npm.cmd run test
-npm.cmd run build
-git diff --check
-```
-
-Verify exactly ten project routes, no runtime archive union, Lucky Arduino as
-Hybrid, first-person validation, ten-project navigation, and neutral generic UI.
-
-### Phase 1 exclusions
-
-- No tree layout or tree adapter without a consumer.
-- No node expansion behavior.
-- No Magic UI installation or animation.
-- No desk-art changes.
-- No deletion of the current desk or project system.
-
-### Phase 1 exit gate
-
-The content contract, ten routes, brief stories, and semantic tokens must pass
-together. A successful typecheck with missing content is insufficient.
-
-## Phase 2 — Static accessible project tree
-
-**Status:** Implemented locally on 2026-08-10. The automated gate passes; final
-viewport inspection remains part of Lakshya's localhost review before Phase 3.
-
-### Objective
-
-Replace the current grid with the final semantic tree without automatic hover or
-decorative animation. Reading order, branch balance, mobile structure, and native
-navigation must work before motion is allowed.
-
-### Data projection
-
-Introduce a presentation-only `ProjectTreeData` adapter containing the root and
-three typed branch arrays. Each project exposes normalized display data only:
-slug, title, category, first-person summary, role, date, technologies, and route.
-The tree must not reach into raw editorial content.
-
-### Structure
-
-- Root: Lakshya Agarwal, the existing one-liner, and `/about`.
-- Desktop: Hybrid left, Software center, Hardware right.
-- Mobile: root once, then complete Hybrid, Software, and Hardware branch groups.
-- Sort projects by existing `displayOrder` within each branch.
-- Use native `details` and `summary` for no-JavaScript disclosure.
-- Collapsed nodes show category and title.
-- Expanded nodes show one summary, role/date, at most three technologies plus
-  overflow, and one route action.
-- Use static CSS/SVG connectors that remain intelligible without decoration.
-
-### Connector geometry (revised 2026-08-10)
-
-The original left-hand bracket connectors were rejected on review: the runs left
-whitespace between segments, the columns did not read as centered, and every
-line ended in mid-air instead of meeting the node it described. The tree is now
-built as **three vertical chains**.
-
-- Each branch is a chain headed by a **branch node** — a rectangle labelled
-  Hybrid, Software, or Hardware — with its project nodes stacked beneath it.
-- Consecutive nodes are joined by exactly **one vertical connector, centered on
-  the bottom edge of the node above and the top edge of the node below**. A
-  connector must terminate flush against both rectangles; no floating ends.
-- The root joins the three branch nodes with a rounded **elbow**: one trunk drops
-  from the root's bottom-center to a horizontal rail, and three drops descend
-  from the rail into each branch node's top-center. Corners are rounded so the
-  join does not read as a spreadsheet grid.
-- Connector centering is derived from the same layout that positions the cards,
-  so expanding a node cannot desynchronise the geometry.
-
-This shape exists to serve Phase 4: a single straight path per branch is what
-makes one cheap traveling pulse possible.
-
-### Verification and exit gate
-
-Verify exact membership/order, all ten links, native disclosure, mobile DOM order,
-long titles, 200% text, keyboard operation, and non-color labels. Do not begin
-Phase 3 until the static tree is complete and understandable.
+What survives them is not in this document: the routes and colours are enforced
+by `web/lib/content/` and the test suite, and the tree's structure is in
+`web/components/project-tree/`. The invariants above still bind every later phase.
 
 ## Phase 3 — Intent hover, pinning, and reflow
 
@@ -416,8 +271,8 @@ Search all imports before removing the old SVG, grid/archive implementation,
 archive adapters, dot-pattern distinction, stale work-mode selectors, unused
 registry code, and duplicate tokens. Report recoverability for material assets.
 
-Reconcile the overview, master phases, visual system, content authoring,
-operations, and release-audit documents. Remove temporary supersession notices
+Reconcile the overview, visual system, content authoring, and operations
+documents. Remove temporary supersession notices
 only once the master documents describe the ten routes, semantic colors, tree,
 diorama, hover/pin behavior, three beams, dynamic media, and `/work` fallback.
 

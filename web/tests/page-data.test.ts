@@ -35,9 +35,12 @@ describe("page data projections", () => {
   it("builds one ordered project tree for the homepage", () => {
     const home = buildHomePageData(portfolioContent);
 
+    // Read the identity from the content rather than repeating it. The root of
+    // the tree is a projection of `siteProfile`, so what is worth asserting is
+    // that it projects — not what today's spelling of the name happens to be.
     expect(home.projectTree.root).toEqual({
-      name: "Lakshya Agarwal",
-      oneLiner: "I make computers do useful things in the real world.",
+      name: portfolioContent.siteProfile.name,
+      oneLiner: portfolioContent.siteProfile.headline,
       routeHref: "/about",
     });
     expect(

@@ -23,21 +23,13 @@ final-content/native-device verification, and production deployment remain gated
 - Route changes begin immediately; an interruptible 220ms transform/opacity entry runs only for pointer navigation, while keyboard and reduced-motion navigation remain instant. Focus moves to the arriving heading or fragment target.
 - Vercel is a possible eventual host, but deployment is explicitly deferred while the frontend is reviewed and overhauled on localhost.
 
-The decision and tradeoffs are recorded in [`docs/decisions/0001-static-content-architecture.md`](docs/decisions/0001-static-content-architecture.md). Product requirements and phase gates live in [`docs/portfolio-overview.md`](docs/portfolio-overview.md) and [`docs/portfolio-implementation-phases.md`](docs/portfolio-implementation-phases.md).
-The active desk and project-tree redesign is governed by [`docs/desk-project-tree-redesign-phases.md`](docs/desk-project-tree-redesign-phases.md).
+All project documentation is indexed in [`docs/README.md`](docs/README.md),
+which names one authoritative document per subject. The shortest paths in:
 
-Content conventions and publication checks are documented in [`docs/content-authoring.md`](docs/content-authoring.md).
-The remaining media, direct-URL, and publication-approval inputs are tracked in
-[`docs/content-inventory.md`](docs/content-inventory.md).
-The public-profile source mapping and LinkedIn recommendations are recorded in
-[`docs/linkedin-audit.md`](docs/linkedin-audit.md).
-The visual tokens, contrast record, and interaction-state rules are documented
-in [`docs/visual-system.md`](docs/visual-system.md).
-Phase 9 evidence and remaining release blockers are recorded in
-[`docs/release-audit.md`](docs/release-audit.md); the authorized deployment and
-rollback workflow lives in [`docs/operations.md`](docs/operations.md).
-To change a sentence on the site, [`docs/editing-copy.md`](docs/editing-copy.md)
-maps every visible piece of writing to the file that holds it.
+- **Change a sentence on the site** — [`docs/editing-copy.md`](docs/editing-copy.md)
+- **Add a project or case study** — [`docs/content-authoring.md`](docs/content-authoring.md)
+- **Build, release, or the standing rules** — [`docs/operations.md`](docs/operations.md)
+- **Touch the isometric scene** — [`docs/desk-artwork-handoff.md`](docs/desk-artwork-handoff.md)
 
 ## Prerequisites
 

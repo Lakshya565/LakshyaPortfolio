@@ -218,7 +218,7 @@ export const deskHotspotDefinitions = [
  * authored bounds remain only as a fallback, and `side` stays authored because
  * popover direction is an editorial choice, not geometry.
  */
-export function resolveHotspotPlacement(
+function resolveHotspotPlacement(
   definition: DeskHotspotDefinition,
 ): DeskHotspotDefinition["placement"] {
   const generated =

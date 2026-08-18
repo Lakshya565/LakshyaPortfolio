@@ -1,9 +1,58 @@
 # Portfolio operations
 
-This runbook covers content updates, release approval, Vercel deployment,
-verification, rollback, and maintenance. It does not authorize a deployment.
-Creating or changing the Vercel project, provider variables, domains, analytics,
-or production content still requires Lakshya's explicit approval.
+This runbook covers the standing rules, content updates, release approval, Vercel
+deployment, verification, rollback, and maintenance. It does not authorize a
+deployment.
+
+## Standing rules
+
+These apply to every session and none of them expire with a redesign. This is the
+authoritative copy; other docs point here rather than restating them.
+
+- **No deploying, no analytics, no domain, no publishing** without new
+  authorization. Committing and pushing is Lakshya's call, not a default.
+- **Never fabricate** responsibilities, outcomes, metrics, links, or technical
+  decisions. Never invent Lighthouse or trace numbers — run the tool, or say the
+  measurement was not performed.
+- **Cisco is approved subject matter in principle, but the omission review is
+  still owed.** No customer identifiers, internal diagrams, logs, credentials, or
+  uncleared metrics. This is the oldest outstanding item on the project.
+- **The software resume is published**, at `web/public/lakshya-agarwal-resume.pdf`
+  (reversed on 2026-08-17 at Lakshya's explicit request; it was previously banned
+  outright). Replace it by overwriting that file and committing — the filename is
+  stable on purpose so links already handed out keep resolving. The
+  **hardware/embedded** resume, the LinkedIn PDF, and any other private document
+  remain editorial source only and must never be copied into `public/`, linked,
+  routed, added to navigation, or emitted in metadata or sitemap output.
+- Relationship wording stays public and indirect ("people I care about"). Do not
+  name or depict Lakshya's girlfriend without new approval.
+- Copied character artwork is excluded. **Kirby is the one exception**, and it was
+  explicitly authorized.
+- The Software / Hybrid / Hardware colours and the ten-project branch membership
+  are locked product semantics.
+
+## Open before publication
+
+Carried forward from the Phase 8 content inventory and the Phase 9 release audit,
+both of which were retired once everything still live was moved here. Git holds
+the originals if the full audit trail is ever wanted.
+
+- The final Cisco omission and confidentiality review, against rendered content.
+- Ownership or permission for the linked repositories, the SmartLift demo, and
+  the SmartLift report.
+- A final confidentiality and personal-data review once all content is rendered.
+  The published resume carries a phone number and home city; decide deliberately
+  whether the public copy should.
+- Ownership and licensing review for any media added later. Intentional absence
+  beats a generic stand-in.
+- Repeat accessibility, performance, image, and confidentiality review against
+  final content, and cross-engine checks including Safari on a real device.
+- Recheck the unknown-slug `NoFallbackError` against the deployed runtime and
+  record its disposition.
+- Configure the real production origin, then verify canonicals, robots, sitemap
+  URLs, social previews, and signed-out public links.
+- Re-run the transfer-size measurement. The last recorded figure (189 KiB for the
+  home route) predates the desk rebuild and the lettering, and is stale.
 
 ## Local update workflow
 
@@ -24,14 +73,6 @@ or production content still requires Lakshya's explicit approval.
    reduced-motion, 320 px, and final-media behavior.
 6. For a release candidate, run `npm.cmd run validate:content:release`. A pass
    is required but is not itself publication approval.
-
-The **software** resume is published, at `web/public/lakshya-agarwal-resume.pdf`
-(**Reversed on 2026-08-17 at Lakshya's explicit request.** ). To replace it, overwrite that file and commit; the filename is
-stable on purpose so links already handed out keep resolving.
-
-Never add the **hardware/embedded** resume, the LinkedIn PDF, or any other
-private document to the repository's public assets, routes, metadata,
-navigation, or sitemap. Use those only as private editorial evidence.
 
 ## Approval checklist
 
@@ -131,7 +172,8 @@ Then verify:
 - Browser console, network requests, and deployment logs contain no error,
   draft, credential, internal path, or confidential content.
 - A production Lighthouse run and, when available, field Core Web Vitals are
-  recorded in `docs/release-audit.md` with their exact conditions.
+  recorded with their exact conditions. Never present a Lighthouse lab number as
+  field INP.
 
 ## Rollback
 

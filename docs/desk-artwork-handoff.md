@@ -15,7 +15,7 @@ signed off one at a time over several sessions, and several of them look the way
 they do because of a specific correction. Changing one "while you are in there"
 undoes work that was paid for in review cycles.
 
-`docs/claude-code-ui-handoff.md` is the older, broader handoff and is **stale in
+the retired claude code ui handoff doc is the older, broader handoff and is **stale in
 three specific ways** — see the last section. It has not been edited; read this
 document as the authority on the desk artwork and that one for the rest.
 
@@ -405,7 +405,7 @@ divide the projection cleanly the way 2.5 and 2 do.
 coordinates and takes roughly 7 KB back.
 
 `scene-markup.ts` has no budget and no test, and it is the one a visitor actually
-downloads. Repetitive path data gzips well, but `docs/release-audit.md` was
+downloads. Repetitive path data gzips well, but the retired release audit doc was
 already stale before this and is worth re-running.
 
 ### What it does not do
@@ -533,50 +533,15 @@ coil/tail/stripe pass to prove the two pieces touch with no background gap.
 
 ## Standing constraints
 
-Unchanged, and none of them expired with the artwork:
-
-- **No deploying to Vercel, no analytics, no domain, no publishing** without new
-  authorization. Committing and pushing is Lakshya's call, not a default.
-- ~~**No resumes on the site**~~ — **Reversed on 2026-08-17 at Lakshya's explicit request.** The software resume is
-  published at `public/lakshya-agarwal-resume.pdf` and appears as a fourth
-  social link. Everything below still holds for **every other** private
-  document: LinkedIn PDFs and the hardware/embedded resume are editorial source
-  only and must
-  never be copied into `public/`.
-- **Cisco is approved subject matter in principle, but the omission review is
-  still owed.** No customer identifiers, internal diagrams, logs, credentials, or
-  uncleared metrics. This has been outstanding for several sessions.
-- **Never fabricate** responsibilities, outcomes, metrics, links, or technical
-  decisions. Never invent Lighthouse or trace numbers — run the tool or say the
-  measurement was not performed.
-- Relationship wording stays public and indirect ("people I care about"). Do not
-  name or depict Lakshya's girlfriend without new approval.
-- Copied character artwork is excluded. **Kirby is the one exception** and was
-  explicitly authorised.
-- The Software / Hybrid / Hardware colours and the ten-project branch membership
-  are locked product semantics.
-
-## What the older handoff gets wrong
-
-`docs/claude-code-ui-handoff.md` still says:
-
-1. **"Substantial uncommitted Phase 1 and Phase 2 work."** No longer true — the
-   tree is clean and everything is on `main`.
-2. **The desk is a rejected hand-authored SVG at `lakshya-desk.svg`.** Superseded.
-   The scene is generated data and the artwork has been through a full rebuild and
-   a per-object review.
-3. **"Vitest: 9 files, 64 tests."** It is 10 files and 83 tests.
-
-Its content rules, locked semantics, performance constraints, and publication
-constraints are all still current. Its list of open questions about visual
-direction is largely answered by the scene as built.
+Moved to [`operations.md`](operations.md#standing-rules), which is now the single
+authoritative copy — no deploying or publishing without authorization, no
+fabricated claims, the Cisco omission review, the resume rule, relationship
+wording, the Kirby exception, and the locked branch semantics.
 
 ## Open items
 
-- **The 3D lettering.** The top-right block described in the layout pass is
-  reserved and empty, waiting for it. Nothing has been drawn or specified yet.
-- **The Cisco omission review.** The oldest outstanding item on the project.
-- Phases 3 and later of `docs/desk-project-tree-redesign-phases.md` have not
-  started and are gated on Lakshya's explicit approval.
+- Phases 3 and later of [`desk-project-tree-redesign-phases.md`](desk-project-tree-redesign-phases.md)
+  have not started and are gated on Lakshya's explicit approval.
 - The `footprintWinding` orientation, above — a known defect with a known blast
   radius, deliberately left alone.
+- Everything under [Open before publication](operations.md#open-before-publication).
