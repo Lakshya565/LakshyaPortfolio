@@ -47,16 +47,23 @@ const publishedSocialLinkSchema = z
     href: nonEmptyText,
   })
   .superRefine((link, context) => {
+    // The resume is the one link that points at this site rather than off it,
+    // so it is the one href that is a path instead of a URL. Constrained to a
+    // PDF at the root of `public/` on purpose: a bare `/something` would let a
+    // typo point the link at a route, and a nested path would put the file
+    // somewhere `getFileIssues` is not looking for it.
     const isValid =
       link.kind === "email"
         ? /^mailto:[^@\s]+@[^@\s]+\.[^@\s]+$/i.test(link.href)
-        : (() => {
-            try {
-              return new URL(link.href).protocol === "https:";
-            } catch {
-              return false;
-            }
-          })();
+        : link.kind === "resume"
+          ? /^\/[a-z0-9][a-z0-9-]*\.pdf$/i.test(link.href)
+          : (() => {
+              try {
+                return new URL(link.href).protocol === "https:";
+              } catch {
+                return false;
+              }
+            })();
 
     if (!isValid) {
       context.addIssue({
@@ -65,7 +72,9 @@ const publishedSocialLinkSchema = z
         message:
           link.kind === "email"
             ? "must be a valid mailto address"
-            : "must be a valid https URL",
+            : link.kind === "resume"
+              ? "must be a site-relative PDF at the root of public/, such as /lakshya-agarwal-resume.pdf"
+              : "must be a valid https URL",
       });
     }
   });

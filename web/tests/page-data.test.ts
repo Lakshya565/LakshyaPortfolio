@@ -123,6 +123,13 @@ describe("page data projections", () => {
         label: "Email",
         href: "mailto:lakshya6@illinois.edu",
       },
+      // The one link that stays on this site. Its file is checked separately by
+      // `validate-portfolio-content.ts`, which fails if the PDF is missing.
+      {
+        kind: "resume",
+        label: "Resume",
+        href: "/lakshya-agarwal-resume.pdf",
+      },
     ]);
   });
 

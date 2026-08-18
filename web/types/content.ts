@@ -1,4 +1,4 @@
-export const socialLinkKinds = ["github", "linkedin", "email"] as const;
+export const socialLinkKinds = ["github", "linkedin", "email", "resume"] as const;
 export type SocialLinkKind = (typeof socialLinkKinds)[number];
 
 type PendingSocialLink = Readonly<{

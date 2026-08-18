@@ -22,9 +22,12 @@ repository.
 - [x] Give every substantial project a routed story in the initial launch.
 - [ ] Final confidentiality and personal-data review after all content is rendered.
 
-The two private resumes may be used only as editorial source material. They must
-not be copied into `public/`, linked, routed, added to navigation, or emitted in
-metadata/sitemap output.
+The software resume is published at `public/lakshya-agarwal-resume.pdf` and
+linked as a social link (**Reversed on 2026-08-17 at Lakshya's explicit request.** ).
+
+The hardware/embedded resume and the LinkedIn PDF remain editorial source
+material only. They must not be copied into `public/`, linked, routed, added to
+navigation, or emitted in metadata/sitemap output.
 
 ## Featured case studies
 

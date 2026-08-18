@@ -1,5 +1,11 @@
 # Portfolio content authoring
 
+How the content model works: the records, their states, and the rules that
+validate them. If you only want to know **which file holds a sentence you can see
+on the page**, read [`editing-copy.md`](editing-copy.md) instead — it maps the
+rendered site back to its sources, including the copy that is hardcoded in pages
+rather than held in `web/content/`.
+
 ## Source of truth
 
 Portfolio content is version-controlled under `web/content/`:
@@ -151,10 +157,23 @@ and location metadata from final raster media during the publication phase.
 
 ## Contact links
 
-GitHub, LinkedIn, and email use typed published records. External profiles must
-use HTTPS; email must use `mailto:`. If a value becomes uncertain, replace it
-with the typed pending variant and `href: null` rather than inventing a URL.
-Release validation rejects pending entries.
+GitHub, LinkedIn, email, and the resume use typed published records. External
+profiles must use HTTPS; email must use `mailto:`. If a value becomes uncertain,
+replace it with the typed pending variant and `href: null` rather than inventing
+a URL. Release validation rejects pending entries.
+
+**The resume is the exception to "links point off the site."** Its `href` is a
+site-relative path, and the schema constrains it to a PDF at the root of
+`public/` — a bare `/something` could point the link at a route, and a nested
+path would put the file where the file check is not looking.
+`validate-portfolio-content.ts` fails the build when the named file is missing,
+because a resume link that 404s is worse than no resume link. Replace the
+document by overwriting `web/public/lakshya-agarwal-resume.pdf`; the filename is
+stable on purpose so a link already handed out keeps resolving to the current
+version.
+
+One list feeds three places — the header nav, the home hero, and the footer — so
+adding an entry adds it everywhere.
 
 The Vercel URL is requested separately during deployment for canonical metadata.
 

@@ -326,6 +326,22 @@ async function getFileIssues(content: PortfolioContent, webRoot: string) {
     );
   }
 
+  // A resume link that 404s is worse than no resume link, and it is the one
+  // href in the content that names a file this repository is supposed to own.
+  for (const link of content.socialLinks) {
+    if (link.kind !== "resume" || link.status !== "published") {
+      continue;
+    }
+
+    const resumePath = path.resolve(publicRoot, link.href.replace(/^\//, ""));
+
+    if (!resumePath.startsWith(`${publicRoot}${path.sep}`)) {
+      issues.push("socialLinks.resume: href escapes the public directory");
+    } else if (!(await pathExists(resumePath))) {
+      issues.push(`socialLinks.resume: missing public file ${link.href}`);
+    }
+  }
+
   for (const project of content.projects) {
     for (const asset of project.assets) {
       const relativePath = asset.path.slice(1).split("/").join(path.sep);

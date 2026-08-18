@@ -25,8 +25,13 @@ or production content still requires Lakshya's explicit approval.
 6. For a release candidate, run `npm.cmd run validate:content:release`. A pass
    is required but is not itself publication approval.
 
-Never add either private resume to the repository's public assets, routes,
-metadata, navigation, or sitemap. Use them only as private editorial evidence.
+The **software** resume is published, at `web/public/lakshya-agarwal-resume.pdf`
+(**Reversed on 2026-08-17 at Lakshya's explicit request.** ). To replace it, overwrite that file and commit; the filename is
+stable on purpose so links already handed out keep resolving.
+
+Never add the **hardware/embedded** resume, the LinkedIn PDF, or any other
+private document to the repository's public assets, routes, metadata,
+navigation, or sitemap. Use those only as private editorial evidence.
 
 ## Approval checklist
 

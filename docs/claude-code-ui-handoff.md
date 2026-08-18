@@ -266,7 +266,10 @@ more motion until the scene and transition are measured in a browser.
   still subject to Lakshya's omission review.
 - The site intentionally launches without project media. Assets and videos must
   remain dynamically sized and data-driven when added later.
-- Do not add resumes to the portfolio.
+- ~~Do not add resumes to the portfolio.~~ **Reversed on 2026-08-17 at Lakshya's explicit request.** One resume is now
+  published at `/lakshya-agarwal-resume.pdf` and linked from the header, hero,
+  and footer. See `docs/editing-copy.md`. No *other* private document may be
+  added without a new decision.
 - Do not deploy to Vercel, add analytics, configure a domain, or publish anything
   without new authorization.
 

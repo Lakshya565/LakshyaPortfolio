@@ -115,7 +115,7 @@ The UI must define what happens when the API is slow, content is empty, an image
 | Public writes | None | Accepted | The deployed site exposes no mutation surface. |
 | Desk hotspots | Eight typed placement groups covering nine personal motifs | Accepted | Geometry is presentation data and never contains canonical project facts. |
 | Content format | Typed manifest plus constrained local MDX | Accepted | Structured metadata stays validated while long-form case studies remain pleasant to author. |
-| Resumes | Not published on the site | Accepted | Case studies should tell a deeper story instead of duplicating application documents. |
+| Resumes | One software resume published at `/lakshya-agarwal-resume.pdf`; all other private documents remain unpublished | Revised 2026-08-17 | Originally "not published on the site", on the argument that case studies tell a deeper story. Reversed at Lakshya's request: a visitor arriving from an application expects the document, and the case studies are still the deeper story. |
 | Initial projects | Every listed project appears publicly | Accepted with quality gate | Thin archive entries may need compact presentation rather than empty full case studies. |
 | Scene direction | Atmospheric sci-fi isometric workbench | Accepted as the base concept | The local SVG and hotspot geometry remain replaceable presentation. |
 
@@ -709,7 +709,8 @@ All listed projects will appear publicly, but forcing a full case-study template
 - Host on Vercel when deployment is authorized; a Vercel-provided domain is sufficient initially.
 - Store desk-hotspot placement in typed frontend configuration and keep every published project in the shared project system.
 - Treat the Cisco feature as approved public subject matter, with an asset/claim-level confidentiality review.
-- Publish neither software nor hardware/embedded resumes on the portfolio.
+- ~~Publish neither software nor hardware/embedded resumes on the portfolio.~~
+  **Reversed on 2026-08-17 at Lakshya's explicit request.** The software resume is published; the hardware/embedded one is not.
 - Include every listed project publicly at launch.
 - Allow older projects to launch as substantial archive cards without full case-study routes.
 - Defer analytics while keeping a later privacy-conscious addition possible.

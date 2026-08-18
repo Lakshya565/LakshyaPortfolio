@@ -661,7 +661,7 @@ Replace representative fixtures with accurate, specific, approved public content
 #### Public links
 
 - Verify every repository, demo, video, GitHub, LinkedIn, and email link.
-- Confirm that no resume route, PDF, navigation label, sitemap entry, or public asset remains.
+- Confirm the published resume is the intended document and resolves: `public/lakshya-agarwal-resume.pdf`, linked as a social link, checked by `validate-portfolio-content.ts`. Confirm no *other* resume route, PDF, navigation label, sitemap entry, or public asset exists.
 
 #### Publication review
 

@@ -12,8 +12,14 @@ export default function Home() {
   return (
     <main id="main-content" tabIndex={-1}>
       <header className="personal-hero site-container">
-        <p className="eyebrow">{data.profile.name} · Computer Engineering</p>
-        <h1 className="hero-title">{data.profile.headline}</h1>
+        <p className="eyebrow">Computer Engineering</p>
+        <h1 className="hero-title">{data.profile.name}</h1>
+        {/* The headline used to be the h1, set at 4.25rem. A visitor arriving
+            from an application or a project link is looking for a name, and a
+            sentence at that size read as a billboard rather than as an
+            introduction — so the name takes the title and the sentence keeps
+            second place. */}
+        <p className="hero-headline">{data.profile.headline}</p>
         <p className="hero-intro">{data.profile.shortIntro}</p>
         <SocialLinks className="hero-social-links" links={data.socialLinks} />
       </header>

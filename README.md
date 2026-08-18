@@ -36,6 +36,8 @@ in [`docs/visual-system.md`](docs/visual-system.md).
 Phase 9 evidence and remaining release blockers are recorded in
 [`docs/release-audit.md`](docs/release-audit.md); the authorized deployment and
 rollback workflow lives in [`docs/operations.md`](docs/operations.md).
+To change a sentence on the site, [`docs/editing-copy.md`](docs/editing-copy.md)
+maps every visible piece of writing to the file that holds it.
 
 ## Prerequisites
 

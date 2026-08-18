@@ -537,8 +537,11 @@ Unchanged, and none of them expired with the artwork:
 
 - **No deploying to Vercel, no analytics, no domain, no publishing** without new
   authorization. Committing and pushing is Lakshya's call, not a default.
-- **No resumes on the site** — no route, PDF, nav label, sitemap entry, or public
-  asset. Private resumes and LinkedIn PDFs are editorial source only and must
+- ~~**No resumes on the site**~~ — **Reversed on 2026-08-17 at Lakshya's explicit request.** The software resume is
+  published at `public/lakshya-agarwal-resume.pdf` and appears as a fourth
+  social link. Everything below still holds for **every other** private
+  document: LinkedIn PDFs and the hardware/embedded resume are editorial source
+  only and must
   never be copied into `public/`.
 - **Cisco is approved subject matter in principle, but the omission review is
   still owed.** No customer identifiers, internal diagrams, logs, credentials, or
