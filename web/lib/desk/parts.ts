@@ -228,29 +228,27 @@ export const palette = {
   wireWarm: { line: "#e8b34a", wash: "#7a5c1c" },
   wireCool: { line: "#5a8ed0", wash: "#28477a" },
   /**
-   * The lettering's face — the flat side of the wall that carries the words.
+   * The lettering's extrusion — the top and right faces of every cube.
    *
-   * The one entry here that is not a material. Its line is `ink.accent` exactly,
-   * because Lakshya asked for the software green, and its wash is what makes the
-   * words legible at all: drawn on `ink.ground` like every other solid, the
-   * letterforms disappeared into a lattice of cube edges with no figure and no
-   * ground. Filling the face turns each letter back into a mass, and the strokes
-   * become the cube divisions the style is built on rather than the letter
-   * itself. Wash luminance is roughly 0.088, clearing the page by 2.67.
-   */
-  lettering: { line: "#62d691", wash: "#1f5f3f" },
-  /**
-   * The lettering's extrusion. Same argument as `triforceSide`, which is the
-   * precedent: a real face at a real angle, not shading painted onto a curve.
-   * Both the top and the right face take this one value — two values would be a
-   * light model, and the scene does not have one.
+   * The one entry here that is not a material. The letterform itself is not in
+   * the palette at all: it is `ink.accent` flat, fill and stroke together, so
+   * the front faces of neighbouring cubes merge into one solid green mass. That
+   * merge is the whole reason the words read. Two earlier builds outlined the
+   * cubes over a dark fill and the letterforms dissolved into a lattice of cube
+   * edges, legible in the geometry and invisible in the picture.
    *
-   * It has to clear the page as well as sit clearly under the face, which is a
-   * narrow gap: at `#0e2b1e` it read correctly and failed the contrast floor at
-   * 1.34. This sits at a luminance near 0.033, clearing by 1.60, and still a
-   * 2.7x step below the face.
+   * This value is what keeps them cubes once the face is solid. Same argument as
+   * `triforceSide`, which is the precedent: a real face at a real angle, not
+   * shading painted onto a curve. Both the top and the right face take this one
+   * value — two would be a light model, and the scene does not have one. With
+   * the front merged, these side faces and the stepped silhouette are the only
+   * places the individual cubes still show, which is exactly how the reference
+   * Lakshya sent reads.
+   *
+   * Wash luminance is roughly 0.088, clearing the page by 2.67 and sitting well
+   * under the accent so the extrusion never competes with the letterform.
    */
-  letteringSide: { line: "#62d691", wash: "#123a28" },
+  letteringSide: { line: "#62d691", wash: "#1f5f3f" },
 } as const;
 
 export type PaletteName = keyof typeof palette;

@@ -18,7 +18,7 @@
  * lattice, are load-bearing rather than tidy. See the notes on each.
  */
 
-import { face, hue, type DeskPart } from "@/lib/desk/parts";
+import { face, hue, ink, type DeskPart } from "@/lib/desk/parts";
 import type { Vec3 } from "@/lib/desk/projection";
 
 /**
@@ -164,9 +164,13 @@ if (lineClearance < 4) {
  *
  * The `+y` face is never dropped. It is the letterform — the flat side the wall
  * turns toward the viewer — and in a wall one cell deep nothing can stand in
- * front of it. It is also the only one filled in `lettering`; the extrusion
- * takes `letteringSide`. Filled alike they were unreadable, and the reason is
- * in the note on those two palette entries.
+ * front of it.
+ *
+ * It is drawn in `accent`, which fills *and* strokes it in one colour, so the
+ * front faces of neighbouring cubes merge into a single solid green mass with no
+ * seam between them. That merge is the entire reason the words are readable; see
+ * the note on `letteringSide`. The cubes do not get lost by it — the extrusion
+ * and the stepped silhouette still show every one.
  *
  * Vertex order matches `boxFaces` exactly: `+y` is its `left`, `+x` its `right`,
  * `+z` its `top`. Same winding, so these read as ordinary cubes.
@@ -178,7 +182,7 @@ function cubeFaces(
 ): readonly DeskPart[] {
   const { x, y, z } = origin;
   const far = { x: x + cell, y: y + cell, z: z + cell };
-  const front = hue("lettering");
+  const front = { accent: ink.accent };
   const side = hue("letteringSide");
 
   return [

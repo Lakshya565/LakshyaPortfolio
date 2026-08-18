@@ -274,25 +274,33 @@ answers both; the whole block is 1.32.
 the scene. It paints first and sits behind everything, which is what a backdrop
 should do.
 
-### It is drawn filled, and that is not a style choice
+### The letterform is solid, and it took two tries to get there
 
-The first build gave every cube face `ink.ground` like every other solid in the
-scene. **The words were unreadable.** With no figure and no ground, twenty-six
-cube outlines per glyph dissolve into a lattice and the letterform disappears
-into it — legible in the geometry, invisible in the picture. It is the clearest
-case yet of the rule at the bottom of this file: geometric fit is not visual fit,
-and the only way it was found was by rendering it and looking.
+**This is the part to not undo.** It took two failed builds, and both of them
+looked fine in the geometry.
 
-Two palette entries fix it. `lettering` fills the `+y` face — the letterform —
-and `letteringSide` fills the extrusion. Both take `ink.accent` as their line.
-The precedent for two values of one hue is `triforce` / `triforceSide`: a real
-face at a real angle, not shading painted onto a curve. Both faces of the
-extrusion take the *same* value; two would be a light model, and the scene does
-not have one.
+1. Every face `ink.ground` with an accent outline, like every other solid in the
+   scene. Unreadable — with no figure and no ground, twenty-six cube outlines per
+   glyph dissolve into a lattice and the letterform disappears into it.
+2. Front face filled dark green, extrusion filled darker, both outlined in the
+   accent. Better, and still wrong: the cube grid stayed louder than the letters,
+   so the words read as texture.
 
-`letteringSide` is squeezed. It has to sit clearly below the face and still clear
-`ink.ground` by the test's 1.4. At `#0e2b1e` it looked right and failed at 1.34.
-`#123a28` clears at 1.60 and is still a 2.7× step below the face.
+What works is the **front faces merging into one mass**. The `+y` face is drawn
+with `accent`, which fills *and* strokes it in a single colour, so neighbouring
+cubes in a letter stroke have no seam between them and the letter becomes a
+solid green shape. The cubes are not lost by it: the extrusion and the stepped
+silhouette still show every one, which is exactly how the reference reads.
+
+So there is only one palette entry, `letteringSide`, and it is the extrusion —
+the letterform itself is `ink.accent` flat and is not in the palette at all. The
+precedent for a second value of one hue is `triforce` / `triforceSide`: a real
+face at a real angle, not shading painted onto a curve. Top and right take the
+*same* value; two would be a light model, and the scene does not have one.
+
+It is the clearest case yet of the rule at the bottom of this file — geometric
+fit is not visual fit, and every one of those three states was only told apart by
+shooting it at 5× and looking at it.
 
 ### Culling and paint order
 
