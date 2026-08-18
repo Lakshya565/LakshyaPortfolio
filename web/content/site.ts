@@ -1,7 +1,7 @@
 import type { SiteProfile, SocialLink } from "@/types/content";
 
 export const siteProfile = {
-  name: "LAKSHYA AGARWAL",
+  name: "Lakshya Agarwal",
   headline: "I make computers do useful things in the real world.",
   shortIntro:
     "Studying Computer Engineering at UIUC, building software, hardware, and AI systems that survive contact with real people and real constraints. Previously interned at Cisco as a Software Engineer on the Industrial IoT team.",

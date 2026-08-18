@@ -38,7 +38,51 @@
   --accent-desk-soft: var(--accent-green-soft);
   --accent-desk-hover: var(--accent-green-hover);
   --font-body: "Inter", "Segoe UI", sans-serif;
-  --font-code: "Cascadia Code", "SFMono-Regular", Consolas, monospace;
+  --font-code: "Departure Mono", "SFMono-Regular", Consolas, monospace;
+
+  /* ---------------------------------------------------------------------
+   * Hero title face. Uncomment exactly one block below.
+   *
+   * The three values move together on purpose. Weight is here because
+   * Departure Mono has only one, and asking a single-weight pixel face for 600
+   * makes the browser synthesise a bold that smears the pixel grid. Tracking is
+   * here because letter-spacing that suits one face rarely suits another — the
+   * monos want the caps opened up, the geometric sans already has the room.
+   *
+   * The faces themselves are declared in `app/fonts.ts`, self-hosted at build
+   * time. Whichever one you settle on, set its `preload: true` there.
+   * ------------------------------------------------------------------- */
+
+  /* Cascadia Code — the site's own mono. Downloads nothing, but a visitor
+     without it installed (most Macs, most Linux) sees their generic monospace
+     instead, which is a different face. */
+  --font-display: var(--font-code);
+  --font-display-weight: 600;
+  --font-display-tracking: 0.06em;
+
+  /* JetBrains Mono — taller and wider than Cascadia; holds up blown up.
+  --font-display: var(--font-jetbrains-mono), var(--font-code);
+  --font-display-weight: 600;
+  --font-display-tracking: 0.05em; */
+
+  /* IBM Plex Mono — warmer, more engineering-document than terminal.
+  --font-display: var(--font-plex-mono), var(--font-code);
+  --font-display-weight: 600;
+  --font-display-tracking: 0.05em; */
+
+  /* Space Grotesk — a geometric sans, not a mono. Minimal rather than computery.
+  --font-display: var(--font-space-grotesk), var(--font-body);
+  --font-display-weight: 600;
+  --font-display-tracking: 0.02em; */
+
+  /* Departure Mono — pixel face, rhymes with the desk lettering. One weight
+     only, and it needs more air between caps than the others. It is also the
+     widest of the five: measured at a 320px viewport the name wraps to two
+     lines. Nothing overflows, but if you want it on one line there, drop the
+     `clamp()` floor on `.hero-title` to about 1.5rem.
+  --font-display: var(--font-departure-mono), var(--font-code);
+  --font-display-weight: 400;
+  --font-display-tracking: 0.08em; */
   --content-wide: 72rem;
   --content-reading: 48rem;
   --radius-control: 0.75rem;
@@ -246,15 +290,33 @@ dd {
 
 .personal-hero {
   padding-block: 4.5rem 2.5rem;
+  text-align: center;
 }
 
 .hero-title {
   max-width: 50rem;
-  margin-top: 0.75rem;
+  margin-inline: auto;
   color: var(--primary);
-  font-size: clamp(2rem, 4vw, 2.75rem);
-  font-weight: 600;
-  letter-spacing: -0.03em;
+  /*
+   * The code face, not the body face. It is already the voice of the eyebrows,
+   * the nav wordmark and every metric label on the site, so the hero reads as
+   * part of the same system rather than introducing a fourth typeface.
+   */
+  font-family: var(--font-display);
+  font-size: clamp(1.75rem, 5.5vw, 3rem);
+  font-weight: var(--font-display-weight);
+  /*
+   * Uppercase is a display choice and lives here, not in `siteProfile.name`.
+   * Setting it in the content would also shout in the footer sentence, the
+   * project-tree root, and anywhere else the name is read back as prose.
+   */
+  text-transform: uppercase;
+  /*
+   * Positive, where the body face wanted negative. A mono is already evenly
+   * spaced and caps have no descenders to interlock, so tightening it closes
+   * the counters instead of tidying the line.
+   */
+  letter-spacing: var(--font-display-tracking);
   line-height: 1.05;
 }
 
@@ -265,7 +327,8 @@ dd {
    prose rather than a two-word display setting. */
 .hero-headline {
   max-width: 38rem;
-  margin-top: 1rem;
+  margin-top: 1.25rem;
+  margin-inline: auto;
   color: var(--primary);
   font-size: clamp(1.25rem, 2.4vw, 1.625rem);
   font-weight: 500;
@@ -284,6 +347,7 @@ dd {
 .hero-intro {
   max-width: 40rem;
   margin-top: 1rem;
+  margin-inline: auto;
   color: var(--secondary);
   font-size: clamp(1rem, 1.5vw, 1.125rem);
   line-height: 1.75;
@@ -292,9 +356,35 @@ dd {
 .hero-social-links {
   display: flex;
   flex-wrap: wrap;
+  justify-content: center;
   gap: 0.75rem 1.5rem;
   margin-top: 1.75rem;
   font-size: 0.875rem;
+  /*
+   * The fourth beat of the hero sequence, after the three swept lines. Done in
+   * CSS rather than with another `DiaTextReveal` because these are anchors, not
+   * prose: the reveal paints text transparent, and a link nobody can see is a
+   * different problem from a heading nobody can see. It also keeps the shared
+   * `SocialLinks` component — which the header and footer use too — untouched.
+   */
+  animation: hero-links-in 0.5s ease-out 1.35s both;
+}
+
+@keyframes hero-links-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.5rem);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-social-links {
+    animation: none;
+  }
 }
 
 .button-primary,

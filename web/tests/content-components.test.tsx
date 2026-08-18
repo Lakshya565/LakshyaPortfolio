@@ -19,9 +19,13 @@ describe("project tree", () => {
     expect(html.match(/<details>/g)).toHaveLength(10);
     expect(html).toContain('href="/about"');
     expect(html).toContain(portfolioContent.siteProfile.name);
-    expect(html).toContain('href="/projects/cisco-agentic-runbook-creator"');
-    expect(html).toContain("Cisco Agentic Runbook Creator");
-    expect(html).toContain("Lucky Arduino Collection");
+    // Titles are editorial and get reworded; slugs are the contract, because
+    // they are the URL. Assert that every published project renders its own
+    // title rather than pinning today's phrasing of two of them.
+    for (const project of portfolioContent.projects) {
+      expect(html, project.slug).toContain(`href="/projects/${project.slug}"`);
+      expect(html, project.slug).toContain(project.title);
+    }
     expect(html).toContain(">Hybrid</h2>");
     expect(html).toContain(">Software</h2>");
     expect(html).toContain(">Hardware</h2>");

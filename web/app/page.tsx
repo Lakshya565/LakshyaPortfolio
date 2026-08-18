@@ -1,10 +1,28 @@
 import Link from "next/link";
 
 import { IsometricDesk } from "@/components/desk/isometric-desk";
+import { DiaTextReveal } from "@/components/ui/dia-text-reveal";
 import { ProjectTree } from "@/components/project-tree/project-tree";
 import { SocialLinks } from "@/components/site/social-links";
 import { Button } from "@/components/ui/button";
 import { getHomePageData } from "@/lib/content/portfolio-repository";
+
+/**
+ * The colours the reveal sweeps through, darkest to lightest and back.
+ *
+ * The component ships a five-stop purple/orange palette. These are the site's
+ * own greens — `#62d691` is `ink.accent`, the colour that means "this responds"
+ * — so the sweep reads as the page lighting up rather than as a stock effect.
+ */
+const heroSweep = ["#168253", "#62d691", "#d9ffe9", "#62e895", "#1f5f3f"];
+
+/**
+ * `color: inherit` rather than a literal, so each line falls back to whatever
+ * its own container already specifies — `--primary` for the title and headline,
+ * `--secondary` for the intro — instead of repeating those values here.
+ */
+const heroNoScriptCss =
+  ".hero-reveal{color:inherit!important;-webkit-text-fill-color:currentColor!important;background-image:none!important}";
 
 export default function Home() {
   const data = getHomePageData();
@@ -12,16 +30,51 @@ export default function Home() {
   return (
     <main id="main-content" tabIndex={-1}>
       <header className="personal-hero site-container">
-        <p className="eyebrow">Computer Engineering</p>
-        <h1 className="hero-title">{data.profile.name}</h1>
+        {/* The three lines sweep in one after another, so the reader's eye is
+            walked down the hero rather than handed all of it at once. The
+            offsets are shorter than the sweep, which makes them cascade instead
+            of queueing. `DiaTextReveal` already honours `prefers-reduced-motion`
+            by jumping to the finished state. */}
+        <h1 className="hero-title">
+          <DiaTextReveal
+            className="hero-reveal leading-[1.05]"
+            colors={heroSweep}
+            delay={0}
+            text={data.profile.name}
+            textColor="var(--primary)"
+          />
+        </h1>
         {/* The headline used to be the h1, set at 4.25rem. A visitor arriving
             from an application or a project link is looking for a name, and a
             sentence at that size read as a billboard rather than as an
             introduction — so the name takes the title and the sentence keeps
             second place. */}
-        <p className="hero-headline">{data.profile.headline}</p>
-        <p className="hero-intro">{data.profile.shortIntro}</p>
+        <p className="hero-headline">
+          <DiaTextReveal
+            className="hero-reveal align-baseline leading-[1.3]"
+            colors={heroSweep}
+            delay={0.45}
+            text={data.profile.headline}
+            textColor="var(--primary)"
+          />
+        </p>
+        <p className="hero-intro">
+          <DiaTextReveal
+            className="hero-reveal align-baseline leading-[1.75]"
+            colors={heroSweep}
+            delay={0.9}
+            text={data.profile.shortIntro}
+            textColor="var(--secondary)"
+          />
+        </p>
         <SocialLinks className="hero-social-links" links={data.socialLinks} />
+        {/* The reveal paints its text with `background-clip: text` over a
+            transparent colour, so with scripting off the hero would render
+            blank. The markup already contains the real words — this just puts
+            the colour back. */}
+        <noscript>
+          <style>{heroNoScriptCss}</style>
+        </noscript>
       </header>
 
       {/* The scene is a 2:1 band, so it spans the page rather than sharing a

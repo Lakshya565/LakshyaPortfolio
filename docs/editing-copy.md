@@ -121,11 +121,142 @@ If the issue is size rather than wording, it is CSS, in `web/app/globals.css`:
 
 | Class | What it sets |
 |---|---|
-| `.eyebrow` | The small uppercase mono line |
-| `.hero-title` | Your name |
+| `.hero-title` | Your name — size, the mono face, the uppercasing, the tracking |
 | `.hero-headline` | The sentence under it |
 | `.hero-intro` | The paragraph |
-| `.hero-social-links` | The link row |
+| `.hero-social-links` | The link row, and the fade that ends the reveal sequence |
+| `.eyebrow` | The small uppercase mono line used elsewhere on the site |
+
+**The title's `font-size` is a `clamp()`, and its floor is not a taste
+decision.** `clamp(1.75rem, 5.5vw, 3rem)` — the middle value scales with the
+viewport, the last is the desktop size, and the first is the floor. At 1.75rem
+the uppercase name measures 271px against the 288px available at a 320px
+viewport, which is the narrowest width this site is expected to reflow at.
+Raising the floor overflows that screen. Raise the **maximum** instead; there is
+plenty of room there.
+
+---
+
+## Fonts
+
+### Where they are defined
+
+Two custom properties near the top of `web/app/globals.css`, inside `:root`:
+
+```css
+--font-body: "Inter", "Segoe UI", sans-serif;
+--font-code: "Cascadia Code", "SFMono-Regular", Consolas, monospace;
+```
+
+`--font-body` is the page. `--font-code` is the technical voice: the nav
+wordmark, every eyebrow, metric labels, timeline values, and now the hero title.
+
+**Nothing here is downloaded.** These are *system font stacks* — the browser uses
+the first name the visitor's machine already has, and falls through to the next.
+That is why the site loads no font files and never flashes unstyled text, and it
+is also the catch: **a visitor without Cascadia Code installed does not see
+Cascadia Code.** Most Macs and most Linux machines don't have it, so they get
+whatever their generic `monospace` is (Menlo, DejaVu Sans Mono), and the hero
+looks noticeably different from what you see on Windows. Same story for Inter.
+
+If you want the site to look the same everywhere, that means shipping a real
+font file — see [Adding a real webfont](#adding-a-real-webfont) below.
+
+### Changing just the hero title
+
+One line, in `.hero-title`:
+
+```css
+.hero-title {
+  font-family: var(--font-code);   /* ← change this */
+}
+```
+
+Give it a stack, not a single name, so there is something to fall back to:
+
+```css
+font-family: "JetBrains Mono", var(--font-code);
+```
+
+### Changing a font everywhere
+
+Edit the token instead of the rule, and every user of it follows:
+
+```css
+--font-code: "IBM Plex Mono", "Cascadia Code", Consolas, monospace;
+```
+
+Be deliberate about this one — `--font-code` is doing a lot of work across the
+site, and what reads well at 3rem in the hero may read badly at 0.6875rem on a
+technology badge.
+
+### Switching the hero title face
+
+**All five candidates are already wired up.** The faces are declared in
+`web/app/fonts.ts` and exposed as CSS variables; the choice is a block of
+commented alternatives at the top of `web/app/globals.css`, in `:root`:
+
+```css
+/* Cascadia Code — the site's own mono. */
+--font-display: var(--font-code);
+--font-display-weight: 600;
+--font-display-tracking: 0.06em;
+
+/* JetBrains Mono — taller and wider than Cascadia; holds up blown up.
+--font-display: var(--font-jetbrains-mono), var(--font-code);
+--font-display-weight: 600;
+--font-display-tracking: 0.05em; */
+```
+
+Comment out the active block, uncomment another, done. Nothing else changes.
+
+**All three values move together on purpose.** Weight is in there because
+Departure Mono has only one, and asking a single-weight pixel face for 600 makes
+the browser synthesise a bold that smears the pixel grid. Tracking is in there
+because letter-spacing that suits one face rarely suits another.
+
+### How the fonts are loaded
+
+`next/font` downloads each file at **build** time and self-hosts it. Nothing is
+fetched from Google at runtime, so there is no third-party request, no privacy
+question, and no change needed to the CSP.
+
+**Every face sets `preload: false`, and that is deliberate.** `preload` defaults
+to true, which injects a `<link rel="preload">` per face — five declared faces
+would mean five downloads on every page load for a site that otherwise ships
+none. With preload off, an unused `@font-face` costs only its few hundred bytes
+of CSS, and the browser fetches a file when text actually asks for it. Verified:
+switching the variable at runtime downloads that face and nothing else.
+
+**Once you settle on one, set its `preload: true` in `fonts.ts`.** It is the
+active face, so paying for it up front is the right trade.
+
+Departure Mono is the one that is not on Google Fonts. Its `.woff2` is committed
+at `web/app/fonts/`, with `DepartureMono-OFL.txt` beside it — copyright
+2022–2024 Helena Zhang, SIL Open Font License 1.1, which permits bundling with
+software and requires the licence to travel with the font. **Do not separate
+them.**
+
+### The five faces
+
+Measured at a 1280px viewport, 48px type, name set in caps:
+
+| Face | Character | Width | File |
+|---|---|---:|---|
+| **Cascadia Code** | The site's own mono. Even, slightly rounded | 465px | none — system stack |
+| **JetBrains Mono** | Taller x-height, wider apertures; built to survive being blown up | 468px | ~25 KB |
+| **IBM Plex Mono** | Warmer and slightly humanist; less terminal, more engineering document | 468px | ~28 KB |
+| **Space Grotesk** | A geometric *sans*, not a mono. Minimal, tighter, more modern | 450px | ~30 KB |
+| **Departure Mono** | Pixel/bitmap face; rhymes directly with the desk lettering | 516px | ~22 KB |
+
+Cascadia is the only one that downloads nothing — and the only one that is not
+guaranteed to be what a visitor sees, since a machine without it installed falls
+back to its generic `monospace`. **Choosing any of the other four is also
+choosing that everyone sees the same thing.**
+
+Two things to check after any font change: the name still fits on one line at a
+320px viewport (see the `clamp()` note above), and the uppercase tracking still
+looks right — `letter-spacing` that suits one face usually does not suit another.
 
 ---
 

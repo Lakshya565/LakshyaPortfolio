@@ -3,10 +3,10 @@ import type { Project } from "@/types/content";
 export const projects = [
   {
     slug: "cisco-agentic-runbook-creator",
-    title: "Cisco Agentic Runbook Creator",
+    title: "Cisco - Agentic Runbook Creator",
     category: "AI Systems",
     shortDescription:
-      "At Cisco, I worked on an industrial-network troubleshooting system that paired local model reasoning, privacy-aware cloud handoffs, and digital-twin evaluation to generate and test runbooks.",
+      "At Cisco, I worked on Agentic Runbook Creator, an industrial-network troubleshooting system that combined local model reasoning, privacy-aware cloud handoffs, and digital-twin evaluation to generate and test runbooks.",
     role: "Software Engineer Intern",
     startDate: "2026-05",
     endDate: "2026-08",
@@ -91,7 +91,7 @@ export const projects = [
   },
   {
     slug: "nucurrent-inventory-system",
-    title: "NuCurrent Inventory System",
+    title: "NuCurrent Inventory Platform",
     category: "Full-stack Software",
     shortDescription:
       "As CUBE Consulting's frontend lead, I helped replace spreadsheet-based part tracking with a React, FastAPI, and SQL inventory platform built around daily maintenance work.",
@@ -182,7 +182,7 @@ export const projects = [
   },
   {
     slug: "lucky-arduino",
-    title: "Lucky Arduino Collection",
+    title: "Lucky Arduino",
     category: "Embedded Systems",
     shortDescription:
       "I taught myself electronics in public through more than fifty Arduino videos, twelve documented builds, and repositories spanning sensors, displays, controls, and electromechanical systems.",
@@ -321,7 +321,7 @@ export const projects = [
   },
   {
     slug: "risenrun-wifi-alarm-clock",
-    title: "COSMOS RiseNRun Wi-Fi Alarm Clock",
+    title: "COSMOS RiseNRun",
     category: "Embedded Systems",
     shortDescription:
       "I developed embedded firmware and IoT behavior for a moving ESP32 alarm clock, then helped evaluate its adaptive physical tasks through deployment and user trials.",
