@@ -14,9 +14,14 @@ authoritative copy; other docs point here rather than restating them.
 - **Never fabricate** responsibilities, outcomes, metrics, links, or technical
   decisions. Never invent Lighthouse or trace numbers — run the tool, or say the
   measurement was not performed.
-- **Cisco is approved subject matter in principle, but the omission review is
-  still owed.** No customer identifiers, internal diagrams, logs, credentials, or
-  uncleared metrics. This is the oldest outstanding item on the project.
+- **Cisco content is cleared for publication.** Lakshya reviewed it and approved
+  it in full on 2026-08-19, explicitly, for the purpose of deploying: nothing
+  needs omitting. This closes what had been the oldest outstanding item on the
+  project. The clearance covers the Cisco material **as it stands at commit
+  `b01d2e5`**; he intends to rework the case studies later, and new claims are
+  new content — the "never fabricate" rule above still governs them, and
+  customer identifiers, internal diagrams, logs and credentials remain out of
+  scope for anything added in future.
 - **The software resume is published**, at `web/public/lakshya-agarwal-resume.pdf`
   (reversed on 2026-08-17 at Lakshya's explicit request; it was previously banned
   outright). Replace it by overwriting that file and committing — the filename is
@@ -37,7 +42,6 @@ Carried forward from the Phase 8 content inventory and the Phase 9 release audit
 both of which were retired once everything still live was moved here. Git holds
 the originals if the full audit trail is ever wanted.
 
-- The final Cisco omission and confidentiality review, against rendered content.
 - Ownership or permission for the linked repositories, the SmartLift demo, and
   the SmartLift report.
 - A final confidentiality and personal-data review once all content is rendered.
@@ -79,7 +83,6 @@ the originals if the full audit trail is ever wanted.
 Before production work, record:
 
 - The clean commit and approved public-content review.
-- The final Cisco omission/confidentiality review.
 - Ownership or license status for every public asset.
 - Vercel account/team owner, intended project name, billing expectation, and
   rollback tolerance.
@@ -205,8 +208,9 @@ After service is stable:
 - After a domain is added: update only the production site-origin value, rebuild,
   and recheck every canonical/discovery/social URL. Track domain renewal with
   the registrar; Vercel cannot replace that ownership process.
-- Re-review factual project claims and Cisco confidentiality whenever content
-  changes, not only when code changes.
+- Re-review factual project claims whenever content changes, not only when code
+  changes. The Cisco clearance of 2026-08-19 covers the material as written; a
+  rewrite of those case studies is new content and gets read again.
 
 Analytics remains optional. Evaluate it only when there is a concrete question
 that server logs or a short manual audit cannot answer. Before selecting a
