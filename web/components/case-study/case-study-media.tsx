@@ -19,7 +19,7 @@ function ProjectFigure({
         className="case-study-image"
         height={media.height}
         preload={preload}
-        sizes="(min-width: 64rem) 48rem, (min-width: 40rem) calc(100vw - 6rem), calc(100vw - 2rem)"
+        sizes="(min-width: 56rem) 48rem, (min-width: 40rem) calc(100vw - 6rem), calc(100vw - 2rem)"
         src={media.src}
         unoptimized={media.src.endsWith(".svg")}
         width={media.width}

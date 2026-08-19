@@ -1,9 +1,12 @@
 import Link from "next/link";
 
 import { IsometricDesk } from "@/components/desk/isometric-desk";
+import { HeroLinkButton } from "@/components/hero/hero-link-button";
+import { HeroName } from "@/components/hero/hero-name";
+import { HeroParticles } from "@/components/hero/hero-particles";
+import { BorderBeam } from "@/components/ui/border-beam";
 import { DiaTextReveal } from "@/components/ui/dia-text-reveal";
 import { ProjectTree } from "@/components/project-tree/project-tree";
-import { SocialLinks } from "@/components/site/social-links";
 import { Button } from "@/components/ui/button";
 import { getHomePageData } from "@/lib/content/portfolio-repository";
 
@@ -18,7 +21,7 @@ const heroSweep = ["#168253", "#62d691", "#d9ffe9", "#62e895", "#1f5f3f"];
 
 /**
  * `color: inherit` rather than a literal, so each line falls back to whatever
- * its own container already specifies — `--primary` for the title and headline,
+ * its own container already specifies — `--primary` for the headline,
  * `--secondary` for the intro — instead of repeating those values here.
  */
 const heroNoScriptCss =
@@ -26,52 +29,87 @@ const heroNoScriptCss =
 
 export default function Home() {
   const data = getHomePageData();
+  /* Resume first. It is the thing a visitor is most likely to have come for,
+     and it used to be the fourth of four identical underlined links. */
+  const heroLinks = [
+    ...data.socialLinks.filter((link) => link.kind === "resume"),
+    ...data.socialLinks.filter((link) => link.kind !== "resume"),
+  ];
 
   return (
     <main id="main-content" tabIndex={-1}>
       <header className="personal-hero site-container">
-        {/* The three lines sweep in one after another, so the reader's eye is
-            walked down the hero rather than handed all of it at once. The
-            offsets are shorter than the sweep, which makes them cascade instead
-            of queueing. `DiaTextReveal` already honours `prefers-reduced-motion`
-            by jumping to the finished state. */}
-        <h1 className="hero-title">
-          <DiaTextReveal
-            className="hero-reveal leading-[1.05]"
-            colors={heroSweep}
-            delay={0}
-            text={data.profile.name}
-            textColor="var(--primary)"
-          />
-        </h1>
-        {/* The headline used to be the h1, set at 4.25rem. A visitor arriving
-            from an application or a project link is looking for a name, and a
-            sentence at that size read as a billboard rather than as an
-            introduction — so the name takes the title and the sentence keeps
-            second place. */}
-        <p className="hero-headline">
-          <DiaTextReveal
-            className="hero-reveal align-baseline leading-[1.3]"
-            colors={heroSweep}
-            delay={0.45}
-            text={data.profile.headline}
-            textColor="var(--primary)"
-          />
-        </p>
-        <p className="hero-intro">
-          <DiaTextReveal
-            className="hero-reveal align-baseline leading-[1.75]"
-            colors={heroSweep}
-            delay={0.9}
-            text={data.profile.shortIntro}
-            textColor="var(--secondary)"
-          />
-        </p>
-        <SocialLinks className="hero-social-links" links={data.socialLinks} />
+        <HeroParticles />
+
+        {/* Two columns of one fraction each: who, and what. A single stack left
+            the right half of a wide screen empty, which read as unfinished
+            rather than as restraint. Below 56rem it is one column again. */}
+        <div className="personal-hero-split">
+          <div className="hero-identity">
+            {/* The heading is the real, readable name and nothing else. The
+                drawing is a sibling rather than a child: nested inside, the
+                SVG's own `<text>` joined the heading's `textContent`, which
+                read back as "Lakshya AgarwalLAKSHYAAGARWAL" to anything doing
+                plain-text extraction. */}
+            <h1 className="hero-title sr-only">{data.profile.name}</h1>
+            <HeroName name={data.profile.name} />
+
+            <div className="hero-actions">
+              {heroLinks.map((link) => (
+                <HeroLinkButton key={link.kind} link={link} />
+              ))}
+            </div>
+          </div>
+
+          {/* A hairline suspended between the halves, with a light running its
+              length. `BorderBeam` traces its host's border box, and on a
+              one-pixel-wide element that box is the line itself — so the beam
+              travels down it and back up rather than around a rectangle. */}
+          <div aria-hidden="true" className="hero-divider">
+            <BorderBeam
+              className="hero-divider-beam"
+              colorFrom="var(--accent-green)"
+              colorTo="var(--accent-green-hover)"
+              duration={7}
+              size={110}
+            />
+          </div>
+
+          {/* The two lines sweep in one after the other, so the reader is walked
+              down the column rather than handed it at once. The offset is
+              shorter than the sweep, which makes them cascade instead of queue.
+              `DiaTextReveal` already honours `prefers-reduced-motion` by
+              jumping to the finished state.
+
+              The name no longer takes a reveal: it paints text transparent and
+              fills it with a moving gradient, which is the same slot the glyph
+              field occupies. They cannot both own the letterforms. */}
+          <div className="hero-statement">
+            <p className="hero-headline">
+              <DiaTextReveal
+                className="hero-reveal align-baseline leading-[1.3]"
+                colors={heroSweep}
+                delay={0.2}
+                text={data.profile.headline}
+                textColor="var(--primary)"
+              />
+            </p>
+            <p className="hero-intro">
+              <DiaTextReveal
+                className="hero-reveal align-baseline leading-[1.75]"
+                colors={heroSweep}
+                delay={0.65}
+                text={data.profile.shortIntro}
+                textColor="var(--secondary)"
+              />
+            </p>
+          </div>
+        </div>
+
         {/* The reveal paints its text with `background-clip: text` over a
-            transparent colour, so with scripting off the hero would render
-            blank. The markup already contains the real words — this just puts
-            the colour back. */}
+            transparent colour, so with scripting off those two lines would
+            render blank. The markup already contains the real words — this just
+            puts the colour back. */}
         <noscript>
           <style>{heroNoScriptCss}</style>
         </noscript>
@@ -121,7 +159,10 @@ export default function Home() {
             </p>
             <Button
               asChild
-              className="mt-4 whitespace-normal text-left"
+              /* `px-0` because the link variant keeps a button's horizontal
+                 padding, which pushed this 17px off the left rail every other
+                 block on the page sits on. */
+              className="mt-4 px-0 whitespace-normal text-left"
               variant="link"
             >
               <Link href="/about">A little more about me →</Link>

@@ -7,7 +7,7 @@ import { SiteHeader } from "@/components/site/site-header";
 import { getSiteShellData } from "@/lib/content/portfolio-repository";
 import { buildRootMetadata } from "@/lib/metadata/site-metadata";
 
-import { displayFontVariables } from "./fonts";
+import { fontVariables } from "./fonts";
 
 import "./globals.css";
 
@@ -17,7 +17,7 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
   const shellData = getSiteShellData();
 
   return (
-    <html className={displayFontVariables} lang="en">
+    <html className={fontVariables} lang="en">
       <body>
         <a className="skip-link" href="#main-content">
           Skip to content

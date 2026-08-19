@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
 
+import { SiteDock } from "@/components/site/site-dock";
 import { SocialAnchor } from "@/components/site/social-anchor";
 import type { SocialLinkData } from "@/lib/content/page-data";
 import {
@@ -40,7 +41,11 @@ function SocialNavigationLink({
   onClick,
 }: Readonly<{ link: SocialLinkData; onClick?: () => void }>) {
   return (
-    <SocialAnchor className="nav-link" link={link} onClick={onClick} />
+    <SocialAnchor
+      className="nav-link nav-link-external"
+      link={link}
+      onClick={onClick}
+    />
   );
 }
 
@@ -64,20 +69,11 @@ export function SiteNavigation({
 
   return (
     <>
-      <nav aria-label="Primary navigation" className="hidden sm:block">
-        <ul className="flex items-center gap-1">
-          {siteNavigationItems.map((item) => (
-            <li key={item.key}>
-              <NavigationLink item={item} pathname={pathname} />
-            </li>
-          ))}
-          {socialLinks.map((link) => (
-            <li key={link.kind}>
-              <SocialNavigationLink link={link} />
-            </li>
-          ))}
-        </ul>
-      </nav>
+      {/* Icons at 40rem and up; the dropdown below keeps real text labels,
+          because an icon with no hover is an icon with no name. */}
+      <div className="hidden sm:block">
+        <SiteDock socialLinks={socialLinks} />
+      </div>
 
       <details className="mobile-menu relative sm:hidden" ref={mobileMenuRef}>
         <summary className="button-secondary cursor-pointer list-none [&::-webkit-details-marker]:hidden">
@@ -97,6 +93,7 @@ export function SiteNavigation({
                 />
               </li>
             ))}
+            <li aria-hidden="true" className="my-1 h-px bg-line" />
             {socialLinks.map((link) => (
               <li key={link.kind}>
                 <SocialNavigationLink

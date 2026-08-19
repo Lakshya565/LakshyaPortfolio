@@ -104,7 +104,6 @@ GitHub · LinkedIn · Email · Resume   ← socialLinks
 
 **Hardcoded in `web/app/page.tsx`:**
 
-- The `COMPUTER ENGINEERING` eyebrow above your name
 - `Work · N projects` (the count is computed, the word "Work" is not)
 - The `Project tree` heading and the line under it
 - The whole closing block: `Away from the workbench`, *I like learning with other
@@ -115,148 +114,211 @@ That closing block is prose that never needed to be reused anywhere, which is
 why it sits in the page. If it ever needs to appear twice, move it to
 `web/content/site.ts` first.
 
+### How the hero is put together
+
+Three tracks above `56rem` — two equal columns with a hairline suspended
+between them — and one stack below it. Left is who, right is what, and
+everything inside each half is centred.
+
+**`56rem` (896px) is the site's one desktop breakpoint.** It used to be `64rem`,
+which was too high: a 1366-pixel laptop panel at 150% display scaling reports
+911 CSS pixels and fell into the stacked layout, turning the page into a
+blown-up phone view and making it 40% taller. Nothing was close to breaking at
+1024, so the number simply came down. It appears in `globals.css` and — the one
+place it is duplicated — in `threeColumnQuery` in
+`components/project-tree/project-tree-beams.tsx`. **Change both or the tree
+renders three columns with no pulses running down them.**
+
+```
+components/hero/
+  hero-name.tsx          the drawn name
+  hero-link-button.tsx   one link, as a pill that floods on hover
+                         (icons live in components/site/site-icons.tsx)
+  hero-particles.tsx     the drifting field behind everything
+  use-hero-motion.ts     the gate the particle field runs through
+```
+
+**Your name is drawn, not typed.** `hero-name.tsx` renders it as an SVG with its
+own `viewBox`. The geometry is *computed rather than measured* — JetBrains Mono
+is monospace, so at a notional font size of 100 user units every advance is
+exactly 60 and the box a line occupies is arithmetic. That is why the file is a
+plain server component with no hooks: it scales to any column width without
+measuring a font or listening for a resize.
+
+Things worth knowing before editing it:
+
+- **The name comes from `siteProfile.name` and is split on whitespace, one word
+  per line.** Two words gives two lines. A middle name would give three, and the
+  box grows to suit — nothing is hardcoded to "Lakshya Agarwal".
+- **Its size is one number:** `max-width` on `.hero-name` in `globals.css`. The
+  SVG fills that box, so the box is the size. Do not look for a `font-size`.
+- The `<h1>` holds the real, readable text and is visually hidden; the drawing
+  is a sibling and is `aria-hidden`. Keep it that way — nested inside the
+  heading, the SVG's own text joined the heading's `textContent` and read back
+  as `Lakshya AgarwalLAKSHYAAGARWAL` to anything extracting plain text.
+
+**The divider** is `.hero-divider`: a one-pixel column faded to transparent at
+both ends so it reads as suspended rather than ruled edge to edge. The light
+running along it is `BorderBeam`, which traces its host's border box — and on a
+one-pixel-wide element that box *is* the line, which is why a component built
+for rectangles works here.
+
+**The particle field runs through `useHeroMotion`**, which requires three things
+at once: the component is mounted (not merely "reduced motion is off", which is
+also true on the server), motion is allowed, and the hero is still on screen.
+Take any one away and the canvas stops. That last condition matters — the hero
+is the top of a 2,500px page, and without it the field would paint forever while
+the reader is down in the project tree.
+
+Under reduced motion the beam and the particles both go and the divider stays.
+With JavaScript off, or at any width below `56rem`, the name still renders in
+full from the server-side SVG.
+
+### The header
+
+`components/site/site-navigation.tsx` renders two things and shows one at a
+time: `SiteDock` at `40rem` and up, and the existing `<details>` dropdown below
+that. The dropdown keeps real text labels on purpose — an icon with no hover is
+an icon with no name, and there is no hover on a touch screen.
+
+The dock is `@magicui/dock`. Two points worth knowing before editing it:
+
+- **A `DockIcon` must be a direct child of `Dock`.** `Dock` clones only its
+  immediate `DockIcon` children in order to hand them the shared pointer
+  position; wrap one in anything and it silently stops magnifying. Other
+  children pass through untouched, which is how the group separator works.
+- **The hover label is anchored to the icon's centre, not its bottom.**
+  `DockIcon` animates its own width and height, so anything measured from the
+  bottom edge slides down as the icon grows. The dock is `items-center`, so the
+  centreline is the one thing that holds still. See `.site-dock-tip`.
+
+Every icon carries an `aria-label`, since the visible label is decoration that
+only appears on hover or focus. The current route is marked with a filled disc
+*and* the accent colour — colour alone would be the only cue otherwise.
+
+Icons are inline SVG in `components/site/site-icons.tsx`, shared with the hero
+buttons. There is no icon package and adding one is not worth it for six
+glyphs.
+
 ### Type sizes in the hero
 
 If the issue is size rather than wording, it is CSS, in `web/app/globals.css`:
 
 | Class | What it sets |
 |---|---|
-| `.hero-title` | Your name — size, the mono face, the uppercasing, the tracking |
+| `.hero-title` | Nothing visual — the heading is visually hidden; see `.hero-name` |
 | `.hero-headline` | The sentence under it |
 | `.hero-intro` | The paragraph |
-| `.hero-social-links` | The link row, and the fade that ends the reveal sequence |
+| `.hero-actions` | The grid of link pills, and the fade that ends the reveal sequence |
+| `.hero-name` | **The size of the name**, and the green glow around it |
+| `.hero-name-letters` | The face, weight and tracking of the drawn name |
+| `.hero-divider` | The hairline between the halves |
 | `.eyebrow` | The small uppercase mono line used elsewhere on the site |
 
-**The title's `font-size` is a `clamp()`, and its floor is not a taste
-decision.** `clamp(1.75rem, 5.5vw, 3rem)` — the middle value scales with the
-viewport, the last is the desktop size, and the first is the floor. At 1.75rem
-the uppercase name measures 271px against the 288px available at a 320px
-viewport, which is the narrowest width this site is expected to reflow at.
-Raising the floor overflows that screen. Raise the **maximum** instead; there is
-plenty of room there.
+**Sizes come from tokens in `:root`, not from the rules themselves.** One
+constraint governs the scale: *every page's `h1` is `--text-display`, and no
+`h2` is ever larger than an `h1`.* Before those tokens existed the hero name
+rendered at 48px while its own "Project tree" heading rendered at 52px, About's
+title at 60px and case-study titles at 64px — the name was the quietest large
+text on the site. If you change one heading size, change the token, not the
+rule, or the ranking drifts apart again.
+
+| Token | Value | Used by |
+|---|---|---|
+| `--text-display` | `clamp(2.5rem, 6vw, 4rem)` | Every `h1` |
+| `--text-section` | `clamp(1.6rem, 3vw, 2.25rem)` | Every `h2` |
+| `--text-subsection` | `clamp(1.25rem, 2.2vw, 1.75rem)` | `h3`, the tree's root card name |
+| `--text-lead` | `clamp(1.25rem, 2.2vw, 1.625rem)` | The hero headline, case-study summaries |
+| `--text-body-lg` | `clamp(1rem, 1.4vw, 1.125rem)` | The hero intro |
+| `--text-label` / `--text-label-sm` | `0.75rem` / `0.6875rem` | Every uppercase mono label |
+
+There are two label sizes because there used to be four — `0.65`, `0.68`, `0.7`
+and `0.75rem` — which read as one size but never quite lined up. Do not add a
+fifth.
 
 ---
 
 ## Fonts
 
-### Where they are defined
+### The two faces
 
-Two custom properties near the top of `web/app/globals.css`, inside `:root`:
+Both are real files, downloaded at build time and served from this site.
 
-```css
---font-body: "Inter", "Segoe UI", sans-serif;
---font-code: "Cascadia Code", "SFMono-Regular", Consolas, monospace;
-```
+| Token | Face | Used for |
+|---|---|---|
+| `--font-body` | **Inter** | Every paragraph, heading, link and card title |
+| `--font-code` | **JetBrains Mono** | The nav wordmark, every eyebrow, metric labels, project categories, and the hero name |
 
-`--font-body` is the page. `--font-code` is the technical voice: the nav
-wordmark, every eyebrow, metric labels, timeline values, and now the hero title.
-
-**Nothing here is downloaded.** These are *system font stacks* — the browser uses
-the first name the visitor's machine already has, and falls through to the next.
-That is why the site loads no font files and never flashes unstyled text, and it
-is also the catch: **a visitor without Cascadia Code installed does not see
-Cascadia Code.** Most Macs and most Linux machines don't have it, so they get
-whatever their generic `monospace` is (Menlo, DejaVu Sans Mono), and the hero
-looks noticeably different from what you see on Windows. Same story for Inter.
-
-If you want the site to look the same everywhere, that means shipping a real
-font file — see [Adding a real webfont](#adding-a-real-webfont) below.
-
-### Changing just the hero title
-
-One line, in `.hero-title`:
+They are declared in `web/app/fonts.ts` and mapped to tokens near the top of
+`web/app/globals.css`, inside `:root`:
 
 ```css
-.hero-title {
-  font-family: var(--font-code);   /* ← change this */
-}
+--font-body: var(--font-inter), "Segoe UI", sans-serif;
+--font-code: var(--font-jetbrains-mono), Consolas, monospace;
 ```
 
-Give it a stack, not a single name, so there is something to fall back to:
-
-```css
-font-family: "JetBrains Mono", var(--font-code);
-```
+**This used to be broken, and the failure was invisible on the machine it was
+written on.** The tokens named `"Inter"` and `"Cascadia Code"` directly, and
+neither font was ever loaded — no `@font-face` for either existed anywhere in
+the build. Every visitor got whatever their operating system supplied instead:
+Segoe UI and Consolas on Windows, Helvetica and SF Mono on a Mac. Because
+Cascadia Code is installed on the development machine, the site looked correct
+there and looked like a different site everywhere else. If you ever put a bare
+font name in one of these stacks again, that is what you are choosing.
 
 ### Changing a font everywhere
 
-Edit the token instead of the rule, and every user of it follows:
+Edit the token, not the rules that use it:
 
 ```css
---font-code: "IBM Plex Mono", "Cascadia Code", Consolas, monospace;
+--font-code: var(--font-jetbrains-mono), Consolas, monospace;
 ```
 
-Be deliberate about this one — `--font-code` is doing a lot of work across the
-site, and what reads well at 3rem in the hero may read badly at 0.6875rem on a
-technology badge.
+To swap in a different face, add it to `web/app/fonts.ts` with `next/font`, add
+its `.variable` to `fontVariables` at the bottom of that file, then point the
+token at it. Be deliberate with `--font-code` — it runs from 64px in the hero
+name down to 11px on a project category label.
 
-### Switching the hero title face
+### Changing just the hero title
 
-**All five candidates are already wired up.** The faces are declared in
-`web/app/fonts.ts` and exposed as CSS variables; the choice is a block of
-commented alternatives at the top of `web/app/globals.css`, in `:root`:
+The hero name has its own three tokens so it can move without dragging every
+label on the site with it:
 
 ```css
-/* Cascadia Code — the site's own mono. */
 --font-display: var(--font-code);
 --font-display-weight: 600;
---font-display-tracking: 0.06em;
-
-/* JetBrains Mono — taller and wider than Cascadia; holds up blown up.
---font-display: var(--font-jetbrains-mono), var(--font-code);
---font-display-weight: 600;
---font-display-tracking: 0.05em; */
+--font-display-tracking: 0.05em;
 ```
 
-Comment out the active block, uncomment another, done. Nothing else changes.
+They move together on purpose: the tracking that suits one face rarely suits
+another, and a face with only one weight will have a bold synthesised for it if
+you ask for 600.
 
-**All three values move together on purpose.** Weight is in there because
-Departure Mono has only one, and asking a single-weight pixel face for 600 makes
-the browser synthesise a bold that smears the pixel grid. Tracking is in there
-because letter-spacing that suits one face rarely suits another.
-
-### How the fonts are loaded
+### How loading works
 
 `next/font` downloads each file at **build** time and self-hosts it. Nothing is
 fetched from Google at runtime, so there is no third-party request, no privacy
-question, and no change needed to the CSP.
+question, and no change needed to the CSP in
+`web/lib/security/response-headers.ts`.
 
-**Every face sets `preload: false`, and that is deliberate.** `preload` defaults
-to true, which injects a `<link rel="preload">` per face — five declared faces
-would mean five downloads on every page load for a site that otherwise ships
-none. With preload off, an unused `@font-face` costs only its few hundred bytes
-of CSS, and the browser fetches a file when text actually asks for it. Verified:
-switching the variable at runtime downloads that face and nothing else.
+Both faces set `preload: true`, which is the default and correct for two faces
+used on every page. **Note that this version of Next emits no
+`<link rel="preload" as="font">` regardless** — checked against a production
+build and against `next start`, both serve zero font preload tags. The faces
+still load: their `@font-face` rules ship inside the render-blocking stylesheet
+that is already in the head, so the browser finds the `src` at effectively the
+moment a preload would have been found. Do not hand-write preload tags to
+"fix" this without measuring first.
 
-**Once you settle on one, set its `preload: true` in `fonts.ts`.** It is the
-active face, so paying for it up front is the right trade.
+### What was removed
 
-Departure Mono is the one that is not on Google Fonts. Its `.woff2` is committed
-at `web/app/fonts/`, with `DepartureMono-OFL.txt` beside it — copyright
-2022–2024 Helena Zhang, SIL Open Font License 1.1, which permits bundling with
-software and requires the licence to travel with the font. **Do not separate
-them.**
-
-### The five faces
-
-Measured at a 1280px viewport, 48px type, name set in caps:
-
-| Face | Character | Width | File |
-|---|---|---:|---|
-| **Cascadia Code** | The site's own mono. Even, slightly rounded | 465px | none — system stack |
-| **JetBrains Mono** | Taller x-height, wider apertures; built to survive being blown up | 468px | ~25 KB |
-| **IBM Plex Mono** | Warmer and slightly humanist; less terminal, more engineering document | 468px | ~28 KB |
-| **Space Grotesk** | A geometric *sans*, not a mono. Minimal, tighter, more modern | 450px | ~30 KB |
-| **Departure Mono** | Pixel/bitmap face; rhymes directly with the desk lettering | 516px | ~22 KB |
-
-Cascadia is the only one that downloads nothing — and the only one that is not
-guaranteed to be what a visitor sees, since a machine without it installed falls
-back to its generic `monospace`. **Choosing any of the other four is also
-choosing that everyone sees the same thing.**
-
-Two things to check after any font change: the name still fits on one line at a
-320px viewport (see the `clamp()` note above), and the uppercase tracking still
-looks right — `letter-spacing` that suits one face usually does not suit another.
+IBM Plex Mono, Space Grotesk and Departure Mono were wired up as hero
+candidates alongside a commented switch block in `globals.css`. Once JetBrains
+Mono was chosen, all three came out along with the switch. Departure Mono's
+`.woff2` and its `DepartureMono-OFL.txt` were deleted **as a pair** — the SIL
+Open Font License requires the licence to travel with the font, so they go
+together or not at all. All of it is recoverable from git history if the pixel
+face is ever wanted for the hero.
 
 ---
 

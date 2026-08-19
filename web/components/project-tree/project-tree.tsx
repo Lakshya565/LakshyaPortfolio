@@ -1,6 +1,8 @@
 import Link from "next/link";
 
+import { ProjectTreeBeams } from "@/components/project-tree/project-tree-beams";
 import { Badge } from "@/components/ui/badge";
+import { BorderBeam } from "@/components/ui/border-beam";
 import { GridPattern } from "@/components/ui/grid-pattern";
 import type {
   ProjectTreeBranchData,
@@ -136,6 +138,18 @@ export function ProjectTree({
           <span className="project-tree-root-action">
             About me <span aria-hidden="true">→</span>
           </span>
+          {/* One light, on the one card the branches grow out of. The colours
+              are the card's own border gradient, so the beam reads as that
+              border catching the light rather than as a new element. It is
+              hidden under `prefers-reduced-motion` from `globals.css`, which
+              the vendored component does not handle itself. */}
+          <BorderBeam
+            className="project-tree-root-beam"
+            colorFrom="var(--accent-green)"
+            colorTo="var(--accent-purple)"
+            duration={9}
+            size={90}
+          />
         </Link>
       </div>
 
@@ -152,6 +166,19 @@ export function ProjectTree({
       ) : (
         <p className="empty-state">No public projects are available yet.</p>
       )}
+
+      {/* Last, so the layer paints over the connector hairlines and under the
+          cards. It draws nothing until it has measured, and nothing at all on a
+          stacked layout or with reduced motion — the CSS tree is complete
+          without it. */}
+      {data.projectCount > 0 ? (
+        <ProjectTreeBeams
+          branches={data.branches.map((branch) => ({
+            workMode: branch.workMode,
+            lastSlug: branch.projects.at(-1)?.slug ?? null,
+          }))}
+        />
+      ) : null}
     </section>
   );
 }
