@@ -3,8 +3,7 @@ import Link from "next/link";
 import { ProjectTreeBeams } from "@/components/project-tree/project-tree-beams";
 import { WorkModePattern } from "@/components/project-tree/work-mode-pattern";
 import { Badge } from "@/components/ui/badge";
-import { BorderBeam } from "@/components/ui/border-beam";
-import { GridPattern } from "@/components/ui/grid-pattern";
+import { NeonGradientCard } from "@/components/ui/neon-gradient-card";
 import type {
   ProjectTreeBranchData,
   ProjectTreeData,
@@ -135,27 +134,37 @@ export function ProjectTree({
   return (
     <section aria-label="Project tree" className="project-tree">
       <div className="project-tree-root">
-        <Link className="project-tree-root-link" href={data.root.routeHref}>
-          <GridPattern className="project-tree-root-pattern" height={32} width={32} />
-          <span className="project-tree-root-label">Root · About me</span>
-          <strong>{data.root.name}</strong>
-          <span className="project-tree-root-summary">{data.root.oneLiner}</span>
-          <span className="project-tree-root-action">
-            About me <span aria-hidden="true">→</span>
-          </span>
-          {/* One light, on the one card the branches grow out of. The colours
-              are the card's own border gradient, so the beam reads as that
-              border catching the light rather than as a new element. It is
-              hidden under `prefers-reduced-motion` from `globals.css`, which
-              the vendored component does not handle itself. */}
-          <BorderBeam
-            className="project-tree-root-beam"
-            colorFrom="var(--accent-green)"
-            colorTo="var(--accent-purple)"
-            duration={9}
-            size={90}
-          />
-        </Link>
+        {/*
+          The one card the whole tree grows out of, so it is the one that glows.
+
+          The colours are tokens rather than hex: this component interpolates
+          them straight into a `linear-gradient()`, where a `var()` resolves
+          normally. (`Particles` is the opposite case — it parses hex by hand.)
+
+          Everything else about it is steered from `globals.css`. Its inner
+          wrapper's classes are hardcoded and *not* merged with anything passed
+          in, including a `bg-gray-100` that would paint this card light grey,
+          so `.project-tree-root-neon > div` overrides the background, the
+          padding and the blur radius. It also ships no reduced-motion handling.
+        */}
+        <NeonGradientCard
+          borderRadius={24}
+          borderSize={2}
+          className="project-tree-root-neon"
+          neonColors={{
+            firstColor: "var(--accent-green)",
+            secondColor: "var(--accent-purple)",
+          }}
+        >
+          <Link className="project-tree-root-link" href={data.root.routeHref}>
+            <span className="project-tree-root-label">Root · About me</span>
+            <strong>{data.root.name}</strong>
+            <span className="project-tree-root-summary">{data.root.oneLiner}</span>
+            <span className="project-tree-root-action">
+              About me <span aria-hidden="true">→</span>
+            </span>
+          </Link>
+        </NeonGradientCard>
       </div>
 
       {data.projectCount > 0 ? (

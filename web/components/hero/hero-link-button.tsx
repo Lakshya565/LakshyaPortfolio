@@ -44,7 +44,9 @@ export function HeroLinkButton({
           again, and announcing it twice would be a bug, not a feature. */}
       <span aria-hidden="true" className="hero-link-button-flood">
         <span>{link.label}</span>
-        <SocialIcon kind={link.kind} />
+        {/* The class is what sizes it. Without it the SVG has no intrinsic
+            size, falls back to 300px, and crushes the label beside it. */}
+        <SocialIcon className="hero-link-button-icon" kind={link.kind} />
       </span>
 
       {isExternal ? (

@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:is(.dark *));
+
 :root {
   --canvas: oklch(0.12 0.012 270);
   --surface: oklch(0.16 0.014 270);
@@ -147,6 +149,15 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+  --animate-background-position-spin: background-position-spin 3000ms infinite alternate;
+  @keyframes background-position-spin {
+  0% {
+    background-position: top center;
+    }
+  100% {
+    background-position: bottom center;
+    }
+  }
 }
 
 * {
@@ -276,6 +287,22 @@ dd {
   transition: color var(--duration-interaction) ease;
 }
 
+/*
+ * Every icon's default size, and it is not optional.
+ *
+ * `components/site/site-icons.tsx` draws them with a `viewBox` and no `width`
+ * or `height`, so without a rule here an SVG falls back to the 300px default
+ * object size. In the hero button's flood — a flex row of label plus icon —
+ * that crushed the label to a couple of characters, and `overflow-wrap:
+ * anywhere` on `<a>` then broke "GitHub" into "GitH / ub".
+ */
+.site-icon {
+  width: 1rem;
+  height: 1rem;
+  flex: none;
+}
+
+/* The dock draws them larger, and against its own box rather than the text. */
 .site-dock-link .site-icon {
   width: 55%;
   height: 55%;
@@ -438,6 +465,18 @@ dd {
   z-index: 1;
   display: grid;
   gap: 2.5rem;
+  /*
+   * One width for both halves, and this is what makes the hero symmetric.
+   *
+   * The tracks were always equal; the *blocks* in them were not. The name was
+   * 21rem centred in a 523px track (94px of slack each side) while the
+   * statement's 34rem measure was wider than its track, so it filled it and had
+   * none. That put 146px of air left of the divider and 52px right.
+   *
+   * Give both blocks the same width and their slack is equal by construction —
+   * at every viewport, not just the one that gets measured.
+   */
+  --hero-identity-width: 24rem;
   /* Centred within each half. Note the auto margins on the children below:
      `text-align` moves the text but leaves a `max-width` box pinned to the
      start of its column, so both are needed. */
@@ -553,10 +592,6 @@ dd {
  * stood 39px proud of the name on each side and the two stopped reading as a
  * unit. One token, and they cannot drift again.
  */
-.hero-identity {
-  --hero-identity-width: 21rem;
-}
-
 .hero-name {
   position: relative;
   width: 100%;
@@ -603,13 +638,18 @@ dd {
   letter-spacing: 5px;
 }
 
-
-
 /* The sentence that used to be the h1. It still carries the voice of the page,
    so it stays the second-largest thing here — but it is a claim, not a name,
    and at 4.25rem it was the loudest thing on the site while telling a visitor
    the least. Tracking is looser than `.hero-title`'s because this is a line of
    prose rather than a two-word display setting. */
+/* The other half of the pair. `.hero-headline` and `.hero-intro` keep their
+   own `34rem` measures, which this now caps before they ever bind. */
+.hero-statement {
+  max-width: var(--hero-identity-width);
+  margin-inline: auto;
+}
+
 .hero-headline {
   max-width: 34rem;
   margin-inline: auto;
@@ -720,6 +760,14 @@ dd {
 
 .hero-link-button-icon {
   flex: none;
+}
+
+/* `overflow-wrap: anywhere` is global on `<a>`, which is right for prose links
+   and wrong for a one-word button label. Said explicitly so a tight fit shows
+   as overflow — something you can see — rather than as a word split in half. */
+.hero-link-button-label,
+.hero-link-button-flood > span {
+  white-space: nowrap;
 }
 
 /* Keyboard users get the same answer as pointer users, so the focused state is
@@ -1087,18 +1135,49 @@ dd {
    content needs, and stays centred — the trunk drops from its middle, and
    `project-tree-beams.tsx` finds the middle column by comparing this card's
    centre to each chip's. */
+/*
+ * The neon card around the root.
+ *
+ * `NeonGradientCard` ships `size-full` on its outer element, so the width has
+ * to be taken back here — the card is sized by what is in it and stays centred,
+ * because the trunk drops from its middle and `project-tree-beams.tsx` finds
+ * the middle column by comparing this card's centre to each chip's.
+ */
+.project-tree-root-neon {
+  width: fit-content;
+  margin-inline: auto;
+}
+
+/*
+ * The component's inner wrapper, which cannot be reached with props.
+ *
+ * `cn` is applied to its *outer* element only; the inner one's classes are
+ * hardcoded — including `bg-gray-100 dark:bg-neutral-900 p-6`. This site has no
+ * `.dark` class, so left alone the light grey wins and the card paints white.
+ * Unlayered CSS beats `@layer utilities`, so these take it back.
+ *
+ * The border is the pre-hydration state. The card sets its glow's size from
+ * `offsetWidth` in an effect, so until that runs there is no neon edge at all;
+ * a hairline means the card is never borderless with JavaScript off.
+ */
+.project-tree-root-neon > div {
+  /* Half the shipped `width / 3`, which on a 550px card is a 180px halo. */
+  --after-blur: 3.5rem;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  padding: 0;
+}
+
+/* `opacity-80` on a bloom this size washed the cards below it. */
+.project-tree-root-neon > div::after {
+  opacity: 0.4;
+}
+
 .project-tree-root-link {
   position: relative;
   display: grid;
-  width: fit-content;
   gap: 0.65rem;
-  margin-inline: auto;
-  overflow: hidden;
-  border: 1px solid transparent;
-  border-radius: var(--radius-panel);
-  background:
-    linear-gradient(var(--surface), var(--surface)) padding-box,
-    linear-gradient(110deg, var(--accent-green), var(--accent-blue), var(--accent-purple)) border-box;
+  border-radius: inherit;
   padding: 1.15rem;
   isolation: isolate;
 }
@@ -1134,19 +1213,26 @@ dd {
 /* The band across the top of a case study, faded out by position. It is
    already transparent where the reading column starts, so there is nothing
    left to fade by the time the reader has scrolled. */
+/*
+ * Full-bleed: the band belongs to the page, not to the reading column it lives
+ * inside. `.case-study-page` is a `.site-container`, so an `inset: 0` band
+ * stopped at its margins and read as a cut-off rectangle.
+ *
+ * `100vw` is safe here only because `body` sets `overflow-x: clip` — without
+ * that this introduces a horizontal scrollbar, which then widens the viewport,
+ * which widens the band. Check both together if either changes.
+ */
 .work-mode-pattern-band {
-  inset: 0 0 auto;
+  top: 0;
+  right: auto;
+  bottom: auto;
+  left: 50%;
   z-index: -1;
+  width: 100vw;
   height: 30rem;
-  opacity: 0.2;
+  margin-left: -50vw;
+  opacity: 0.06;
   mask-image: linear-gradient(to bottom, black, transparent);
-}
-
-.project-tree-root-pattern {
-  z-index: -1;
-  color: var(--line-strong);
-  opacity: 0.36;
-  mask-image: linear-gradient(to bottom left, black, transparent 75%);
 }
 
 .project-tree-root-label,
@@ -1451,12 +1537,13 @@ dd {
   pointer-events: none;
 }
 
-/* `BorderBeam` on the root card animates forever and ships no reduced-motion
-   handling of its own. Its moving gradient is the only visible part of it, so
-   hiding that leaves an inert transparent overlay. */
+/* `NeonGradientCard` animates its gradient forever and ships no reduced-motion
+   handling of its own. Stopping the sweep leaves the card, its glow and its
+   colours — only the movement goes. */
 @media (prefers-reduced-motion: reduce) {
-  .project-tree-root-beam {
-    display: none;
+  .project-tree-root-neon > div::before,
+  .project-tree-root-neon > div::after {
+    animation: none;
   }
 }
 
@@ -1961,7 +2048,7 @@ dd {
      brightens. Reusing the scene's idiom keeps the site to one interaction
      language instead of importing a second, unrelated hover effect. */
   .project-tree-node,
-  .project-tree-root-link,
+  .project-tree-root-neon,
   .project-tree-root-action {
     transition:
       transform var(--duration-interaction) var(--ease-out),
@@ -1974,7 +2061,10 @@ dd {
     transform: translateY(-2px);
   }
 
-  .project-tree-root-link:hover {
+  /* The whole card lifts, not the link inside it. `:has` rather than hovering
+     the card directly, because the card's bloom reaches well past its edge and
+     would otherwise trigger on empty space. */
+  .project-tree-root-neon:has(.project-tree-root-link:hover) {
     transform: translateY(-2px);
   }
 
@@ -2068,10 +2158,8 @@ dd {
     display: block;
   }
 
-  /* Now that the card spans the container, the text alone left most of it
-     empty. The action moves to the far end and the card becomes a masthead
-     with two ends rather than a wide box with a hole in it. `GridPattern` and
-     `BorderBeam` are both `position: absolute`, so neither takes a track. */
+  /* Two ends rather than a stack: the text on the left, the action on the
+     right, with the card sized by the pair of them. */
   .project-tree-root-link {
     grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;

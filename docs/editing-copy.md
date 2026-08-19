@@ -140,10 +140,26 @@ components/hero/
   use-hero-motion.ts     the gate both fields run through
 ```
 
-**The name and the buttons are one block, and it has one width.**
-`--hero-identity-width` on `.hero-identity` sets both `.hero-name` and
-`.hero-actions`. They used to carry unrelated numbers, and the button grid stood
-39px proud of the name on each side. Change the one token, not the two rules.
+**One width governs both halves, and it is what makes the hero symmetric.**
+`--hero-identity-width` on `.personal-hero-split` sets `.hero-name`,
+`.hero-actions` and `.hero-statement`. Change that one token, never the three
+rules.
+
+It is worth knowing why, because the failure is subtle. The two grid tracks were
+always exactly equal; the *blocks inside them* were not. The name was 21rem
+centred in a 523px track — 94px of slack each side — while the statement's 34rem
+measure was wider than its track, so it filled it and had none. That put 146px
+of air left of the divider and 52px right, and no amount of centring fixes it.
+Give both blocks the same width and their slack is equal by construction, at
+every viewport rather than at the one that happens to get measured.
+
+**Icons need `.site-icon` to keep a base size in `globals.css`.**
+`components/site/site-icons.tsx` draws every icon with a `viewBox` and no
+`width` or `height`, so without that rule an SVG falls back to the 300px default
+object size. That is not a cosmetic bug: in the hero button's flood — a flex row
+of label plus icon — a 300px icon crushed the label to a couple of characters,
+and `overflow-wrap: anywhere` (global on `<a>`) then broke "GitHub" into
+"GitH / ub".
 
 **Your name is drawn, not typed.** `hero-name.tsx` renders it as an SVG with its
 own `viewBox`. The geometry is *computed rather than measured* — JetBrains Mono
@@ -174,8 +190,7 @@ This was `BorderBeam` and could not stay. That component walks a gradient square
 around its host's border box at a constant rate, and on a one-pixel-wide element
 the path is 460px down, 1px across, 460px back up — so the whole turn happens in
 one frame, and `offset-rotate` spins the square 180° while it does. There is no
-prop for it. `BorderBeam` is still on the project tree's root card, where the
-host really is a rectangle.
+prop for it. Nothing on the site uses `BorderBeam` any more.
 
 One number in that rule is derived, not chosen: the segment is `22%` of the line
 and the keyframe moves it `354.5%`, which is `(100 / 22 − 1) × 100`. **Change the
@@ -371,6 +386,26 @@ in the same file — it throws at import rather than rendering a blank. The
 
 ## Project tree cards and project pages
 
+### The About card
+
+`NeonGradientCard`, and almost everything about it is steered from
+`globals.css` rather than from props — because **its inner wrapper's classes are
+hardcoded and are not merged with anything passed in.** `cn` is applied to its
+outer element only. Those hardcoded classes include `bg-gray-100`, and this site
+has no `.dark` class for the `dark:` variant to match, so left alone the card
+paints *light grey*. `.project-tree-root-neon > div` takes back the background,
+the padding and the blur radius; unlayered CSS beats `@layer utilities`.
+
+Two more things it does not handle itself: it sets its glow's size from
+`offsetWidth` in an effect, so the card keeps a plain hairline border underneath
+for the moment before hydration and for no-JS; and it ships no reduced-motion
+handling, so `globals.css` stops the sweep.
+
+Its colours are passed as `var(--accent-green)` and `var(--accent-purple)`. That
+works because the component interpolates them into a `linear-gradient()` string,
+where a `var()` resolves normally — unlike `Particles`, which parses hex by hand
+and turns anything else into `NaN`.
+
 ### Each branch has a colour *and* a texture
 
 `components/project-tree/work-mode-pattern.tsx` is the only place the mapping
@@ -399,6 +434,22 @@ real: "Embedded Systems" sits under Hybrid *and* under Hardware, so it is blue
 in one column and purple in the other. The eyebrow answers "which branch", not
 "which category". Measured at 9.3–10.7:1 against the card surface, so it reads
 better than the grey it replaced.
+
+**The beams trace the tree, corners and all.** A pulse leaves the About card,
+reaches the junction where the trunk meets the rail, and three more depart from
+that junction — out along the rail, round the corner, and down their branch to
+the last card. `project-tree-beams.tsx` builds one SVG `<path>` per branch from
+the measured positions and walks a dash along it; a travelling gradient cannot
+be used, because a gradient vector is a straight line and stops tracking the
+connector the moment it turns.
+
+Two numbers in that file are load-bearing. The trunk and the branches must keep
+**equal periods** (`duration + repeatDelay`), or they drift apart over a few
+minutes and the split stops lining up — `delay` applies only to the first run
+and cannot hold them together. And the corner radius is read from the elbow's
+resolved `border-top-left-radius`, not from `--tree-radius`: that token's value
+is the text `0.75rem`, and `parseFloat` on it yields `0.75`, which is a sharp
+corner rather than a curve.
 
 `components/ui/dot-pattern.tsx` is written here rather than vendored. The
 registry's version is a client component that emits one `<circle>` per dot —

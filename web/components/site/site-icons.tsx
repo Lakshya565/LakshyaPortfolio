@@ -1,4 +1,7 @@
+import { cloneElement } from "react";
+
 import type { SocialLinkData } from "@/lib/content/page-data";
+import { cn } from "@/lib/utils";
 
 /**
  * Every icon on the site, in one place.
@@ -24,15 +27,27 @@ import type { SocialLinkData } from "@/lib/content/page-data";
  * Every icon shares one box and inherits its colour from whatever contains it.
  * The size comes from CSS rather than a width attribute, so the dock can draw
  * them larger than the hero buttons do without a second copy of each path.
+ *
+ * **`.site-icon` must keep a base size in `globals.css`.** There is no `width`
+ * or `height` attribute here, and an SVG with a viewBox but no intrinsic size
+ * falls back to the 300px default object size. That is not a small mistake: in
+ * a flex row a 300px icon squeezes its sibling label to a couple of characters,
+ * and `overflow-wrap: anywhere` (global on `<a>`) then breaks the word in half.
+ * That is exactly what the hero buttons did on hover.
  */
 function Icon({
   children,
+  className,
   label,
-}: Readonly<{ children: React.ReactNode; label: string }>) {
+}: Readonly<{
+  children: React.ReactNode;
+  className?: string;
+  label: string;
+}>) {
   return (
     <svg
       aria-hidden="true"
-      className="site-icon"
+      className={cn("site-icon", className)}
       data-icon={label}
       fill="currentColor"
       viewBox="0 0 24 24"
@@ -59,7 +74,7 @@ export const personIcon = (
 
 /** Keyed by link kind, so the `socialLinkKinds` union drives the mapping. */
 export const socialIcons: Partial<
-  Record<SocialLinkData["kind"], React.ReactElement>
+  Record<SocialLinkData["kind"], React.ReactElement<{ className?: string }>>
 > = {
   github: (
     <Icon label="github">
@@ -88,9 +103,22 @@ export const socialIcons: Partial<
   ),
 };
 
-/** The icon for a link, or nothing if that kind has none. */
+/**
+ * The icon for a link, or nothing if that kind has none.
+ *
+ * `className` is passed down to the `<svg>`, which is how a caller sizes one.
+ * The entries in `socialIcons` are already-built elements, so this clones the
+ * one it needs rather than re-rendering the map.
+ */
 export function SocialIcon({
+  className,
   kind,
-}: Readonly<{ kind: SocialLinkData["kind"] }>) {
-  return socialIcons[kind] ?? null;
+}: Readonly<{ className?: string; kind: SocialLinkData["kind"] }>) {
+  const icon = socialIcons[kind];
+
+  if (!icon) {
+    return null;
+  }
+
+  return className ? cloneElement(icon, { className }) : icon;
 }

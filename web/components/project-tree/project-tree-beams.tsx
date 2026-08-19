@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, useReducedMotion } from "motion/react";
 
 /**
@@ -12,26 +12,33 @@ import { motion, useReducedMotion } from "motion/react";
  * hydration, without JavaScript, or with reduced motion. Nothing here replaces
  * them; the beams just light one up now and again.
  *
- * The layer sits at `z-index: 0` beneath the cards, which do the clipping: a
- * pulse's line runs the whole length of a column, but only the stretches
- * crossing the gaps between cards are ever seen — and those gaps are exactly
- * where the connectors are. So the light appears to hop from join to join down
- * the chain.
+ * The layer sits at `z-index: 0` beneath the cards, which do the clipping. A
+ * pulse's path runs the whole length of a branch, but the stretches behind a
+ * card are hidden — so down a column the light appears to hop from join to
+ * join, while the run along the rail at the top, which crosses open space, is
+ * visible end to end.
  *
  * `ProjectTree` itself stays a server component. This finds its anchors through
  * the DOM by the ids and classes the markup already carries, so no refs are
  * threaded through the tree and none of the project content is pushed into the
  * client bundle.
  *
- * **Why this is not `@magicui/animated-beam`.** That component was the intended
- * route and it cannot do this. It animates a `linearGradient` whose vector is
- * always horizontal — `y1` and `y2` are pinned to `"0%"` with no prop to change
- * them — so on a vertical connector the sweep crosses the line's ~2px of width
- * in a couple of frames instead of running along it. Rendered and captured at
- * 250ms intervals across a full cycle, it produced no visible pulse at all. It
- * also draws one full-size `<svg>` per beam and reads its colours through
- * `stopColor`, where a `var(--token)` does not resolve. This is one `<svg>` for
- * the whole layer with the gradient turned to run along the path.
+ * **Why a dash on a path, and not a gradient.** This drew straight lines and
+ * animated a `linearGradient`'s `y1`/`y2` along them. That cannot follow the
+ * elbow: a gradient vector is a straight line by definition, so the moment a
+ * connector turns a corner the sweep stops tracking it. A dash pattern walking
+ * a `<path>` via `stroke-dashoffset` is the only mechanism that follows a
+ * curve, and it is what the outer two branches need — they leave the junction
+ * sideways before they ever head down.
+ *
+ * The cost is that a dash has hard ends where the gradient faded in and out.
+ * Two strokes of the same path — a wide faint one for bloom and a crisp one on
+ * top, both round-capped — is the closest equivalent.
+ *
+ * (`@magicui/animated-beam` was the intended route originally and cannot do any
+ * of this: its gradient vector is pinned horizontal with no prop to change it,
+ * it draws one full-size `<svg>` per beam, and it reads colour through
+ * `stopColor`, where a `var(--token)` does not resolve.)
  */
 
 /** Which branch each pulse belongs to, and where its chain ends. */
@@ -55,21 +62,36 @@ const beamAccent: Readonly<Record<string, readonly [string, string]>> = {
 /** A measured run of connector, ready to light. */
 interface Pulse {
   readonly key: string;
-  /** Column centre, in layer coordinates. */
-  readonly x: number;
-  readonly top: number;
-  readonly bottom: number;
+  /** The path the light follows, in layer coordinates. */
+  readonly d: string;
+  /** Its length, so the dash is a real number of pixels on every branch. */
+  readonly length: number;
   readonly edge: string;
   readonly core: string;
   readonly delay: number;
+  readonly duration: number;
+  readonly repeatDelay: number;
 }
 
 /** Length of the travelling band, in pixels. */
 const bandLength = 110;
-/** One pass down a chain. */
-const travelDuration = 2.4;
-/** Dead time between passes — a heartbeat, not a strobe. */
-const travelRepeatDelay = 3.2;
+
+/*
+ * The two runs, and the timing that makes them read as one signal splitting.
+ *
+ * The trunk goes first; the branches leave slightly before it lands, so the
+ * light appears to arrive at the junction and fan out rather than to stop and
+ * restart. **Both periods must stay equal** — `duration + repeatDelay` — or the
+ * two drift apart over a few minutes and the split stops lining up. `delay` in
+ * Motion applies to the first run only, so it cannot hold them together.
+ */
+const cyclePeriod = 5.5;
+const trunkDuration = 0.9;
+const branchDuration = 2.6;
+const branchDelay = 0.75;
+
+/** The length of a quarter circle of radius `r`. */
+const quarterArc = (radius: number) => (Math.PI * radius) / 2;
 
 /**
  * The breakpoint at which `.project-tree-branches` becomes three columns and
@@ -82,7 +104,6 @@ export function ProjectTreeBeams({
   branches,
 }: Readonly<{ branches: readonly ProjectTreeBeamBranch[] }>) {
   const layerRef = useRef<HTMLDivElement>(null);
-  const gradientId = useId();
   const prefersReducedMotion = useReducedMotion();
   const [isThreeColumn, setIsThreeColumn] = useState(false);
   const [size, setSize] = useState({ width: 0, height: 0 });
@@ -121,65 +142,116 @@ export function ProjectTreeBeams({
         };
       };
 
-      const root = tree.querySelector(".project-tree-root-link");
-      const rootBox = root ? place(root) : null;
-      const next: Pulse[] = [];
+      /* The card is the neon wrapper, not the link inside it. */
+      const root =
+        tree.querySelector(".project-tree-root-neon") ??
+        tree.querySelector(".project-tree-root-link");
+      const branchGrid = tree.querySelector(".project-tree-branches");
 
-      branches.forEach((branch, index) => {
+      if (!root || !branchGrid) {
+        setPulses([]);
+        return;
+      }
+
+      /*
+       * The junction: where the trunk meets the rail. `.project-tree-branches`
+       * carries `padding-top: var(--tree-link)` and its `::before` elbow sits
+       * at `top: 0` of that padding box, so the rail is on the grid's own top
+       * edge. The corner radius comes from the same token the elbow uses, so
+       * the path cannot drift from the shape the CSS draws.
+       */
+      const rootBox = place(root);
+      const railY = branchGrid.getBoundingClientRect().top - frame.top;
+      /*
+       * Read off the elbow itself rather than from `--tree-radius`. The token's
+       * value is the literal text `0.75rem`, and `parseFloat` on that yields
+       * `0.75` — a sub-pixel arc, which is a sharp corner. A resolved
+       * `border-top-left-radius` comes back in pixels, and it is the very
+       * corner this path is meant to trace.
+       */
+      const radius =
+        Number.parseFloat(
+          getComputedStyle(branchGrid, "::before").borderTopLeftRadius,
+        ) || 12;
+      const junctionX = rootBox.x;
+
+      const next: Pulse[] = [
+        {
+          key: "trunk",
+          d: `M ${junctionX} ${rootBox.bottom} V ${railY}`,
+          length: Math.max(railY - rootBox.bottom, 0),
+          /* The trunk carries all three, so it takes the root card's own two
+             colours rather than any one branch's. */
+          edge: resolve("--accent-green"),
+          core: resolve("--accent-purple"),
+          delay: 0,
+          duration: trunkDuration,
+          repeatDelay: cyclePeriod - trunkDuration,
+        },
+      ];
+
+      branches.forEach((branch) => {
         const [edgeToken, coreToken] =
           beamAccent[branch.workMode] ?? beamAccent.software;
-        const edge = resolve(edgeToken);
-        const core = resolve(coreToken);
-        const head = tree.querySelector(
-          `.project-tree-branch[data-work-mode="${branch.workMode}"] > .project-tree-branch-node`,
+        const column = tree.querySelector(
+          `.project-tree-branch[data-work-mode="${branch.workMode}"]`,
         );
-
-        if (!head) {
-          return;
-        }
-
-        const headBox = place(head);
-
-        /*
-         * Only the branch directly below the root gets a beam from it. The
-         * connector to the outer two turns a corner through the elbow, and a
-         * straight line would cut the corner rather than follow it. Comparing
-         * centres finds the middle column without assuming which index it is.
-         */
-        if (rootBox && Math.abs(headBox.x - rootBox.x) < 2) {
-          next.push({
-            key: `trunk-${branch.workMode}`,
-            x: headBox.x,
-            top: rootBox.bottom,
-            bottom: headBox.top,
-            edge,
-            core,
-            delay: 0,
-          });
-        }
-
-        /*
-         * The chain, as one run. Every card in a column shares a centre, so a
-         * single line from the branch head down to the last card is exactly
-         * vertical and covers every join in between — one pulse per branch
-         * rather than one per join, with the cards clipping it to the gaps.
-         */
         const tail = branch.lastSlug
           ? tree.querySelector(`#project-node-${CSS.escape(branch.lastSlug)}`)
           : null;
 
-        if (tail) {
-          const tailBox = place(tail);
-          next.push({
-            key: `chain-${branch.workMode}`,
-            x: headBox.x,
-            top: headBox.bottom,
-            bottom: tailBox.top,
-            edge,
-            core,
-            delay: 0.45 + index * 0.3,
-          });
+        if (!column || !tail) {
+          return;
         }
+
+        const columnX = place(column).x;
+        /* Down to the last card's *bottom*, so the dash finishes its travel
+           hidden behind that card instead of winking out on its top edge. */
+        const endY = place(tail).bottom;
+        const offset = columnX - junctionX;
+
+        let d: string;
+        let length: number;
+
+        if (Math.abs(offset) < 2) {
+          /* The middle column sits directly under the junction: straight down,
+             no rail to run along and no corner to turn. */
+          d = `M ${junctionX} ${railY} V ${endY}`;
+          length = endY - railY;
+        } else {
+          /*
+           * Out along the rail, round the corner, then down. The sweep flag is
+           * the direction of the turn: the arc starts directly above its centre
+           * and ends directly beside it, so 0 goes left and 1 goes right — the
+           * short way, which is the way the CSS corner curves.
+           */
+          const towards = Math.sign(offset);
+          const cornerX = columnX - towards * radius;
+          const sweep = towards > 0 ? 1 : 0;
+
+          d =
+            `M ${junctionX} ${railY} H ${cornerX} ` +
+            `A ${radius} ${radius} 0 0 ${sweep} ${columnX} ${railY + radius} ` +
+            `V ${endY}`;
+          /* Computed rather than read back with `getTotalLength()`: the
+             segments are known, and this avoids a second measure pass purely
+             to size a dash. */
+          length =
+            Math.abs(cornerX - junctionX) +
+            quarterArc(radius) +
+            (endY - railY - radius);
+        }
+
+        next.push({
+          key: `chain-${branch.workMode}`,
+          d,
+          length,
+          edge: resolve(edgeToken),
+          core: resolve(coreToken),
+          delay: branchDelay,
+          duration: branchDuration,
+          repeatDelay: cyclePeriod - branchDuration,
+        });
       });
 
       setSize({ width: frame.width, height: frame.height });
@@ -202,65 +274,50 @@ export function ProjectTreeBeams({
     <div aria-hidden="true" className="project-tree-beams" ref={layerRef}>
       {pulses.length > 0 ? (
         <svg fill="none" height={size.height} width={size.width}>
-          <defs>
-            {pulses.map((pulse) => (
+          {pulses.map((pulse) => {
+            /* One dash on the path at a time: the gap is longer than the path,
+               so the pattern never repeats within it. The offset runs from one
+               band's length before the start to one path's length past the end,
+               which walks the dash the whole way through. */
+            const dash = `${bandLength} ${pulse.length + bandLength}`;
+            const animate = { strokeDashoffset: [bandLength, -pulse.length] };
+            const transition = {
+              delay: pulse.delay,
+              duration: pulse.duration,
+              ease: "easeInOut" as const,
+              repeat: Infinity,
+              repeatDelay: pulse.repeatDelay,
+            };
+
+            return (
               /*
-               * `gradientUnits="userSpaceOnUse"` with a vertical vector, so the
-               * band is a real length in pixels travelling along the line
-               * rather than a proportion of a box. `x1`/`x2` are equal, which
-               * is what makes it run down the path instead of across it.
+               * Two passes of the same path: a wide, faint one for the bloom
+               * and a crisp one on top. A 2px line alone was almost invisible
+               * against the hairline it travels.
                */
-              <motion.linearGradient
-                animate={{
-                  y1: [pulse.top - bandLength, pulse.bottom],
-                  y2: [pulse.top, pulse.bottom + bandLength],
-                }}
-                gradientUnits="userSpaceOnUse"
-                id={`${gradientId}-${pulse.key}`}
-                initial={{ y1: pulse.top - bandLength, y2: pulse.top }}
-                key={pulse.key}
-                transition={{
-                  delay: pulse.delay,
-                  duration: travelDuration,
-                  ease: "easeInOut",
-                  repeat: Infinity,
-                  repeatDelay: travelRepeatDelay,
-                }}
-                x1={0}
-                x2={0}
-              >
-                <stop offset="0%" stopColor={pulse.edge} stopOpacity={0} />
-                <stop offset="50%" stopColor={pulse.core} stopOpacity={1} />
-                <stop offset="100%" stopColor={pulse.edge} stopOpacity={0} />
-              </motion.linearGradient>
-            ))}
-          </defs>
-          {pulses.map((pulse) => (
-            /*
-             * Two passes of the same gradient: a wide, faint one for the bloom
-             * and a crisp one on top. A 2px line alone was almost invisible
-             * against the hairline it travels.
-             */
-            <g key={pulse.key} stroke={`url(#${gradientId}-${pulse.key})`}>
-              <line
-                opacity={0.3}
-                strokeLinecap="round"
-                strokeWidth={8}
-                x1={pulse.x}
-                x2={pulse.x}
-                y1={pulse.top}
-                y2={pulse.bottom}
-              />
-              <line
-                strokeLinecap="round"
-                strokeWidth={2}
-                x1={pulse.x}
-                x2={pulse.x}
-                y1={pulse.top}
-                y2={pulse.bottom}
-              />
-            </g>
-          ))}
+              <g key={pulse.key}>
+                <motion.path
+                  animate={animate}
+                  d={pulse.d}
+                  opacity={0.3}
+                  stroke={pulse.edge}
+                  strokeDasharray={dash}
+                  strokeLinecap="round"
+                  strokeWidth={8}
+                  transition={transition}
+                />
+                <motion.path
+                  animate={animate}
+                  d={pulse.d}
+                  stroke={pulse.core}
+                  strokeDasharray={dash}
+                  strokeLinecap="round"
+                  strokeWidth={2}
+                  transition={transition}
+                />
+              </g>
+            );
+          })}
         </svg>
       ) : null}
     </div>
