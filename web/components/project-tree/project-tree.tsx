@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { ProjectTreeBeams } from "@/components/project-tree/project-tree-beams";
+import { WorkModePattern } from "@/components/project-tree/work-mode-pattern";
 import { Badge } from "@/components/ui/badge";
 import { BorderBeam } from "@/components/ui/border-beam";
 import { GridPattern } from "@/components/ui/grid-pattern";
@@ -46,7 +47,8 @@ function ProjectTreeNode({
       data-work-mode={project.workMode}
       id={`project-node-${project.slug}`}
     >
-      <GridPattern className="project-tree-pattern" height={28} width={28} />
+      {/* The branch's own texture, faint enough to read summary text over. */}
+      <WorkModePattern tone="faint" workMode={project.workMode} />
 
       <details>
         <summary>
@@ -100,8 +102,11 @@ function ProjectTreeBranch({
       className="project-tree-branch"
       data-work-mode={branch.workMode}
     >
-      {/* Branch head: the rectangle each chain hangs from. */}
+      {/* Branch head: the chip each chain hangs from, sized by its own label.
+          Same texture treatment as the cards below it — at full strength the
+          pattern crowded a box this small and fought the label. */}
       <header className="project-tree-branch-node">
+        <WorkModePattern tone="faint" workMode={branch.workMode} />
         <Heading id={headingId}>{branch.label}</Heading>
       </header>
 

@@ -134,9 +134,16 @@ components/hero/
   hero-name.tsx          the drawn name
   hero-link-button.tsx   one link, as a pill that floods on hover
                          (icons live in components/site/site-icons.tsx)
-  hero-particles.tsx     the drifting field behind everything
-  use-hero-motion.ts     the gate the particle field runs through
+  hero-background.tsx    which field is behind the hero — the switch
+  hero-particles.tsx     the drifting field
+  hero-grid.tsx          a grid whose squares light and fade
+  use-hero-motion.ts     the gate both fields run through
 ```
+
+**The name and the buttons are one block, and it has one width.**
+`--hero-identity-width` on `.hero-identity` sets both `.hero-name` and
+`.hero-actions`. They used to carry unrelated numbers, and the button grid stood
+39px proud of the name on each side. Change the one token, not the two rules.
 
 **Your name is drawn, not typed.** `hero-name.tsx` renders it as an SVG with its
 own `viewBox`. The geometry is *computed rather than measured* — JetBrains Mono
@@ -159,20 +166,41 @@ Things worth knowing before editing it:
 
 **The divider** is `.hero-divider`: a one-pixel column faded to transparent at
 both ends so it reads as suspended rather than ruled edge to edge. The light
-running along it is `BorderBeam`, which traces its host's border box — and on a
-one-pixel-wide element that box *is* the line, which is why a component built
-for rectangles works here.
+bouncing down it is `.hero-divider-beam`, a plain CSS keyframe on `alternate`
+and `ease-in-out` — that pairing is the bounce, since it decelerates into each
+end rather than reversing at speed.
 
-**The particle field runs through `useHeroMotion`**, which requires three things
-at once: the component is mounted (not merely "reduced motion is off", which is
+This was `BorderBeam` and could not stay. That component walks a gradient square
+around its host's border box at a constant rate, and on a one-pixel-wide element
+the path is 460px down, 1px across, 460px back up — so the whole turn happens in
+one frame, and `offset-rotate` spins the square 180° while it does. There is no
+prop for it. `BorderBeam` is still on the project tree's root card, where the
+host really is a rectangle.
+
+One number in that rule is derived, not chosen: the segment is `22%` of the line
+and the keyframe moves it `354.5%`, which is `(100 / 22 − 1) × 100`. **Change the
+height and you must recompute the translate**, or the beam stops short of the
+bottom or runs past it.
+
+**Which field sits behind the hero** is one constant in `hero-background.tsx`:
+
+```tsx
+const HERO_BACKGROUND: "grid" | "particles" = "particles";
+```
+
+Both are built and both work. Flip the string to swap them; `page.tsx` imports
+only `HeroBackground`, so nothing else knows or cares which is running.
+
+**Both fields run through `useHeroMotion`**, which requires three things at
+once: the component is mounted (not merely "reduced motion is off", which is
 also true on the server), motion is allowed, and the hero is still on screen.
-Take any one away and the canvas stops. That last condition matters — the hero
-is the top of a 2,500px page, and without it the field would paint forever while
+Take any one away and the field stops. That last condition matters — the hero is
+the top of a 2,300px page, and without it the field would paint forever while
 the reader is down in the project tree.
 
-Under reduced motion the beam and the particles both go and the divider stays.
-With JavaScript off, or at any width below `56rem`, the name still renders in
-full from the server-side SVG.
+Under reduced motion the beam and the field both go and the divider stays. With
+JavaScript off, or at any width below `56rem`, the name still renders in full
+from the server-side SVG.
 
 ### The header
 
@@ -342,6 +370,41 @@ in the same file — it throws at import rather than rendering a blank. The
 ---
 
 ## Project tree cards and project pages
+
+### Each branch has a colour *and* a texture
+
+`components/project-tree/work-mode-pattern.tsx` is the only place the mapping
+lives, and both the tree and every case study page go through it:
+
+| branch | colour | texture |
+|---|---|---|
+| Hybrid | blue | grid |
+| Software | green | hexagons |
+| Hardware | purple | dots |
+
+It sets no colour of its own. All three patterns paint from `currentColor` and
+`stroke`, and `--project-accent` is already on an ancestor wherever this is
+used, so one rule in `globals.css` colours the lot. Changing a branch's texture
+is one line in that file; changing a branch's colour is `--project-accent` in
+`globals.css`, and **the colours are locked product semantics — do not.**
+
+The same texture appears as a band across the top of that project's case study,
+faded out by a mask rather than by a scroll listener. It is already transparent
+where the reading column starts, so scrolling past it is scrolling past nothing,
+and it is correct before hydration.
+
+**The category eyebrow is now its branch's colour**, and that overturned an
+earlier rule that colour never appears without its branch label. The cost is
+real: "Embedded Systems" sits under Hybrid *and* under Hardware, so it is blue
+in one column and purple in the other. The eyebrow answers "which branch", not
+"which category". Measured at 9.3–10.7:1 against the card surface, so it reads
+better than the grey it replaced.
+
+`components/ui/dot-pattern.tsx` is written here rather than vendored. The
+registry's version is a client component that emits one `<circle>` per dot —
+roughly four hundred of them across the Hardware branch, none server-rendered.
+Ours is one SVG `<pattern>` holding a single circle. If you re-run
+`shadcn add @magicui/dot-pattern`, it will overwrite this. Don't.
 
 ### `web/content/projects.ts`
 

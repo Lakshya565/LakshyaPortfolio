@@ -1,10 +1,9 @@
 import Link from "next/link";
 
 import { IsometricDesk } from "@/components/desk/isometric-desk";
+import { HeroBackground } from "@/components/hero/hero-background";
 import { HeroLinkButton } from "@/components/hero/hero-link-button";
 import { HeroName } from "@/components/hero/hero-name";
-import { HeroParticles } from "@/components/hero/hero-particles";
-import { BorderBeam } from "@/components/ui/border-beam";
 import { DiaTextReveal } from "@/components/ui/dia-text-reveal";
 import { ProjectTree } from "@/components/project-tree/project-tree";
 import { Button } from "@/components/ui/button";
@@ -39,7 +38,7 @@ export default function Home() {
   return (
     <main id="main-content" tabIndex={-1}>
       <header className="personal-hero site-container">
-        <HeroParticles />
+        <HeroBackground />
 
         {/* Two columns of one fraction each: who, and what. A single stack left
             the right half of a wide screen empty, which read as unfinished
@@ -61,18 +60,18 @@ export default function Home() {
             </div>
           </div>
 
-          {/* A hairline suspended between the halves, with a light running its
-              length. `BorderBeam` traces its host's border box, and on a
-              one-pixel-wide element that box is the line itself — so the beam
-              travels down it and back up rather than around a rectangle. */}
+          {/* A hairline suspended between the halves, with a light bouncing
+              down it and back.
+
+              This was `BorderBeam` and could not stay. That component walks a
+              square gradient around its host's border box at a constant rate;
+              on a one-pixel-wide element that path is 460px down, 1px across,
+              460px back up — so the turn happens in a tenth of a percent of the
+              cycle, and `offset-rotate` spins the square 180° as it goes. The
+              snap was the geometry, not a setting. A segment on an `alternate`
+              keyframe eases into each end instead, in CSS, on `transform`. */}
           <div aria-hidden="true" className="hero-divider">
-            <BorderBeam
-              className="hero-divider-beam"
-              colorFrom="var(--accent-green)"
-              colorTo="var(--accent-green-hover)"
-              duration={7}
-              size={110}
-            />
+            <span className="hero-divider-beam" />
           </div>
 
           {/* The two lines sweep in one after the other, so the reader is walked

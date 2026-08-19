@@ -7,6 +7,7 @@ import {
   CaseStudyVideos,
 } from "@/components/case-study/case-study-media";
 import { CaseStudyNavigation } from "@/components/case-study/case-study-navigation";
+import { WorkModePattern } from "@/components/project-tree/work-mode-pattern";
 import { Badge } from "@/components/ui/badge";
 import type {
   CaseStudyNavigationItem,
@@ -154,6 +155,13 @@ export function CaseStudyRenderer({
       </Link>
 
       <article data-work-mode={project.workMode}>
+        {/* The same texture this project's node carries in the tree, so the
+            page is visibly the same branch you followed to get here. It is a
+            band across the top faded out by a mask rather than a scroll
+            listener: it is already transparent where the reading column starts,
+            so scrolling past it is scrolling past nothing. */}
+        <WorkModePattern tone="band" workMode={project.workMode} />
+
         <CaseStudyHeader project={project} />
         {project.hero ? <CaseStudyHero media={project.hero} /> : null}
 

@@ -282,13 +282,36 @@ dd {
 }
 
 /*
- * The current route: a filled disc behind the icon as well as the accent
- * colour. Colour alone would be the only cue, and the space below the icon
- * where a dot would go belongs to the label.
+ * The current route: a ring around the icon as well as the accent colour.
+ * Colour alone would be the only cue, and the space below the icon where a dot
+ * would go belongs to the label.
  */
 .site-dock-link[aria-current="page"] {
-  background: color-mix(in oklch, var(--accent-green) 16%, transparent);
   color: var(--accent-green);
+}
+
+/*
+ * The ring, on a pseudo-element rather than on the link's own box — because
+ * that box is not square. The link fills `DockIcon`'s content box across
+ * (19.2px at rest) but is a flex item in an `items-center` row, so vertically
+ * it collapses to the height of the icon inside it (10.6px). A radius on that
+ * draws a capsule, which is what a filled disc was quietly hiding.
+ *
+ * `width: 100%` picks up the honest measurement, `aspect-ratio: 1` squares it,
+ * and both track the magnification: at 44px the content box is 31.2 and so is
+ * the ring. An inset shadow rather than a border, since a border on the link
+ * would pull the icon inwards by its own width as the box breathes.
+ */
+.site-dock-link[aria-current="page"]::before {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 999px;
+  box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--accent-green) 60%, transparent);
+  content: "";
+  transform: translate(-50%, -50%);
 }
 
 .site-dock-divider {
@@ -390,6 +413,26 @@ dd {
   pointer-events: none;
 }
 
+/*
+ * The animated grid behind the hero. See `components/hero/hero-background.tsx`
+ * for the switch between this and the particle field.
+ *
+ * Colour is set here rather than passed as a prop: the lit squares are
+ * `fill="currentColor"` and the rules are stroked, so `color` and `stroke`
+ * drive the whole thing from tokens. The component ships Tailwind defaults
+ * (`fill-gray-400/30 stroke-gray-400/30`) which these override — unlayered CSS
+ * beats `@layer utilities`.
+ *
+ * The radial mask keeps the grid off the header rule above and off the top of
+ * the desk scene below, so it fades out rather than butting against either.
+ */
+.hero-grid {
+  color: var(--accent-green);
+  fill: none;
+  stroke: color-mix(in oklch, var(--line) 35%, transparent);
+  mask-image: radial-gradient(ellipse at center, black 35%, transparent 78%);
+}
+
 .personal-hero-split {
   position: relative;
   z-index: 1;
@@ -443,9 +486,45 @@ dd {
   }
 }
 
-/* `BorderBeam` animates forever and ships no reduced-motion handling. Its
-   travelling gradient is the only visible part of it, so hiding that leaves an
-   inert overlay behind. Same treatment as `.project-tree-root-beam`. */
+/*
+ * The light that runs the divider.
+ *
+ * A segment of the line, brighter than the line, travelling top to bottom and
+ * back. `alternate` plus `ease-in-out` is what makes it a bounce rather than a
+ * loop: it decelerates into each end, rests for an instant, and accelerates
+ * away — which is exactly what `BorderBeam` could not do here, because walking
+ * a 1px-wide border box at a constant rate spends the whole turn in a single
+ * frame.
+ *
+ * The travel is `(100 / 22 - 1) x 100%` — the segment is 22% of the line, so
+ * moving it by 354.5% of its own height lands its bottom edge on the line's
+ * bottom edge. Change the height and this number changes with it.
+ */
+.hero-divider-beam {
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  height: 22%;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    var(--accent-green) 45%,
+    var(--accent-green-hover) 55%,
+    transparent
+  );
+  animation: hero-beam-travel 3.6s ease-in-out infinite alternate;
+}
+
+@keyframes hero-beam-travel {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(354.5%);
+  }
+}
+
+/* The travelling segment is the only moving part; the hairline it runs on stays. */
 @media (prefers-reduced-motion: reduce) {
   .hero-divider-beam {
     display: none;
@@ -467,13 +546,24 @@ dd {
  * computed geometry — that is what keeps the clip path in register with the
  * canvas as the column changes width.
  */
+/*
+ * The name and the buttons under it are one block, and this is its width.
+ *
+ * They used to carry unrelated numbers — 21rem and 26rem — so the button grid
+ * stood 39px proud of the name on each side and the two stopped reading as a
+ * unit. One token, and they cannot drift again.
+ */
+.hero-identity {
+  --hero-identity-width: 21rem;
+}
+
 .hero-name {
   position: relative;
   width: 100%;
   /* The name's size, in one number: the SVG scales to fill this box. Heavier
      letterforms hold at a smaller size, and this has to clear a 372px column
      on a 896px laptop with room to spare. */
-  max-width: 21rem;
+  max-width: var(--hero-identity-width);
   margin-inline: auto;
   /*
    * The green glow, in two radii: a tight core and a wide bloom.
@@ -566,7 +656,7 @@ dd {
 @media (min-width: 56rem) {
   .hero-actions {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    max-width: 26rem;
+    max-width: var(--hero-identity-width);
     margin-inline: auto;
   }
 }
@@ -993,10 +1083,16 @@ dd {
   height: var(--tree-link);
 }
 
+/* Sized by what is in it. It spans no more of the container than its own
+   content needs, and stays centred — the trunk drops from its middle, and
+   `project-tree-beams.tsx` finds the middle column by comparing this card's
+   centre to each chip's. */
 .project-tree-root-link {
   position: relative;
   display: grid;
+  width: fit-content;
   gap: 0.65rem;
+  margin-inline: auto;
   overflow: hidden;
   border: 1px solid transparent;
   border-radius: var(--radius-panel);
@@ -1005,6 +1101,45 @@ dd {
     linear-gradient(110deg, var(--accent-green), var(--accent-blue), var(--accent-purple)) border-box;
   padding: 1.15rem;
   isolation: isolate;
+}
+
+/*
+ * The branch textures. See `components/project-tree/work-mode-pattern.tsx` for
+ * which shape belongs to which branch.
+ *
+ * One rule colours all three, because all three paint from `currentColor` and
+ * `stroke` and `--project-accent` is already on an ancestor everywhere this is
+ * used. The components ship Tailwind defaults (`fill-gray-400/30`,
+ * `stroke-line`) which these override — unlayered CSS beats `@layer utilities`.
+ *
+ * `fill: none` is for the outlined shapes; the dots carry their own
+ * `fill="currentColor"` attribute, which beats an inherited value.
+ */
+.work-mode-pattern {
+  color: var(--project-accent);
+  fill: none;
+  stroke: var(--project-accent);
+}
+
+/* Branch chips and project cards alike. Faint enough that a title stays
+   readable over it, and masked so it thins out across the box rather than
+   running edge to edge. The chips were tried at three times this and the
+   pattern crowded the label — a box that small has no room for a loud one. */
+.work-mode-pattern-faint {
+  z-index: -1;
+  opacity: 0.14;
+  mask-image: linear-gradient(to bottom left, black, transparent 72%);
+}
+
+/* The band across the top of a case study, faded out by position. It is
+   already transparent where the reading column starts, so there is nothing
+   left to fade by the time the reader has scrolled. */
+.work-mode-pattern-band {
+  inset: 0 0 auto;
+  z-index: -1;
+  height: 30rem;
+  opacity: 0.2;
+  mask-image: linear-gradient(to bottom, black, transparent);
 }
 
 .project-tree-root-pattern {
@@ -1086,7 +1221,16 @@ dd {
   position: relative;
   z-index: 1;
   display: grid;
+  /* Sized by its label rather than by its column. It was 279px of box around
+     68px of the word "Hybrid". Centred, because the connector above it and the
+     chain below it both arrive on its centre. */
+  width: fit-content;
   justify-items: center;
+  margin-inline: auto;
+  /* Clips the texture to the rounded corners; `isolation` keeps the texture's
+     negative `z-index` inside this box instead of dropping it behind the page. */
+  overflow: hidden;
+  isolation: isolate;
   border: 1px solid color-mix(in oklch, var(--project-accent) 45%, var(--line));
   border-radius: var(--radius-card);
   background:
@@ -1098,6 +1242,10 @@ dd {
     var(--surface);
   padding: 0.85rem 1rem;
   text-align: center;
+}
+
+.project-tree-branch-node .work-mode-pattern {
+  z-index: -1;
 }
 
 /* Sits between the project titles below it and the name in the root above. */
@@ -1150,19 +1298,12 @@ dd {
   z-index: 1;
   min-width: 0;
   overflow: hidden;
-  border: 1px solid color-mix(in oklch, var(--project-accent) 26%, var(--line));
+  border: 1px solid color-mix(in oklch, var(--project-accent) 55%, var(--line));
   border-radius: var(--radius-card);
   background:
     radial-gradient(circle at 100% 0%, color-mix(in oklch, var(--project-accent) 8%, transparent), transparent 48%),
     var(--surface);
   isolation: isolate;
-}
-
-.project-tree-pattern {
-  z-index: -1;
-  color: color-mix(in oklch, var(--project-accent) 30%, transparent);
-  opacity: 0.42;
-  mask-image: linear-gradient(to bottom left, black, transparent 72%);
 }
 
 /* Sized by its content: a fixed min-height left a band of empty pattern above
@@ -1191,10 +1332,21 @@ dd {
   gap: 0.45rem;
 }
 
-/* The category is not the work mode. Accent color stays on the branch heading,
-   connectors, and border so a hue never appears without its branch label. */
+/*
+ * The category eyebrow, in its branch's colour.
+ *
+ * This rule used to say the opposite — that the accent stays on the branch
+ * heading, the connectors and the border so a hue never appears without its
+ * branch label — and it was overturned deliberately. Colour now means branch
+ * everywhere, which is what ties a card to the chip above it and to the case
+ * study page it opens.
+ *
+ * The cost is real and worth knowing: "Embedded Systems" appears under Hybrid
+ * and under Hardware, and is now blue in one column and purple in the other.
+ * The eyebrow answers "which branch", not "which category".
+ */
 .project-tree-node-heading > span {
-  color: var(--muted);
+  color: var(--project-accent);
   font-family: var(--font-code);
   font-size: var(--text-label-sm);
   font-weight: 600;
@@ -1385,6 +1537,11 @@ dd {
 .case-study-page article {
   --project-accent: var(--accent-green);
   --project-accent-secondary: var(--accent-green);
+  /* The stage for the pattern band. `isolation` is what keeps the band's
+     negative `z-index` behind the header text and in front of the page
+     background, rather than falling through to the root stacking context. */
+  position: relative;
+  isolation: isolate;
   margin-top: 2rem;
 }
 
