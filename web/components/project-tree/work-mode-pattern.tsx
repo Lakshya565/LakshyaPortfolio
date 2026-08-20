@@ -27,7 +27,10 @@ export type WorkModePatternTone =
   /** Branch chips and project cards: texture under text that stays readable. */
   | "faint"
   /** The band across the top of a case study page. */
-  | "band";
+  | "band"
+  /** One of three layers washed across the root card. The layer supplies the
+      mask; this only sets the strength. */
+  | "wash";
 
 export function WorkModePattern({
   className,

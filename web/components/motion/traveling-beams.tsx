@@ -64,11 +64,16 @@ export function pulseTiming(
  * `border-top-left-radius` comes back in pixels and is the very corner the path
  * is meant to trace.
  */
-export function elbowRadius(element: Element, fallback = 12) {
+export function elbowRadius(
+  element: Element,
+  fallback = 12,
+  /* Which corner to read. A fan-out elbow curves at the top; the merge's
+     inverted one curves at the bottom, and reading the wrong corner on either
+     returns `0px` rather than a wrong number. */
+  corner: "borderTopLeftRadius" | "borderBottomLeftRadius" = "borderTopLeftRadius",
+) {
   return (
-    Number.parseFloat(
-      getComputedStyle(element, "::before").borderTopLeftRadius,
-    ) || fallback
+    Number.parseFloat(getComputedStyle(element, "::before")[corner]) || fallback
   );
 }
 
@@ -118,6 +123,56 @@ export function railPath({
       Math.abs(cornerX - junctionX) +
       (Math.PI * radius) / 2 +
       (endY - railY - radius),
+  };
+}
+
+/**
+ * The path from a column down into a junction — the fan-out reversed.
+ *
+ * Not `railPath` traversed backwards: the light enters the arc from the column
+ * rather than from the rail, so the turn happens at the *end* of the drop
+ * instead of at the start of it, and the sweep flag is the opposite one. Get
+ * that flag wrong and the arc takes the long way round — a 270° loop, which is
+ * obvious in a screenshot and invisible in the numbers.
+ *
+ * The column within a couple of pixels of the junction drops straight through:
+ * it has no corner to turn, only the elbow's height to cross.
+ */
+export function mergePath({
+  columnX,
+  junctionX,
+  radius,
+  railY,
+  startY,
+}: Readonly<{
+  columnX: number;
+  junctionX: number;
+  radius: number;
+  railY: number;
+  startY: number;
+}>): Readonly<{ d: string; length: number }> {
+  const offset = junctionX - columnX;
+
+  if (Math.abs(offset) < 2) {
+    return {
+      d: `M ${columnX} ${startY} V ${railY}`,
+      length: railY - startY,
+    };
+  }
+
+  const towards = Math.sign(offset);
+  const cornerX = columnX + towards * radius;
+  const sweep = towards > 0 ? 0 : 1;
+
+  return {
+    d:
+      `M ${columnX} ${startY} V ${railY - radius} ` +
+      `A ${radius} ${radius} 0 0 ${sweep} ${cornerX} ${railY} ` +
+      `H ${junctionX}`,
+    length:
+      (railY - radius - startY) +
+      (Math.PI * radius) / 2 +
+      Math.abs(junctionX - cornerX),
   };
 }
 

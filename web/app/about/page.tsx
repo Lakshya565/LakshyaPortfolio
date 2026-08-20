@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 
+import { AboutAmbient } from "@/components/about/about-ambient";
 import { AboutRail } from "@/components/about/about-rail";
 import { AboutRailBeams } from "@/components/about/about-rail-beams";
 import { SocialLinks } from "@/components/site/social-links";
@@ -34,6 +35,9 @@ export default function AboutPage() {
       id="main-content"
       tabIndex={-1}
     >
+      {/* Behind everything, including the Connect block below the stage. */}
+      <AboutAmbient />
+
       {/* The whole figure is one stage: the beam layer is `inset: 0` on this
           element and measures the intro and both rails inside it. */}
       <div className="about-stage">
@@ -49,17 +53,20 @@ export default function AboutPage() {
               {" "}
               (pronounced {data.intro.pronunciation})
             </span>
-            , I go by {data.intro.nickname}, and it means {data.intro.meaning}.
+            . Fun fact: it means {data.intro.meaning}.  Most of my friends know me as {data.intro.nickname}!
           </p>
 
           <p className="about-intro-body">{data.intro.body}</p>
         </header>
 
-        {data.rails.map((rail) => (
+        {data.rails.map((rail, index) => (
           <AboutRail
             headingId={`about-rail-${rail.key}`}
             key={rail.key}
             label={railLabels[rail.key]}
+            /* Every rail but the last folds back into one line, which is what
+               hands it to the rail below. The last has nothing to hand to. */
+            mergesBelow={index < data.rails.length - 1}
             panels={rail.panels}
             railKey={rail.key}
           />
@@ -77,7 +84,7 @@ export default function AboutPage() {
       >
         <div className="section-heading">
           <p className="eyebrow">Connect</p>
-          <h2 id="about-contact-title">Continue the conversation.</h2>
+          <h2 id="about-contact-title">Hit me up!</h2>
         </div>
         <SocialLinks
           className="mt-8 flex flex-wrap gap-x-8 gap-y-4 text-lg"

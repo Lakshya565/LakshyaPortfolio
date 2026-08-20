@@ -182,7 +182,7 @@ export const aboutIntro = {
   pronunciation: "Luck-shay",
   nickname: "Lucky",
   meaning: '"aim" in Hindi',
-  body: "I was born in San Jose, California, and went to Westmont High School. Now I am at the University of Illinois Urbana-Champaign studying Computer Engineering.",
+  body: "I've lived in the Bay Area all my life and went to Westmont High School. Initially, I wanted to study Electrical Engineering, but I found a passion for Computer Science in my junior year, so I combined the two! Now, I'm at UIUC studying Computer Engineering, and seeking out new opportunities wherever the world takes me next.",
 } as const satisfies AboutIntro;
 
 /**
@@ -200,21 +200,21 @@ export const aboutIntro = {
 export const aboutPanels = [
   {
     rail: "now",
-    title: "What I am up to",
-    body: "I am studying Computer Engineering at the University of Illinois Urbana-Champaign, with an expected May 2029 graduation. Most recently I interned at Cisco as a Software Engineer on the Industrial IoT team.",
+    title: "What I'm up to",
+    body: "At UIUC studying Computer Engineering, with an expected May 2029 graduation (or May 2028, if I can get my degree done early!). Most recently I interned at Cisco as a Software Engineer on the Industrial IoT team. I'm always building, learning, and looking for new opportunities.",
     displayOrder: 10,
   },
   {
     rail: "now",
     title: "What I love",
-    body: "Bouldering, lifting, anime nights, and tracking down good food with people I care about. Teaching belongs on this list too: it has shaped how I engineer more than anything else outside a keyboard.",
-    displayOrder: 20,
+    body: "Boba and matcha, climbing, Thai food, Hot Cheetos, anime, personal projects, and making the most of my short time on this planet. Teaching belongs on this list too: it has shaped how I engineer more than anything else outside a keyboard.",
+    displayOrder: 30,
   },
   {
     rail: "now",
     title: "Currently obsessed with",
-    body: "Bouldering has taken up a lot of my time lately, and I am a V5 climber right now. Off the wall it is matcha and boba, which are my top drink choices at the moment.",
-    displayOrder: 30,
+    body: "How AI can be used productively in the real world, and how different LLM and agentic concepts are applied to real workflows. Also, keeping up with the latest new tech and models, and making my own informed decisions about them instead of just following the hype.",
+    displayOrder: 20,
   },
   {
     rail: "work",
@@ -225,7 +225,7 @@ export const aboutPanels = [
   {
     rail: "work",
     title: "Teaching and leadership",
-    body: "More than twelve years of Taekwondo led to a fourth-degree black belt and a Master Instructor role teaching three weekly classes. Scouting, Eagle Scout service, and counseling at Camp Hi-Sierra taught a related lesson: preparation and communication determine whether technical knowledge becomes useful to the person standing in front of you.",
+    body: "More than twelve years of Taekwondo led to a fourth-degree black belt and a Master Instructor role teaching three weekly classes to the smallest of students. Furthermore, being an Eagle Scout and a counselor at Camp Hi-Sierra taught me an important lesson: preparation and communication determine whether technical knowledge becomes useful to the person standing in front of you.",
     displayOrder: 50,
   },
   {

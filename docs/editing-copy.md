@@ -502,9 +502,18 @@ required it.
 
 **Three panels per rail is structural, not stylistic.** The connector above each
 rail is one element whose ends sit at `100% / 6` — correct only for three equal
-columns — and `about-rail-beams.tsx` measures three drops. `content-schema.ts`
-enforces the count, so a fourth panel fails validation rather than rendering a
-broken corner.
+columns — and `about-rail-beams.tsx` measures three drops. The merge below the
+first rail is the same expression mirrored. `content-schema.ts` enforces the
+count, so a fourth panel fails validation rather than rendering a broken corner.
+
+**Panel length is load-bearing between the rails.** Every rail but the last ends
+in a converging junction: three legs down from the three cards into one line,
+which is what feeds the rail below. Each leg is as long as its own card is
+short, so editing one panel's body silently redraws that column's connector.
+Nothing measures anything — the column is a flex box and the leg takes whatever
+the card leaves — but if the three bodies happen to come out the same length at
+a given width, the three legs come out the same too and the junction reads as a
+plain bracket. That is not a bug; it is the content agreeing with itself.
 
 `aboutIntro` is the **one field exempt from the third-person voice check**. That
 rule rejects the literal word "Lakshya" to stop copy like "Lakshya built X", but
@@ -512,6 +521,13 @@ this intro opens *"My name is Lakshya"* — first person, and the only place on
 the site where the name is said rather than displayed. The exemption is granted
 per field in `validate-portfolio-content.ts`; everything else keeps the full
 rule, including `he` and `his` here.
+
+**The three branch textures wash across the page**, in vertical zones — hexagon
+behind the intro, grid behind the first rail, dots behind the second and
+Connect — coloured green through purple as you scroll. It is one ambient layer
+(`components/about/about-ambient.tsx`) rather than a texture per panel, because
+those three shapes are locked to the three branches and a panel wearing the grid
+would claim to be Hybrid. Nothing there needs editing when copy changes.
 
 **The page is drawn with the project tree's connector geometry** — same
 `--tree-link`, `--tree-radius`, `--tree-line-color` from `:root`, same elbow of

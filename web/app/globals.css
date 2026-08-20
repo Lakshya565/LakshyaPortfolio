@@ -1204,15 +1204,59 @@ dd {
   opacity: 0.4;
 }
 
+/*
+ * `overflow: hidden` belongs here and not on the card's inner `div`. That div's
+ * own `::after` is the bloom — positioned outside its box behind a 56px blur —
+ * so clipping the div would delete the glow. The link is the same box minus the
+ * glow, and it already carries the radius to clip to.
+ */
 .project-tree-root-link {
   position: relative;
   display: grid;
   justify-items: center;
   gap: 0.65rem;
+  overflow: hidden;
   border-radius: inherit;
   padding: 1.35rem 1.5rem;
   text-align: center;
   isolation: isolate;
+}
+
+.project-tree-root-wash {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  pointer-events: none;
+}
+
+/*
+ * Three textures across one card, each fading out where the next takes over, so
+ * there is no seam between them — a mask per layer rather than three boxes side
+ * by side. The order matches the eyebrow above: green, blue, purple.
+ */
+.project-tree-root-wash-layer {
+  position: absolute;
+  inset: 0;
+}
+
+.project-tree-root-wash-layer[data-texture="software"] {
+  --project-accent: var(--accent-green);
+  mask-image: linear-gradient(90deg, black, transparent 55%);
+}
+
+.project-tree-root-wash-layer[data-texture="hybrid"] {
+  --project-accent: var(--accent-blue);
+  mask-image: linear-gradient(
+    90deg,
+    transparent 12%,
+    black 50%,
+    transparent 88%
+  );
+}
+
+.project-tree-root-wash-layer[data-texture="hardware"] {
+  --project-accent: var(--accent-purple);
+  mask-image: linear-gradient(90deg, transparent 45%, black);
 }
 
 /*
@@ -1241,6 +1285,13 @@ dd {
   z-index: -1;
   opacity: 0.14;
   mask-image: linear-gradient(to bottom left, black, transparent 72%);
+}
+
+/* The root card's wash. Fainter than a card's own texture: three layers cross
+   here where everywhere else there is one, and the card is already carrying a
+   neon border and a bloom. */
+.work-mode-pattern-wash {
+  opacity: 0.11;
 }
 
 /* The band across the top of a case study, faded out by position. It is
@@ -1588,7 +1639,82 @@ dd {
  * should read as the workbench continuing rather than as a separate document.
  * ========================================================================= */
 .about-page {
+  position: relative;
+  /* Keeps the ambient layer's negative `z-index` inside the page. Without it
+     the texture drops behind the canvas fill and disappears entirely. */
+  isolation: isolate;
   padding-block: var(--space-block) var(--space-section);
+}
+
+/*
+ * The texture behind the whole page — see `components/about/about-ambient.tsx`.
+ *
+ * Full-bleed, because a background that stops at the reading column's margins
+ * reads as a rectangle somebody forgot to finish. `100vw` is safe only because
+ * `body` sets `overflow-x: clip`; without that this adds a horizontal
+ * scrollbar, which widens the viewport, which widens the layer. Check both
+ * together if either changes.
+ */
+.about-ambient {
+  position: absolute;
+  z-index: -1;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 100vw;
+  margin-left: -50vw;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/*
+ * Three zones down the page, each masked into the next so the textures blend
+ * rather than butt against a line.
+ *
+ * **The green-to-purple wash is three steps, not a gradient.** An SVG stroke
+ * cannot take a page-long gradient without serialising the pattern into a mask
+ * image, which is far more machinery than a background is worth — and since
+ * the zones are vertical, a colour per zone *is* a colour per vertical
+ * position. The masks blur the boundaries, so it reads as one wash.
+ *
+ * `0.05` is below the `0.06` the case-study band uses, because this sits behind
+ * body text rather than behind a heading. The test is not whether you can find
+ * it in a screenshot; it is whether the paragraph over it still reads.
+ */
+.about-ambient-layer {
+  fill: none;
+  opacity: 0.05;
+}
+
+.about-ambient-top {
+  color: var(--accent-green);
+  mask-image: linear-gradient(to bottom, black 0%, black 16%, transparent 34%);
+  stroke: var(--accent-green);
+}
+
+.about-ambient-middle {
+  color: color-mix(in oklch, var(--accent-green) 50%, var(--accent-purple));
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 16%,
+    black 32%,
+    black 54%,
+    transparent 72%
+  );
+  stroke: color-mix(in oklch, var(--accent-green) 50%, var(--accent-purple));
+}
+
+/*
+ * Louder than the other two, and it has to be: a 1.3px dot on an 18px grid
+ * covers a fraction of the ink a hexagon outline does, so matching their
+ * opacity made the bottom third of the page look like the layer had failed to
+ * load. Same apparent weight, different number.
+ */
+.about-ambient-bottom {
+  color: var(--accent-purple);
+  opacity: 0.13;
+  mask-image: linear-gradient(to bottom, transparent 54%, black 74%, black 100%);
+  stroke: var(--accent-purple);
 }
 
 /* The stage the beam layer measures against. Everything the connectors touch —
@@ -1707,9 +1833,12 @@ dd {
   line-height: 1.65;
 }
 
-/* Stacked, there is no rail to draw and no corners to turn. */
+/* Stacked, there is no rail to draw, no corners to turn and nothing to
+   converge — the three panels are already one column. */
 .about-rail-panels::before,
-.about-panel::before {
+.about-panel::before,
+.about-panel-leg,
+.about-merge {
   display: none;
 }
 
@@ -2358,12 +2487,94 @@ dd {
   /* Three columns, and the elbow above them. Same construction as
      `.project-tree-branches` — the padding-top is the vertical run the elbow
      occupies, so the rail sits on the grid's own top edge. */
+  /*
+   * `stretch`, not `start` — and that one word is the whole mechanism behind
+   * three legs of three different lengths.
+   *
+   * The grid row is as tall as its tallest column. Each column stretches to it
+   * and lays its children out in a flex column: the card keeps its natural
+   * height, and the leg below takes whatever is left, which is exactly "the
+   * tallest card's height minus mine". No measuring, correct on the server, and
+   * it re-solves itself every time the text reflows.
+   */
   .about-rail-panels {
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    align-items: start;
+    align-items: stretch;
     gap: var(--tree-column-gap);
     margin-top: calc(1.25rem + var(--tree-link));
     padding-top: var(--tree-link);
+  }
+
+  .about-panel-column {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  /* The slack under the card. `min-height` so even the tallest card in the row
+     gets a connector rather than sitting flush on the rail. */
+  .about-panel-leg {
+    position: relative;
+    display: block;
+    flex: 1 0 auto;
+    min-height: var(--tree-link);
+  }
+
+  .about-panel-leg::before {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    width: var(--tree-line);
+    background: var(--tree-line-color);
+    content: "";
+    pointer-events: none;
+    transform: translateX(-50%);
+  }
+
+  /*
+   * The converging junction: the elbow above, mirrored. Three legs arrive, one
+   * line leaves.
+   *
+   * It is the last thing in its rail's section, so the next rail's own trunk
+   * (`.about-rail::before`, measured from that section's top) starts exactly
+   * where this ends and the line stays unbroken across the two.
+   */
+  .about-merge {
+    position: relative;
+    display: block;
+    height: var(--tree-link);
+  }
+
+  .about-merge::before,
+  .about-merge::after {
+    position: absolute;
+    content: "";
+    pointer-events: none;
+  }
+
+  /* One element again for the rail, both arcs and both outer stubs — the same
+     construction as the fan-out elbow with the borders and the radii moved to
+     the bottom. */
+  .about-merge::before {
+    top: 0;
+    right: calc(100% / 6 - var(--tree-column-gap) / 3);
+    left: calc(100% / 6 - var(--tree-column-gap) / 3);
+    height: var(--tree-link);
+    border: var(--tree-line) solid var(--tree-line-color);
+    border-top: 0;
+    border-bottom-right-radius: var(--tree-radius);
+    border-bottom-left-radius: var(--tree-radius);
+  }
+
+  /* The middle column, straight through the elbow's height and on down. */
+  .about-merge::after {
+    top: 0;
+    left: 50%;
+    width: var(--tree-line);
+    height: var(--tree-link);
+    background: var(--tree-line-color);
+    transform: translateX(-50%);
   }
 
   .about-rail-panels::before,
@@ -2390,8 +2601,10 @@ dd {
 
   /* Only the middle panel draws its own drop. The outer two are already served
      by the elbow's side borders, and a straight stub there would run up through
-     the arc instead of following it. */
-  .about-panel:not(:first-child):not(:last-child)::before {
+     the arc instead of following it.
+     Counted on the *column*: the card is an only child of its own wrapper, so
+     `:not(:first-child)` on the card itself would never match. */
+  .about-panel-column:not(:first-child):not(:last-child) .about-panel::before {
     top: calc(var(--tree-link) * -1);
     left: 50%;
     display: block;

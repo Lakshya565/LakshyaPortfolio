@@ -45,11 +45,12 @@ describe("project tree", () => {
     expect(html.match(/Open project/g)).toHaveLength(10);
     expect(html).toContain("Technologies");
     expect(html).toContain('aria-label="5 more technologies"');
-    /* One texture per node, all of them server-rendered: ten project cards and
-       the three branch chips. The count is the point — a pattern that only
-       appears after hydration would not be here. The root card has none; it
-       carries the neon gradient instead. */
-    expect(html.match(/<pattern/g)).toHaveLength(13);
+    /* One texture per node, all of them server-rendered: ten project cards, the
+       three branch chips, and three more washed across the root card, which
+       wears all three shapes because everything below it grows out of it. The
+       count is the point — a pattern that only appeared after hydration would
+       not be here. */
+    expect(html.match(/<pattern/g)).toHaveLength(16);
     /* And each branch draws its own shape. `<circle` is the one that matters:
        it is why `components/ui/dot-pattern.tsx` is a local `<pattern>` rather
        than the registry's client component, which emits nothing on the

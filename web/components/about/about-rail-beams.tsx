@@ -5,6 +5,7 @@ import { useReducedMotion } from "motion/react";
 
 import {
   elbowRadius,
+  mergePath,
   pulseTiming,
   railPath,
   TravelingBeams,
@@ -30,15 +31,40 @@ import {
  */
 
 /*
- * Rail one runs, then rail two. Both share `cyclePeriod` — see `pulseTiming`
- * for why equal periods are the thing holding a group together once `delay` has
- * been spent on the first run.
+ * One pass down the page: in at the top, out across rail one, back together
+ * under it, down to rail two, out again.
+ *
+ * Every entry shares `cyclePeriod` — see `pulseTiming` for why equal periods
+ * are the only thing holding a group together once `delay` has been spent on
+ * the first run. The rest at the end of the cycle is deliberate: this is a page
+ * somebody is reading, and light that never stops is light nobody stops seeing.
  */
-const cyclePeriod = 9;
-const trunkDuration = 1.1;
-const railDuration = 3.4;
-const railOneDelay = 0.9;
-const railTwoDelay = 2.6;
+const cyclePeriod = 13;
+
+const railStages = [
+  {
+    /** From the intro down to rail one's junction. */
+    trunk: { delay: 0, duration: 1.1 },
+    /** Out along the rail and down into the three panels. */
+    drops: { delay: 0.9, duration: 3.4 },
+    /**
+     * The three legs back in. One duration for all three, though the legs are
+     * three different lengths — so the short one crawls, the long one hurries,
+     * and all three reach the junction on the same frame. That simultaneous
+     * arrival is the entire point of a merge.
+     */
+    merge: { delay: 4.2, duration: 2.6 },
+  },
+  {
+    /** Down from the merge rail into rail two's junction. */
+    trunk: { delay: 6.7, duration: 1.4 },
+    drops: { delay: 8, duration: 3.4 },
+    merge: { delay: 11.4, duration: 1.4 },
+  },
+] as const;
+
+const stageFor = (railIndex: number) =>
+  railStages[Math.min(railIndex, railStages.length - 1)];
 
 /** Matches the `@media (min-width: 56rem)` block that builds the rails. */
 const threeColumnQuery = "(min-width: 56rem)";
@@ -102,25 +128,29 @@ export function AboutRailBeams() {
         const gridBox = grid.getBoundingClientRect();
         const junctionX = gridBox.left - frame.left + gridBox.width / 2;
 
-        /* What feeds this rail: the intro for the first, the rail above for the
-           second. Either way the trunk drops from that block's bottom edge. */
+        const timing = stageFor(railIndex);
+
+        /* What feeds this rail: the intro for the first, and for any rail below
+           that, the merge closing the one above — the trunk leaves the merge
+           rail, not the panel grid, whose bottom edge the legs have pushed
+           down. The grid is the fallback if a rail above has no merge. */
+        const above = rails[railIndex - 1];
         const feeder =
           railIndex === 0
             ? stage.querySelector(".about-intro")
-            : rails[railIndex - 1]?.querySelector(".about-rail-panels");
+            : (above?.querySelector(".about-merge") ??
+              above?.querySelector(".about-rail-panels"));
 
         if (feeder) {
+          const feederBottom = place(feeder).bottom;
+
           next.push({
             key: `trunk-${railIndex}`,
-            d: `M ${junctionX} ${place(feeder).bottom} V ${railY}`,
-            length: Math.max(railY - place(feeder).bottom, 0),
+            d: `M ${junctionX} ${feederBottom} V ${railY}`,
+            length: Math.max(railY - feederBottom, 0),
             edge: resolve("--accent-green"),
             core: resolve("--accent-green-hover"),
-            ...pulseTiming(
-              cyclePeriod,
-              trunkDuration,
-              railIndex === 0 ? 0 : railOneDelay + railDuration,
-            ),
+            ...pulseTiming(cyclePeriod, timing.trunk.duration, timing.trunk.delay),
           });
         }
 
@@ -141,13 +171,43 @@ export function AboutRailBeams() {
             }),
             edge: resolve("--accent-green"),
             core: resolve("--accent-green-hover"),
-            ...pulseTiming(
-              cyclePeriod,
-              railDuration,
-              railIndex === 0 ? railOneDelay : railTwoDelay,
-            ),
+            ...pulseTiming(cyclePeriod, timing.drops.duration, timing.drops.delay),
           });
         });
+
+        /* The converging junction under this rail, if it has one. Its rail is
+           the bottom edge of the elbow box, and its corners curve the other
+           way — hence the second argument to `elbowRadius`. */
+        const merge = rail.querySelector(".about-merge");
+
+        if (merge) {
+          const mergeBox = place(merge);
+          const mergeRadius = elbowRadius(merge, 12, "borderBottomLeftRadius");
+
+          panels.forEach((panel, panelIndex) => {
+            const panelBox = place(panel);
+
+            next.push({
+              key: `merge-${railIndex}-${panelIndex}`,
+              ...mergePath({
+                columnX: panelBox.x,
+                junctionX,
+                radius: mergeRadius,
+                railY: mergeBox.bottom,
+                /* The card's own bottom edge, which is what makes the three
+                   legs three different lengths. */
+                startY: panelBox.bottom,
+              }),
+              edge: resolve("--accent-green"),
+              core: resolve("--accent-green-hover"),
+              ...pulseTiming(
+                cyclePeriod,
+                timing.merge.duration,
+                timing.merge.delay,
+              ),
+            });
+          });
+        }
       });
 
       setSize({ width: frame.width, height: frame.height });
