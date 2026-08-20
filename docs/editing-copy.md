@@ -27,7 +27,7 @@ full MDX policy — see [`content-authoring.md`](content-authoring.md).
 | The resume PDF itself | `web/public/lakshya-agarwal-resume.pdf` |
 | A project card's title, blurb, tech, metrics | `web/content/projects.ts` |
 | A case study's body | `web/content/case-studies/<slug>.mdx` |
-| The About narrative | `web/content/about.mdx` |
+| The About page | `web/content/about.ts` → `aboutIntro`, `aboutPanels` |
 | Skills lists and About cards | `web/content/about.ts` |
 | Labels on the isometric desk objects | `web/lib/desk/hotspots.ts` |
 | The words spelled out in the desk scene | `web/lib/desk/lettering.ts` → `phrase` |
@@ -490,14 +490,40 @@ Plain Markdown with a deliberately narrow feature set — see the MDX rules belo
 
 ## About page — `/about`
 
-Three sources:
+An intro, then two rails of three panels, then Connect. It is **all typed
+content now** — `content/about.mdx` is gone, and so is the validator rule that
+required it.
 
 | What | File |
 |---|---|
-| The narrative essay | `web/content/about.mdx` |
-| The skills lists | `web/content/about.ts` → `skillGroups` |
-| The cards below the essay | `web/content/about.ts` → `aboutItems` |
-| The headings — *Building across boundaries.*, *What shapes the work.*, *Continue the conversation.* — and the page's `<title>`/description | `web/app/about/page.tsx` |
+| Name, pronunciation, nickname, meaning, and the where-I-am-from paragraph | `web/content/about.ts` → `aboutIntro` |
+| The six panels | `web/content/about.ts` → `aboutPanels` |
+| The two rail labels — *Where I am right now*, *How I work* — and the page's `<title>`/description | `web/app/about/page.tsx` |
+
+**Three panels per rail is structural, not stylistic.** The connector above each
+rail is one element whose ends sit at `100% / 6` — correct only for three equal
+columns — and `about-rail-beams.tsx` measures three drops. `content-schema.ts`
+enforces the count, so a fourth panel fails validation rather than rendering a
+broken corner.
+
+`aboutIntro` is the **one field exempt from the third-person voice check**. That
+rule rejects the literal word "Lakshya" to stop copy like "Lakshya built X", but
+this intro opens *"My name is Lakshya"* — first person, and the only place on
+the site where the name is said rather than displayed. The exemption is granted
+per field in `validate-portfolio-content.ts`; everything else keeps the full
+rule, including `he` and `his` here.
+
+**The page is drawn with the project tree's connector geometry** — same
+`--tree-link`, `--tree-radius`, `--tree-line-color` from `:root`, same elbow of
+three borders and two rounded corners, same travelling pulses from
+`components/motion/traveling-beams.tsx`. That is the point of it: the About page
+should read as the workbench continuing. If you change a `--tree-*` token, you
+are changing both pages.
+
+Two exports in `content/about.ts` are still validated but **no longer rendered
+anywhere**: `skillGroups` (the old Toolbox sidebar) and `aboutItems` (the old
+Perspective cards). They are real prose, so they were kept rather than deleted
+when the layout changed. Each carries a comment saying so.
 
 ---
 
@@ -521,7 +547,7 @@ is fine as a *value* — `siteProfile.name` — just not inside prose.)
 
 **Nothing may be empty.** Every text field is checked for non-empty content.
 
-**MDX is deliberately restricted.** In case studies and `about.mdx`:
+**MDX is deliberately restricted.** In case studies:
 
 - No imports, exports, or JavaScript expressions
 - No raw HTML

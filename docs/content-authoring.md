@@ -15,7 +15,8 @@ Portfolio content is version-controlled under `web/content/`:
 - `about.ts` contains structured skills and About items.
 - `about.ts` also contains the editable labels and descriptions for the nine
   personal desk motifs used by eight typed hotspot groups.
-- `about.mdx` contains the longer personal narrative.
+- The About page is typed content, not MDX — see `about.ts` → `aboutIntro`
+  and `aboutPanels`. `about.mdx` was removed when that page was rebuilt.
 - `case-studies/*.mdx` contains project stories whose depth follows the available evidence.
 - `portfolio.ts` assembles the complete validated content object.
 

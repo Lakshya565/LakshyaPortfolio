@@ -156,10 +156,12 @@ export function ProjectTree({
             secondColor: "var(--accent-purple)",
           }}
         >
+          {/* A door, not a summary. The name is the eyebrow and the question
+              is the heading, so the card asks what the page it opens answers —
+              `/about` leads with the same three words. */}
           <Link className="project-tree-root-link" href={data.root.routeHref}>
-            <span className="project-tree-root-label">Root · About me</span>
-            <strong>{data.root.name}</strong>
-            <span className="project-tree-root-summary">{data.root.oneLiner}</span>
+            <span className="project-tree-root-label">{data.root.name}</span>
+            <strong>Who Am I?</strong>
             <span className="project-tree-root-action">
               About me <span aria-hidden="true">→</span>
             </span>

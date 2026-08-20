@@ -1,12 +1,9 @@
-import Link from "next/link";
-
 import { IsometricDesk } from "@/components/desk/isometric-desk";
 import { HeroBackground } from "@/components/hero/hero-background";
 import { HeroLinkButton } from "@/components/hero/hero-link-button";
 import { HeroName } from "@/components/hero/hero-name";
 import { DiaTextReveal } from "@/components/ui/dia-text-reveal";
 import { ProjectTree } from "@/components/project-tree/project-tree";
-import { Button } from "@/components/ui/button";
 import { getHomePageData } from "@/lib/content/portfolio-repository";
 
 /**
@@ -138,36 +135,6 @@ export default function Home() {
           </p>
         </div>
         <ProjectTree branchHeadingLevel="h3" data={data.projectTree} />
-      </section>
-
-      <section
-        aria-labelledby="about-title"
-        className="border-t border-line"
-        id="contact"
-      >
-        <div className="personal-closing site-container">
-          <div>
-            <p className="eyebrow">Away from the workbench</p>
-            <h2 id="about-title">I like learning with other people.</h2>
-          </div>
-          <div>
-            <p>
-              Teaching has shaped how I engineer. So have bouldering, lifting,
-              anime nights, and finding good food—from boba and froyo to sushi,
-              Thai food, and Indian food—with people I care about.
-            </p>
-            <Button
-              asChild
-              /* `px-0` because the link variant keeps a button's horizontal
-                 padding, which pushed this 17px off the left rail every other
-                 block on the page sits on. */
-              className="mt-4 px-0 whitespace-normal text-left"
-              variant="link"
-            >
-              <Link href="/about">A little more about me →</Link>
-            </Button>
-          </div>
-        </div>
       </section>
     </main>
   );

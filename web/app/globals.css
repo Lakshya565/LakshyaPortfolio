@@ -35,6 +35,12 @@
   --accent-purple-faint: oklch(0.78 0.13 305 / 0.08);
   --accent-purple-soft: oklch(0.78 0.13 305 / 0.46);
   --accent-purple-hover: oklch(0.83 0.14 305);
+  /* For a blurred glow, and nothing else. `--accent-purple` sits at lightness
+     0.78, and a wide blur over a dark canvas is additive — light hue plus
+     additive is exactly how a purple turns white, which is what the root card's
+     bloom was doing. Lightness comes down and chroma goes *up*: merely darkening
+     it would have greyed out instead. */
+  --accent-purple-deep: oklch(0.52 0.19 305);
   --accent-purple-text-hover: oklch(0.86 0.13 305);
   --accent-desk-faint: var(--accent-green-faint);
   --accent-desk-soft: var(--accent-green-soft);
@@ -86,6 +92,23 @@
   --space-block: clamp(2rem, 3.5vw, 3rem);
   --content-wide: 72rem;
   --content-reading: 48rem;
+  /* ---------------------------------------------------------------------
+   * Connector geometry, shared by the project tree and the About page rails.
+   *
+   * Both pages draw the same figure — a trunk into a junction, a horizontal
+   * rail, two rounded corners, and a drop into each of three columns. These
+   * live here rather than on `.project-tree` so the second page reads the same
+   * numbers instead of copying them.
+   *
+   * `--tree-radius` is also read in JavaScript, but **not from this token** —
+   * see `elbowRadius` in `components/motion/traveling-beams.tsx`. Its value is
+   * the text `0.75rem`, and `parseFloat` on that yields `0.75`.
+   * ------------------------------------------------------------------- */
+  --tree-link: 1.75rem;
+  --tree-radius: 0.75rem;
+  --tree-column-gap: clamp(0.75rem, 1.5vw, 1.25rem);
+  --tree-line: 1px;
+  --tree-line-color: var(--line-strong);
   --radius-control: 0.75rem;
   --radius-card: 0.9rem;
   --radius-panel: 1.5rem;
@@ -1074,25 +1097,15 @@ dd {
    Phase 4 traveling pulse cheap: no per-node measurement. */
 .project-tree {
   position: relative;
-  --tree-link: 1.75rem;
-  --tree-radius: 0.75rem;
-  --tree-column-gap: clamp(0.75rem, 1.5vw, 1.25rem);
-  --tree-line: 1px;
-  --tree-line-color: var(--line-strong);
   width: 100%;
 }
 
-/* The root card spans the container.
+/* The wrapper the trunk hangs off.
  *
- * It used to be `max-width: 35rem; margin-inline: auto`, which left it floating
- * at x=440 while the section heading above it and the branch grid below it both
- * started at x=145 — the one element in the section off the left rail, and the
- * real source of the "something is wrong with the formatting" feeling.
- *
- * Widening it costs nothing structurally: its *centre* is still the container's
- * centre, so the trunk drop, the elbow, and the three-column geometry further
- * down are untouched. `.project-tree-root-summary` keeps its own reading
- * measure inside the wider card. */
+ * It stays full width while the card inside it is sized by its content and
+ * centred. That split matters: `.project-tree-root::after` draws the trunk at
+ * `left: 50%` of *this* element, so the drop stays on the container's centre
+ * however wide the card ends up. */
 .project-tree-root {
   position: relative;
   z-index: 1;
@@ -1145,6 +1158,10 @@ dd {
  */
 .project-tree-root-neon {
   width: fit-content;
+  /* The card holds only an eyebrow, a question and a button now. At pure
+     `fit-content` that is about 260px — narrower than any single branch column
+     beneath it, which stops it reading as the trunk they all hang from. */
+  min-width: min(20rem, 100%);
   margin-inline: auto;
 }
 
@@ -1168,17 +1185,33 @@ dd {
   padding: 0;
 }
 
-/* `opacity-80` on a bloom this size washed the cards below it. */
+/*
+ * The bloom, and only the bloom.
+ *
+ * The component paints `::before` (the crisp border) and `::after` (the blur)
+ * from the same pair of custom properties, so splitting them has to happen
+ * here. The border keeps `--accent-purple`, the hue the Hardware branch is
+ * drawn in; the glow takes the deep one, because a light purple behind a 56px
+ * blur reads as white. `opacity-80` on a bloom this size also washed the cards
+ * below it.
+ */
 .project-tree-root-neon > div::after {
+  background-image: linear-gradient(
+    0deg,
+    var(--accent-green),
+    var(--accent-purple-deep)
+  );
   opacity: 0.4;
 }
 
 .project-tree-root-link {
   position: relative;
   display: grid;
+  justify-items: center;
   gap: 0.65rem;
   border-radius: inherit;
-  padding: 1.15rem;
+  padding: 1.35rem 1.5rem;
+  text-align: center;
   isolation: isolate;
 }
 
@@ -1258,11 +1291,10 @@ dd {
   line-height: 1.08;
 }
 
-.project-tree-root-summary {
-  max-width: 30rem;
-  color: var(--secondary);
-  font-size: 0.875rem;
-  line-height: 1.6;
+/* The eyebrow is the name now, so it takes the tri-colour gradient the card's
+   border used to carry alone. */
+.project-tree-root-label {
+  letter-spacing: 0.12em;
 }
 
 .project-tree-root-action {
@@ -1547,39 +1579,157 @@ dd {
   }
 }
 
-/* One column on the rail. The two-column split this used to be
-   (`0.75fr / 1.25fr`) appears nowhere else on the site, and it left the heading
-   orphaned across two lines with the paragraph starting 470px to its right. */
-.personal-closing {
-  display: grid;
-  gap: 1.25rem;
-  padding-block: var(--space-section);
+/* =========================================================================
+ * The About page.
+ *
+ * Two rails of three panels, drawn with the project tree's own connector
+ * geometry — the same `--tree-*` tokens from `:root`, the same elbow built from
+ * three borders and two rounded corners. That is the point of the page: it
+ * should read as the workbench continuing rather than as a separate document.
+ * ========================================================================= */
+.about-page {
+  padding-block: var(--space-block) var(--space-section);
 }
 
-/* Not `max-width` on `.personal-closing` itself: it shares an element with
-   `.site-container`, whose `margin-inline: auto` would centre the narrower box
-   instead of capping it in place. */
-.personal-closing h2 {
-  max-width: 22ch;
+/* The stage the beam layer measures against. Everything the connectors touch —
+   the intro and both rails — lives inside it. */
+.about-stage {
+  position: relative;
+  isolation: isolate;
 }
 
-.personal-closing > * {
-  min-width: 0;
+.about-intro {
+  position: relative;
+  z-index: 1;
+  text-align: center;
 }
 
-.personal-closing h2 {
+.about-intro .page-title {
   margin-top: 0.75rem;
-  color: var(--primary);
-  font-size: var(--text-section);
-  font-weight: 600;
-  letter-spacing: -0.045em;
-  line-height: 1.08;
 }
 
-.personal-closing p:last-of-type {
-  max-width: 40rem;
+/* The one sentence that says the name out loud. Larger than the body below it
+   because it is the answer to the heading directly above. */
+.about-name-line {
+  max-width: 34rem;
+  margin: 1.5rem auto 0;
+  color: var(--primary);
+  font-size: var(--text-lead);
+  font-weight: 500;
+  letter-spacing: -0.015em;
+  line-height: 1.35;
+}
+
+/* The pronunciation is an aside, not a claim, and it is set in the code face
+   because that is the voice every other piece of metadata on the site uses. */
+.about-name-aside {
+  color: var(--accent-green);
+  font-family: var(--font-code);
+  font-size: 0.72em;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.about-intro-body {
+  max-width: 38rem;
+  margin: 1rem auto 0;
   color: var(--secondary);
-  line-height: 1.75;
+  font-size: var(--text-body-lg);
+  line-height: 1.7;
+}
+
+/*
+ * `padding-top` rather than `margin-top`, so the rail's own top edge *is* the
+ * bottom of whatever feeds it. The trunk is drawn from that edge, and
+ * `AboutRailBeams` measures its pulse from the same place — a margin would put
+ * the line and the light in different positions.
+ */
+.about-rail {
+  --about-rail-label-height: 1.125rem;
+  position: relative;
+  padding-top: var(--space-block);
+}
+
+/*
+ * The label sits in a gap in the trunk, like a fieldset legend.
+ *
+ * The trunk runs from the block above straight down to the elbow, and the label
+ * is on that line. Rather than route the line around it, the label is sized to
+ * its own text and painted on the canvas colour, so the line passes behind and
+ * reads as deliberately interrupted. `fit-content` plus auto margins is what
+ * keeps the painted area to the words instead of the full column width.
+ */
+.about-rail-label {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: fit-content;
+  /* Fixed, because the trunk's length is computed from it below. */
+  height: var(--about-rail-label-height);
+  margin-inline: auto;
+  background: var(--canvas);
+  padding-inline: 0.85rem;
+  text-align: center;
+}
+
+.about-rail-panels {
+  position: relative;
+  display: grid;
+  gap: 1rem;
+  margin-top: 1.25rem;
+}
+
+.about-panel {
+  position: relative;
+  /* Above the beam layer, so a travelling dash passes behind a panel rather
+     than across its text. */
+  z-index: 1;
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+  padding: 1.15rem;
+}
+
+.about-panel h3 {
+  color: var(--primary);
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+}
+
+.about-panel p {
+  margin-top: 0.6rem;
+  color: var(--secondary);
+  font-size: 0.9rem;
+  line-height: 1.65;
+}
+
+/* Stacked, there is no rail to draw and no corners to turn. */
+.about-rail-panels::before,
+.about-panel::before {
+  display: none;
+}
+
+/*
+ * The pulse layer, drawn by `AboutRailBeams`.
+ *
+ * Under the panels and over the connector hairlines, the same arrangement the
+ * project tree uses.
+ */
+.about-rail-beams {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  pointer-events: none;
+}
+
+.about-connect {
+  margin-top: var(--space-section);
+  border-top: 1px solid var(--line);
+  padding-top: var(--space-block);
 }
 
 .empty-state {
@@ -2158,26 +2308,10 @@ dd {
     display: block;
   }
 
-  /* Two ends rather than a stack: the text on the left, the action on the
-     right, with the card sized by the pair of them. */
-  .project-tree-root-link {
-    grid-template-columns: minmax(0, 1fr) auto;
-    align-items: center;
-    column-gap: 2.5rem;
-    padding: 1.5rem 1.75rem;
-  }
-
-  .project-tree-root-label,
-  .project-tree-root-link strong,
-  .project-tree-root-summary {
-    grid-column: 1;
-  }
-
+  /* The action reads as a button rather than as a link, on the one card whose
+     entire job is to be clicked. It stays in the stack — there is no second
+     column to move it to any more. */
   .project-tree-root-action {
-    grid-row: 1 / -1;
-    grid-column: 2;
-    align-self: center;
-    margin-top: 0;
     border: 1px solid var(--line);
     border-radius: var(--radius-control);
     padding: 0.6rem 0.95rem;
@@ -2219,6 +2353,75 @@ dd {
     left: 50%;
     display: block;
     height: var(--tree-link);
+  }
+
+  /* Three columns, and the elbow above them. Same construction as
+     `.project-tree-branches` — the padding-top is the vertical run the elbow
+     occupies, so the rail sits on the grid's own top edge. */
+  .about-rail-panels {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: start;
+    gap: var(--tree-column-gap);
+    margin-top: calc(1.25rem + var(--tree-link));
+    padding-top: var(--tree-link);
+  }
+
+  .about-rail-panels::before,
+  .about-panel::before {
+    position: absolute;
+    content: "";
+    pointer-events: none;
+  }
+
+  /* One element draws the whole elbow: the rail, both arcs, and both outer
+     drops. Its ends land on the true column centres — with three equal columns
+     and a gap of G, centre one sits at 100%/6 - G/3, not at 100%/6. */
+  .about-rail-panels::before {
+    top: 0;
+    right: calc(100% / 6 - var(--tree-column-gap) / 3);
+    left: calc(100% / 6 - var(--tree-column-gap) / 3);
+    display: block;
+    height: var(--tree-link);
+    border: var(--tree-line) solid var(--tree-line-color);
+    border-bottom: 0;
+    border-top-left-radius: var(--tree-radius);
+    border-top-right-radius: var(--tree-radius);
+  }
+
+  /* Only the middle panel draws its own drop. The outer two are already served
+     by the elbow's side borders, and a straight stub there would run up through
+     the arc instead of following it. */
+  .about-panel:not(:first-child):not(:last-child)::before {
+    top: calc(var(--tree-link) * -1);
+    left: 50%;
+    display: block;
+    width: var(--tree-line);
+    height: var(--tree-link);
+    background: var(--tree-line-color);
+    transform: translateX(-50%);
+  }
+
+  /*
+   * The trunk into each rail: from the bottom of the block above, straight down
+   * to the elbow, passing behind the label.
+   *
+   * Every term is one of the gaps it crosses, so the line ends exactly on the
+   * elbow rather than near it: the rail's own padding, the label, and the gap
+   * the panel grid leaves above itself. Change any of those and change this.
+   */
+  .about-rail::before {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: var(--tree-line);
+    height: calc(
+      var(--space-block) + var(--about-rail-label-height) + 1.25rem +
+        var(--tree-link)
+    );
+    background: var(--tree-line-color);
+    content: "";
+    pointer-events: none;
+    transform: translateX(-50%);
   }
 
   .case-study-reading-layout:has(.case-study-outline) {

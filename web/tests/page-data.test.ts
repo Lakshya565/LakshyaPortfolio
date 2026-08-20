@@ -159,6 +159,11 @@ describe("page data projections", () => {
     expect(home.socialLinks).toEqual([]);
     expect(about.items).toEqual([]);
     expect(about.skillGroups).toEqual([]);
+    /* The rails are not part of the emptied collections — they are the page
+       now, and the connector geometry assumes three panels on each. */
+    expect(about.rails.map(({ key }) => key)).toEqual(["now", "work"]);
+    expect(about.rails.every(({ panels }) => panels.length === 3)).toBe(true);
+    expect(about.intro.name).toBe("Lakshya");
   });
 });
 

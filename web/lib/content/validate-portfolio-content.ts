@@ -65,8 +65,25 @@ function stripExcludedMdxText(source: string) {
     .replace(/\]\([^)]*\)/g, "]");
 }
 
-function getFirstPersonVoiceIssues(value: string, label: string) {
-  const narratorTerms = value.match(/\b(?:Lakshya|he|his)\b/gi) ?? [];
+/**
+ * Copy on this site is written in the first person. This catches the drift into
+ * third-person narration — "Lakshya built X", "his work on Y".
+ *
+ * `allowOwnName` exists for exactly one field: the About page intro, whose
+ * opening line is "My name is Lakshya". That is first person, and it is the one
+ * place on the site where the name is said rather than displayed. The check
+ * cannot tell the two apart, so the exemption is granted per field rather than
+ * by weakening the pattern for everything.
+ */
+function getFirstPersonVoiceIssues(
+  value: string,
+  label: string,
+  allowOwnName = false,
+) {
+  const narratorPattern = allowOwnName
+    ? /\b(?:he|his)\b/gi
+    : /\b(?:Lakshya|he|his)\b/gi;
+  const narratorTerms = value.match(narratorPattern) ?? [];
   const uniqueTerms = [...new Set(narratorTerms.map((term) => term.toLowerCase()))];
 
   return uniqueTerms.map(
@@ -100,6 +117,16 @@ function getNarrativeVoiceIssues(content: PortfolioContent) {
       ...getFirstPersonVoiceIssues(item.body, `aboutItems.${item.title}.body`),
     );
   }
+
+  for (const panel of content.aboutPanels) {
+    issues.push(
+      ...getFirstPersonVoiceIssues(panel.body, `aboutPanels.${panel.title}.body`),
+    );
+  }
+
+  issues.push(
+    ...getFirstPersonVoiceIssues(content.aboutIntro.body, "aboutIntro.body", true),
+  );
 
   for (const motif of content.personalMotifs) {
     issues.push(
@@ -381,12 +408,10 @@ async function getFileIssues(content: PortfolioContent, webRoot: string) {
     }
   }
 
-  const aboutPath = path.resolve(webRoot, "content", "about.mdx");
-  if (!(await pathExists(aboutPath))) {
-    issues.push("about: missing content/about.mdx");
-  } else {
-    issues.push(...(await validateMdxFile(aboutPath, "about")));
-  }
+  /* The About narrative used to live in `content/about.mdx` and was required
+     here. It is typed content now — `aboutIntro` and `aboutPanels` in
+     `content/about.ts` — so there is no About MDX file left to check.
+     Case-study MDX is validated above and is unaffected. */
 
   return issues;
 }

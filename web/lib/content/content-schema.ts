@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import {
+  aboutRailKeys,
   ongoingProjectDate,
   personalMotifKeys,
   projectAssetKinds,
@@ -155,6 +156,24 @@ const aboutItemSchema = z.object({
   displayOrder: z.number().int().nonnegative(),
 });
 
+const aboutIntroSchema = z.object({
+  name: nonEmptyText,
+  pronunciation: nonEmptyText,
+  nickname: nonEmptyText,
+  meaning: nonEmptyText,
+  body: z.string().trim().min(40),
+});
+
+/* Exactly three panels per rail — the connector geometry in `globals.css` and
+   the measured drops in `about-rail-beams.tsx` both assume it. A fourth panel
+   should fail here rather than render a broken elbow. */
+const aboutPanelSchema = z.object({
+  rail: z.enum(aboutRailKeys),
+  title: nonEmptyText,
+  body: z.string().trim().min(40),
+  displayOrder: z.number().int().nonnegative(),
+});
+
 const personalMotifSchema = z.object({
   key: z.enum(personalMotifKeys),
   label: nonEmptyText,
@@ -170,4 +189,14 @@ export const portfolioContentSchema = z.object({
   skillGroups: z.array(skillGroupSchema),
   aboutItems: z.array(aboutItemSchema),
   personalMotifs: z.array(personalMotifSchema),
+  aboutIntro: aboutIntroSchema,
+  aboutPanels: z
+    .array(aboutPanelSchema)
+    .refine(
+      (panels) =>
+        aboutRailKeys.every(
+          (rail) => panels.filter((panel) => panel.rail === rail).length === 3,
+        ),
+      { message: "each about rail needs exactly three panels" },
+    ),
 });

@@ -4,9 +4,11 @@ import {
   getPublishedSocialLinks,
 } from "@/lib/content/project-queries";
 import { buildDeskHotspots, type DeskHotspotData } from "@/lib/desk/hotspots";
-import { projectWorkModeLabels } from "@/types/content";
+import { aboutRailKeys, projectWorkModeLabels } from "@/types/content";
 import type {
   AboutItem,
+  AboutPanel,
+  AboutRailKey,
   PortfolioContent,
   Project,
   ProjectCategory,
@@ -64,6 +66,14 @@ export type HomePageData = Readonly<{
 
 type AboutPageData = Readonly<{
   profile: PortfolioContent["siteProfile"];
+  intro: PortfolioContent["aboutIntro"];
+  /** Two rails of three, in display order, ready to render as given. */
+  rails: readonly Readonly<{
+    key: AboutRailKey;
+    panels: readonly AboutPanel[];
+  }>[];
+  /* `items` and `skillGroups` are still built and still validated, but nothing
+     renders them — see the comments on their exports in `content/about.ts`. */
   items: readonly AboutItem[];
   skillGroups: readonly SkillGroup[];
   socialLinks: readonly SocialLinkData[];
@@ -123,6 +133,9 @@ export function buildProjectTreeData(
   return {
     root: {
       name: content.siteProfile.name.trim(),
+      /* Nothing renders this any more — the root card became a door to
+         `/about` rather than a summary, so its tagline went. Kept because the
+         headline itself is still the hero's, and the field costs nothing. */
       oneLiner: content.siteProfile.headline.trim(),
       routeHref: "/about",
     },
@@ -153,8 +166,17 @@ export function buildHomePageData(content: PortfolioContent): HomePageData {
 }
 
 export function buildAboutPageData(content: PortfolioContent): AboutPageData {
+  const panels = content.aboutPanels.toSorted(compareDisplayOrder);
+
   return {
     profile: content.siteProfile,
+    intro: content.aboutIntro,
+    /* Grouped here rather than in the page, so rail order is a property of the
+       data and not of whichever component happens to loop over it. */
+    rails: aboutRailKeys.map((key) => ({
+      key,
+      panels: panels.filter((panel) => panel.rail === key),
+    })),
     items: content.aboutItems.toSorted(compareDisplayOrder),
     skillGroups: content.skillGroups.toSorted(compareDisplayOrder),
     socialLinks: toSocialLinkData(content),

@@ -1,5 +1,17 @@
-import type { AboutItem, PersonalMotif, SkillGroup } from "@/types/content";
+import type {
+  AboutIntro,
+  AboutItem,
+  AboutPanel,
+  PersonalMotif,
+  SkillGroup,
+} from "@/types/content";
 
+/**
+ * **Nothing currently renders this.** The About page was rebuilt around
+ * `aboutIntro` and `aboutPanels` below, and the boxed "Toolbox" sidebar that
+ * used to show these went with it. Kept because the grouping is real and
+ * deleting written content to suit a layout is not reversible.
+ */
 export const skillGroups = [
   {
     name: "Languages",
@@ -34,6 +46,11 @@ export const skillGroups = [
   },
 ] as const satisfies readonly SkillGroup[];
 
+/**
+ * **Nothing currently renders this either** — the "Perspective" card grid it fed
+ * was removed for saying the same things the About rails now say. Kept for the
+ * same reason as `skillGroups`.
+ */
 export const aboutItems = [
   {
     category: "education",
@@ -147,3 +164,74 @@ export const personalMotifs = [
     displayOrder: 120,
   },
 ] as const satisfies readonly PersonalMotif[];
+
+/**
+ * The opening of the About page.
+ *
+ * Everything here is the kind of thing a visitor only learns by getting to this
+ * page, which is the whole reason the page exists.
+ *
+ * Note `name` is the given name alone, not `siteProfile.name`. This is the one
+ * place on the site where the name is *said* rather than displayed, and it is
+ * why `validate-portfolio-content.ts` exempts this block from the third-person
+ * narrator check — "My name is Lakshya" is first person, and the check cannot
+ * tell the difference.
+ */
+export const aboutIntro = {
+  name: "Lakshya",
+  pronunciation: "Luck-shay",
+  nickname: "Lucky",
+  meaning: '"aim" in Hindi',
+  body: "I was born in San Jose, California, and went to Westmont High School. Now I am at the University of Illinois Urbana-Champaign studying Computer Engineering.",
+} as const satisfies AboutIntro;
+
+/**
+ * The six panels of the About page, in two rails of three.
+ *
+ * **Three per rail is structural, not stylistic.** `globals.css` draws a
+ * three-column elbow above each rail and
+ * `components/about/about-rail-beams.tsx` measures three drops. Adding a fourth
+ * panel to a rail breaks the connector geometry, not just the balance.
+ *
+ * `now` is who he is at the moment; `work` is how he works. The `work` rail is
+ * the prose that used to live in `content/about.mdx`, with "Why I build" and
+ * "Building for real conditions" combined into one panel.
+ */
+export const aboutPanels = [
+  {
+    rail: "now",
+    title: "What I am up to",
+    body: "I am studying Computer Engineering at the University of Illinois Urbana-Champaign, with an expected May 2029 graduation. Most recently I interned at Cisco as a Software Engineer on the Industrial IoT team.",
+    displayOrder: 10,
+  },
+  {
+    rail: "now",
+    title: "What I love",
+    body: "Bouldering, lifting, anime nights, and tracking down good food with people I care about. Teaching belongs on this list too: it has shaped how I engineer more than anything else outside a keyboard.",
+    displayOrder: 20,
+  },
+  {
+    rail: "now",
+    title: "Currently obsessed with",
+    body: "Bouldering has taken up a lot of my time lately, and I am a V5 climber right now. Off the wall it is matcha and boba, which are my top drink choices at the moment.",
+    displayOrder: 30,
+  },
+  {
+    rail: "work",
+    title: "Why I build",
+    body: "The most interesting engineering problems do not stay inside one layer, so my work moves between agentic software, connected devices, and physical prototypes instead of treating them as separate interests. I care about what happens after a system works once: at Cisco that meant testing generated troubleshooting steps against simulated faults, and in embedded projects it has meant debugging sensor behavior and running user trials outside a controlled lab.",
+    displayOrder: 40,
+  },
+  {
+    rail: "work",
+    title: "Teaching and leadership",
+    body: "More than twelve years of Taekwondo led to a fourth-degree black belt and a Master Instructor role teaching three weekly classes. Scouting, Eagle Scout service, and counseling at Camp Hi-Sierra taught a related lesson: preparation and communication determine whether technical knowledge becomes useful to the person standing in front of you.",
+    displayOrder: 50,
+  },
+  {
+    rail: "work",
+    title: "What I am exploring",
+    body: "I am especially interested in intelligent IoT, human-centered technology, and AI systems whose behavior can be inspected and evaluated. The common thread is building across boundaries while keeping the result understandable to the people who use and maintain it.",
+    displayOrder: 60,
+  },
+] as const satisfies readonly AboutPanel[];

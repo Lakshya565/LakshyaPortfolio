@@ -150,6 +150,38 @@ export type SkillGroup = Readonly<{
   skills: readonly string[];
 }>;
 
+/**
+ * The opening of the About page: the things a visitor only learns by getting
+ * there. `name` is spelled out here rather than reused from `siteProfile`
+ * because this is the one place the name is *said* rather than displayed.
+ */
+export type AboutIntro = Readonly<{
+  name: string;
+  /** How to say it, plainly. */
+  pronunciation: string;
+  nickname: string;
+  /** What the name means, and in which language. */
+  meaning: string;
+  /** Two or three sentences of where he is from and what he is doing now. */
+  body: string;
+}>;
+
+/** Which rail a panel belongs to. */
+export const aboutRailKeys = ["now", "work"] as const;
+export type AboutRailKey = (typeof aboutRailKeys)[number];
+
+/**
+ * One panel on an About rail. Three panels per rail, and the layout depends on
+ * that: `globals.css` draws a three-column elbow, and
+ * `components/about/about-rail-beams.tsx` measures three drops.
+ */
+export type AboutPanel = Readonly<{
+  rail: AboutRailKey;
+  title: string;
+  body: string;
+  displayOrder: number;
+}>;
+
 export type AboutItem = Readonly<{
   category: "education" | "leadership" | "community" | "interests";
   title: string;
@@ -172,4 +204,6 @@ export type PortfolioContent = Readonly<{
   skillGroups: readonly SkillGroup[];
   aboutItems: readonly AboutItem[];
   personalMotifs: readonly PersonalMotif[];
+  aboutIntro: AboutIntro;
+  aboutPanels: readonly AboutPanel[];
 }>;

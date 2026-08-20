@@ -319,7 +319,6 @@ LakshyaPortfolio/
     content/
       site.ts
       projects.ts
-      about.mdx
       projects/
         cisco-agentic-runbook-creator.mdx
         repoframe.mdx
@@ -384,7 +383,8 @@ applications.
 
 Skills and short education, leadership, community, and interest records remain
 structured TypeScript data because they are repeated and order-sensitive.
-`about.mdx` holds the longer personal narrative. Employment context belongs in
+The About page is typed content in `about.ts` (`aboutIntro`, `aboutPanels`)
+rather than MDX. Employment context belongs in
 the relevant project case study rather than a duplicate experience collection.
 
 ### Metrics and assets
