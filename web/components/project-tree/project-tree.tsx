@@ -160,12 +160,13 @@ export function ProjectTree({
               is the heading, so the card asks what the page it opens answers —
               `/about` leads with the same three words. */}
           <Link className="project-tree-root-link" href={data.root.routeHref}>
-            {/* All three branch textures at once, left to right in the same
-                green-blue-purple order as the eyebrow's gradient below. This
-                is the one card everything else grows out of, so it wears every
-                shape rather than picking one. */}
+            {/* All three branch textures at once, left to right in the order
+                the branches themselves appear below — grid, hexagon, dots, the
+                same as Hybrid, Software, Hardware — so each texture sits above
+                the branch it belongs to. This is the one card everything else
+                grows out of, so it wears every shape rather than picking one. */}
             <span aria-hidden="true" className="project-tree-root-wash">
-              {(["software", "hybrid", "hardware"] as const).map((workMode) => (
+              {(["hybrid", "software", "hardware"] as const).map((workMode) => (
                 <span
                   className="project-tree-root-wash-layer"
                   /* `data-texture`, not `data-work-mode`: this card belongs to

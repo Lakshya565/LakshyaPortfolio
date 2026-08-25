@@ -1232,20 +1232,25 @@ dd {
 /*
  * Three textures across one card, each fading out where the next takes over, so
  * there is no seam between them — a mask per layer rather than three boxes side
- * by side. The order matches the eyebrow above: green, blue, purple.
+ * by side.
+ *
+ * **The left-to-right order is the branch order below**, not the eyebrow's
+ * colour order: Hybrid, Software, Hardware, so the grid sits above the Hybrid
+ * column, the hexagons above Software and the dots above Hardware. Reorder the
+ * branches and these three masks are what has to follow.
  */
 .project-tree-root-wash-layer {
   position: absolute;
   inset: 0;
 }
 
-.project-tree-root-wash-layer[data-texture="software"] {
-  --project-accent: var(--accent-green);
+.project-tree-root-wash-layer[data-texture="hybrid"] {
+  --project-accent: var(--accent-blue);
   mask-image: linear-gradient(90deg, black, transparent 55%);
 }
 
-.project-tree-root-wash-layer[data-texture="hybrid"] {
-  --project-accent: var(--accent-blue);
+.project-tree-root-wash-layer[data-texture="software"] {
+  --project-accent: var(--accent-green);
   mask-image: linear-gradient(
     90deg,
     transparent 12%,
@@ -1329,8 +1334,10 @@ dd {
   text-transform: uppercase;
 }
 
+/* Blue, green, purple — the branch order below the card, which is also the
+   order the textures behind these letters run in. Not the token order. */
 .project-tree-root-label {
-  background: linear-gradient(90deg, var(--accent-green), var(--accent-blue), var(--accent-purple));
+  background: linear-gradient(90deg, var(--accent-blue), var(--accent-green), var(--accent-purple));
   background-clip: text;
   color: transparent;
 }
@@ -1687,13 +1694,13 @@ dd {
 }
 
 .about-ambient-top {
-  color: var(--accent-green);
+  color: var(--accent-blue);
   mask-image: linear-gradient(to bottom, black 0%, black 16%, transparent 34%);
-  stroke: var(--accent-green);
+  stroke: var(--accent-blue);
 }
 
 .about-ambient-middle {
-  color: color-mix(in oklch, var(--accent-green) 50%, var(--accent-purple));
+  color: var(--accent-green);
   mask-image: linear-gradient(
     to bottom,
     transparent 16%,
@@ -1701,7 +1708,7 @@ dd {
     black 54%,
     transparent 72%
   );
-  stroke: color-mix(in oklch, var(--accent-green) 50%, var(--accent-purple));
+  stroke: var(--accent-green);
 }
 
 /*
@@ -1806,16 +1813,72 @@ dd {
   margin-top: 1.25rem;
 }
 
+/*
+ * Each rail carries one leg of the page's blue-green-purple run, and its three
+ * cards divide that leg between them: rail one goes blue to green, rail two
+ * green to purple, so the borders pick up where the ambient texture behind them
+ * is. Set on the rail, read by the cards.
+ */
+.about-rail[data-rail="now"] {
+  --rail-from: var(--accent-blue);
+  --rail-to: var(--accent-green);
+}
+
+.about-rail[data-rail="work"] {
+  --rail-from: var(--accent-green);
+  --rail-to: var(--accent-purple);
+}
+
+/*
+ * A gradient border, and it has to be two backgrounds rather than a
+ * `border-color`: a border takes one colour, and `border-image` does not follow
+ * a `border-radius`. The surface layer is clipped to the padding box and the
+ * gradient to the border box, so the 1px ring between them is the only part of
+ * the gradient that shows.
+ */
 .about-panel {
   position: relative;
   /* Above the beam layer, so a travelling dash passes behind a panel rather
      than across its text. */
   z-index: 1;
   min-width: 0;
-  border: 1px solid var(--line);
+  border: 1px solid transparent;
   border-radius: var(--radius-card);
-  background: var(--surface);
+  background-clip: padding-box, border-box;
+  /* Dimmed with alpha, not by mixing toward `--line`. That grey carries a hue
+     of its own, and a 50% mix dragged both ends of every card toward it — blue
+     and green both came out the same pale cyan, and the run the borders exist
+     to show was gone. Alpha leaves the hue exactly where the token put it. */
+  background-image:
+    linear-gradient(var(--surface), var(--surface)),
+    linear-gradient(
+      90deg,
+      color-mix(in oklch, var(--panel-from, var(--rail-from)) 62%, transparent),
+      color-mix(in oklch, var(--panel-to, var(--rail-to)) 62%, transparent)
+    );
+  background-origin: border-box;
   padding: 1.15rem;
+}
+
+/*
+ * Each card takes one third of its rail's run, so the three of them read as a
+ * single sweep across the row rather than as three copies of the same gradient.
+ * Stacked below 56rem they read as a sweep down the column instead, which is
+ * the same idea with the axis turned.
+ */
+.about-panel-column:first-child .about-panel {
+  --panel-from: var(--rail-from);
+  --panel-to: color-mix(in oklch, var(--rail-from) 67%, var(--rail-to));
+}
+
+.about-panel-column:nth-child(2) .about-panel {
+  --panel-from: color-mix(in oklch, var(--rail-from) 67%, var(--rail-to));
+  --panel-to: color-mix(in oklch, var(--rail-from) 33%, var(--rail-to));
+}
+
+.about-panel-column:last-child .about-panel {
+  --panel-from: color-mix(in oklch, var(--rail-from) 33%, var(--rail-to));
+  --panel-to: var(--rail-to);
 }
 
 .about-panel h3 {

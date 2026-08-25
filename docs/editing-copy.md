@@ -522,12 +522,18 @@ the site where the name is said rather than displayed. The exemption is granted
 per field in `validate-portfolio-content.ts`; everything else keeps the full
 rule, including `he` and `his` here.
 
-**The three branch textures wash across the page**, in vertical zones — hexagon
-behind the intro, grid behind the first rail, dots behind the second and
-Connect — coloured green through purple as you scroll. It is one ambient layer
-(`components/about/about-ambient.tsx`) rather than a texture per panel, because
-those three shapes are locked to the three branches and a panel wearing the grid
-would claim to be Hybrid. Nothing there needs editing when copy changes.
+**The three branch textures wash across the page**, in vertical zones — grid
+behind the intro, hexagons behind the first rail, dots behind the second and
+Connect. That is blue, green, purple: the branch order in the project tree, so
+the About page runs through the same three colours in the same sequence as the
+card that points at it. The panel borders follow the same run — rail one blue to
+green, rail two green to purple, each rail's three cards taking a third of it
+each, set by `--rail-from` / `--rail-to` on the rail.
+
+It is one ambient layer (`components/about/about-ambient.tsx`) rather than a
+texture per panel, because those three shapes are locked to the three branches
+and a panel wearing the grid would claim to be Hybrid. Nothing there needs
+editing when copy changes.
 
 **The page is drawn with the project tree's connector geometry** — same
 `--tree-link`, `--tree-radius`, `--tree-line-color` from `:root`, same elbow of

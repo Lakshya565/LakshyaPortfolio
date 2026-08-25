@@ -11,10 +11,15 @@ import { HexagonPattern } from "@/components/ui/hexagon-pattern";
  * Hybrid, and those three shapes are locked to the three branches. As one
  * ambient layer under everything they read as the house texture instead.
  *
- * **Vertical zones.** Hexagon behind the intro, grid behind the first rail, dot
+ * **Vertical zones.** Grid behind the intro, hexagon behind the first rail, dot
  * behind the second and the Connect block, each masked so it fades into the
  * next rather than meeting it at a line. The texture changes as you scroll,
  * which quietly marks where on the page you are.
+ *
+ * The order — grid, hexagon, dot, which is blue, green, purple — is the branch
+ * order in the project tree, so the page runs through the same three colours in
+ * the same sequence as the tree that points at it, and the panel borders follow
+ * it too.
  *
  * Server-rendered and static: three tiled `<pattern>`s, no measuring, no
  * client bundle. `globals.css` owns the masks, the colours and the opacity.
@@ -22,8 +27,8 @@ import { HexagonPattern } from "@/components/ui/hexagon-pattern";
 export function AboutAmbient() {
   return (
     <div aria-hidden="true" className="about-ambient">
-      <HexagonPattern className="about-ambient-layer about-ambient-top" radius={26} />
-      <GridPattern className="about-ambient-layer about-ambient-middle" height={44} width={44} />
+      <GridPattern className="about-ambient-layer about-ambient-top" height={44} width={44} />
+      <HexagonPattern className="about-ambient-layer about-ambient-middle" radius={26} />
       <DotPattern
         className="about-ambient-layer about-ambient-bottom"
         cr={1.3}
