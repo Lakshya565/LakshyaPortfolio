@@ -1,26 +1,31 @@
 ## Overview
 
 The Agentic Runbook Creator, or ARC, automates troubleshooting for industrial
-network faults. During my Cisco internship on the Industrial IoT team, I worked
+network faults by allowing for dynamic creation of runbooks, which are automated scripts made to troubleshoot network faults. During my Cisco internship on the Industrial IoT team, I worked
 on the reasoning, generation, privacy, integration, and evaluation paths that
 turned a fault context into a testable runbook instead of selecting only from a
-fixed procedure catalog.
+fixed procedure catalog. 
 
 ## Problem
 
 The existing workflow covered 13 predefined procedures. Faults outside that
 catalog still required engineers to assemble hypotheses and diagnostic steps
-manually, while sensitive topology details could not simply be forwarded to a
-cloud model. ARC needed to generate situation-specific guidance without losing
-the privacy boundary of the client network.
+manually (which could take hours depending on the fault at hand), 
+while sensitive topology details could not simply be forwarded to a
+cloud model.
+
+<Callout>
+  ARC had to generate situation-specific guidance without ever losing the privacy boundary of the client network. That single requirement is why the pipeline splits into local reasoning and cloud synthesis at all.
+</Callout>
 
 ## Local reasoning and staged generation
 
 I contributed to local small-language-model reasoning and a multi-stage runbook
-generation flow. Local processing established the initial fault context and
-hypotheses. Before cloud analysis, the handoff obfuscated sensitive topology
-information so later reasoning could use the structure of the problem without
-exposing the original network details.
+generation flow. Local processing established the initial fault context and turned them
+into hypotheses as to what the problem could be. Before cloud analysis, the handoff obfuscated sensitive topology
+information so later LLM reasoning could use the structure of the problem without
+exposing the original network details. The second part of the pipeline was the runbook generation,
+which used the hypotheses bundle to produce a runbook that could hypothetically troubleshoot every hypothesis posed.
 
 A Flask integration layer connected those stages and kept the boundary between
 local and cloud work explicit. The goal was not an unrestricted model call; it
@@ -28,23 +33,33 @@ was a repeatable workflow whose inputs and transitions could be controlled.
 
 ## Evaluation loop
 
-I also built a digital-twin evaluator that injected faults into Cisco IOS XE network
+The final part of the pipeline, which I built directoy, was a digital-twin evaluator that injected faults into Cisco IOS XE network
 simulations and exercised the generated runbooks. This made evaluation part of
 the system rather than a manual review performed only after generation.
 
 The evaluator provided a path toward closed-loop troubleshooting inside the
 client network: generate a candidate runbook, test it against a simulated fault,
-and use the observed behavior to decide whether the procedure was useful.
+and use the observed behavior to decide whether the procedure was useful. It also
+integrated an LLM judge, that decided whether the runbook was of good enough quality
+to send back to the client or if it needed to go through a regeneration phase.
 
 ## Results and boundaries
 
-The project expanded troubleshooting beyond the 13 predefined procedures and
-reported reducing triage time from hours to under 25 minutes. Those are
+The project expanded troubleshooting beyond the 13 predefined procedures and reduced triage time from hours to under 25 minutes. Those are
 project-level results; my individual contribution was the local reasoning,
 multi-stage generation, privacy-preserving handoff, Flask integration, and
 digital-twin evaluation work described above.
 
-This case study intentionally omits customer identifiers, proprietary source,
-credentials, logs, and unapproved topology details. A final architecture image
-will be added only after the labels and data shown in it receive the same
-confidentiality review as the prose.
+## Takeaways
+
+Interning at Cisco was one of the most eye-opening experiences of my life. 
+The idea of working this extensively with AI while still claiming ownership of what
+it generated was a new concept for me. Furthermore, I worked on this project with two
+other interns (Srivishnu Vusirikala and Pranav Butaney), and learning how to work with 
+others on a project as intricate and influential as this one was amazing. Building the 
+evaluator itself taught me that I couldn't accept just a syntactically sound runbook - 
+the semantics of the runbook itself mattered way more. Furthermore, the privacy layer
+was a change from how I usually work. Now, instead of just making sure that the project worked
+with the data given, I had to make sure that the data itself was properly cleansed and that
+the evaluator could work with said obfuscated identifiers. Other than that, I had
+all the essentials for the best internship experience, and I'd love coming back!

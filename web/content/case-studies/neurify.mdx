@@ -2,23 +2,36 @@
 
 Neurify explored a direct connection between an EEG headset and everyday media. I
 contributed signal-processing and software work to a system that classified
-emotional state in Python and used the result to control Spotify playback.
+emotional state in Python and used the result to control Spotify playback. The idea
+was to use a headphone-style headset, a newer innovation in the realm of neurotech, 
+that had EEG nodes distributed across the earcups and headband, and made contact through
+only the ears and top of the head.
+
+<Callout>
+  The end-to-end loop mattered more than displaying raw signals: the classification result had to change what the listener actually experienced.
+</Callout>
 
 ## System flow
 
 The project moved from EEG input to software classification and then to a visible
-application response. That end-to-end loop mattered more than displaying raw
-signals: the classification result had to change what the listener experienced.
+application response. On
+a high level, brainwaves would be read through the headset, converted into raw data, and
+then our job would be to convert that messy data into readable, categorized, and organized classifiers.
+This would then interface with our custom API, as well as Spotify Web API, to pick Spotify playlists
+according to the user's current mood. Finally, that playlist would play through the headphones themselves!
 
 ## Contribution boundary
 
-My verified contribution covered signal processing and software. The available
-public material does not separate model design, headset hardware, and integration
-ownership in enough detail to assign those areas to me, so I do not claim the
-entire system as individual work.
+My verified contribution covered signal processing and software. As I said before, I 
+contributed directly to the conversion of messy data into organized datasets and classifiers.
+Furthermore, I helped with the integration of Spotify Web API and our custom API that covered some
+of the functions that Spotify Web API had previously deprecated. I also helped achieve real-time response
+rather than using preloaded data, bringing latency down to less then 100 ms!
 
-## Takeaway
+## Takeaways
 
 Neurify is a compact example of why I enjoy hybrid projects. Signal quality,
 software interpretation, and product behavior all had to agree before the result
-felt meaningful.
+felt meaningful. It was also very interesting to me - I had never worked with any
+sort of neurotech before and I love listening to music so getting to work
+with Spotify and learning how they really worked was awesome!

@@ -225,13 +225,13 @@ export const aboutPanels = [
   {
     rail: "work",
     title: "Teaching and leadership",
-    body: "More than twelve years of Taekwondo led to a fourth-degree black belt and a Master Instructor role teaching three weekly classes to the smallest of students. Furthermore, being an Eagle Scout and a counselor at Camp Hi-Sierra taught me an important lesson: preparation and communication determine whether technical knowledge becomes useful to the person standing in front of you.",
+    body: "More than twelve years of Taekwondo led to a fourth-degree black belt and a Master Instructor role teaching three weekly classes to the smallest of students. Furthermore, being an Eagle Scout and a counselor at Camp Hi-Sierra taught me an important lesson: preparation and communication determine whether technical knowledge becomes useful to the person standing in front of you. These core experiences heavily shaped the way I engineer and lead.",
     displayOrder: 50,
   },
   {
     rail: "work",
     title: "What I am exploring",
-    body: "I am especially interested in intelligent IoT, human-centered technology, and AI systems whose behavior can be inspected and evaluated. The common thread is building across boundaries while keeping the result understandable to the people who use and maintain it.",
+    body: "I am especially interested in intelligent IoT, human-centered technology, and AI systems whose behavior can be inspected and evaluated. The common thread is building across boundaries while keeping the result understandable to the people who use and maintain it. Beyond that, I'm always looking for the next productive, but fun opportunity! If I'm not interested in the work I'm doing, regardless of how influential it may be, I'll end up looking for the next challenge that excites me.",
     displayOrder: 60,
   },
 ] as const satisfies readonly AboutPanel[];

@@ -5,19 +5,21 @@ wearable could make repetition count and workout intensity visible during a set
 without depending on an app, smartwatch, or microcontroller. The semester ended
 with a hardware proof of concept rather than a fully realized wearable MVP.
 
+<Callout>
+  One caveat introduced by ECE 145 - the design had to intentionally use hardware logic rather than firmware: no app, no smartwatch, and no microcontroller between the lift and the number on the display.
+</Callout>
+
 ## Problem
 
-Checking a phone or interpreting a raw heart-rate value interrupts a lift. The
-team instead designed two immediate outputs: a two-digit repetition count and a
+Checking a phone or interpreting a raw heart-rate value interrupts a lift. We instead designed two immediate outputs: a two-digit repetition count and a
 low, medium, or high exertion signal that could be understood at a glance.
 
 ## Technical approach
 
 A flex sensor detects elbow motion during lifts such as curls and bench press.
 Analog conditioning and digital counter logic translate that movement into the
-two-digit seven-segment display. In parallel, a pulse sensor feeds an LED array
-that represents one of three exertion levels. The design intentionally used
-hardware logic rather than firmware.
+two-digit seven-segment display. In parallel, a pulse sensor that the user wears on their earlobe feeds an LED array
+that represents one of three exertion levels.
 
 ## Contributions
 
@@ -29,7 +31,7 @@ and interactions between circuits that worked separately but failed together.
 
 ## Status and next steps
 
-The project demonstrated its major circuit paths, but the team did not finish
+The project demonstrated its major circuit paths, but we were not able to finish
 the complete sleeve during the semester. The documented next steps were to
 fabricate the output PCB, extend the PCB across the remaining circuitry, build
 the wearable enclosure, and test the system with athletes in a gym.
@@ -39,4 +41,7 @@ the wearable enclosure, and test the system with athletes in a gym.
 Physical systems expose assumptions quickly. Sensor noise, power distribution,
 timing, and mechanical placement all changed what looked straightforward in a
 block diagram, making integration and honest scope control as important as the
-individual circuits.
+individual circuits. We spent hours debugging small, frankly stupid, errors that
+could've been avoided easily. From this, we all learned the importance of patience
+and taking the time to check over everything before moving onto the next part and making
+the project harder to debug.

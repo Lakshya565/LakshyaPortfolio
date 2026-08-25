@@ -1,21 +1,24 @@
 ## Overview
 
-BackBuddy is an electronic posture brace I designed and built as a capstone. The
+BackBuddy is an electronic posture brace I designed and built in a team of 3 as part of Engineering Design and Development (PLTW Engineering Capstone). The
 device used a custom circuit and PCB to detect a hunched posture and respond with
 vibration, turning posture feedback into something immediate and wearable.
 
+<Callout>
+  The design constraint was physical rather than visual: the wearer should not need to check a screen to understand the warning.
+</Callout>
+
 ## Hardware approach
 
-I developed the project around a simple physical interaction: the wearer should
-not need to check a screen to understand the warning. The sensing, circuit, PCB,
-and vibration response therefore had to behave as one compact hardware system.
+That constraint decided the build. The sensing, circuit, PCB, and vibration
+response all had to behave as one compact hardware system. It was fairly simple - 
+a power source with a on/off switch connected to a tilt ball switch, which triggered three vibration motors in parallel when the user's back was hunched. 
+Figuring out that circuit wasn't the hard part, it was making sure that the vibration didn't ruin the rest of the circuit
+and testing on a wide variety of people to figure out the optimal setup and placement of the PCB.
 
-The current public record does not preserve enough detail to claim a specific
-sensor architecture or circuit topology, so this story intentionally stops at the
-verified system boundary.
-
-## Outcome
+## Takeaways
 
 BackBuddy earned second place for engineering and product presentation among more
 than thirty capstone projects. That result reflects both the working hardware and
-the ability to explain why the feedback loop mattered to a potential wearer.
+the ability to explain why the feedback loop mattered to a potential wearer. I also learned
+the basics of circuit design and applying it to create a marketable product.

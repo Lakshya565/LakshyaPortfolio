@@ -23,7 +23,7 @@ describe("case-study normalization", () => {
   it("keeps renderer data intentional and strips editorial control fields", () => {
     const pageData = toCaseStudyPageData(getCaseStudy("repoframe"));
 
-    expect(pageData.metrics).toHaveLength(3);
+    expect(pageData.metrics).toHaveLength(2);
     expect(pageData.media).toEqual([]);
     expect(pageData.hero).toBeNull();
     expect(pageData.videos).toEqual([]);

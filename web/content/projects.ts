@@ -80,11 +80,6 @@ export const projects = [
         value: "4",
         context: "Resume, README, portfolio, and LinkedIn content.",
       },
-      {
-        label: "Interview preparation",
-        value: "Opt-in",
-        context: "Generated separately from the four core written outputs.",
-      },
     ],
     videos: [],
     assets: [],

@@ -47,6 +47,10 @@
   --accent-desk-hover: var(--accent-green-hover);
   --font-body: var(--font-inter), "Segoe UI", sans-serif;
   --font-code: var(--font-jetbrains-mono), Consolas, monospace;
+  /* Plaques: the project tree's branch heads. A third voice, because a label
+     that names one of the site's three divisions is neither prose nor
+     metadata — see `app/fonts.ts` for why this face and not a louder one. */
+  --font-label: var(--font-chakra-petch), var(--font-body);
 
   /* ---------------------------------------------------------------------
    * Hero title face.
@@ -1407,7 +1411,7 @@ dd {
      negative `z-index` inside this box instead of dropping it behind the page. */
   overflow: hidden;
   isolation: isolate;
-  border: 1px solid color-mix(in oklch, var(--project-accent) 45%, var(--line));
+  border: 1px solid color-mix(in oklch, var(--project-accent) 65%, var(--line));
   border-radius: var(--radius-card);
   background:
     linear-gradient(
@@ -1416,6 +1420,22 @@ dd {
       transparent 70%
     ),
     var(--surface);
+  /*
+   * The backlight, in its own branch colour — the root card's bloom carried
+   * down the tree, so the three chips read as lit by the thing above them.
+   *
+   * `box-shadow` rather than the root's blurred `::after`, because this box
+   * sets `overflow: hidden` to clip its texture to the rounded corners, and
+   * that would clip a pseudo-element glow along with it. A shadow paints
+   * outside the border box and is not clipped by the element's own overflow.
+   *
+   * Two stops: a tight one that reads as the edge glowing, and a wide faint one
+   * that reads as light landing on the page behind. Negative spread keeps both
+   * off the connector arriving above.
+   */
+  box-shadow:
+    0 0 18px -6px color-mix(in oklch, var(--project-accent) 60%, transparent),
+    0 0 48px -12px color-mix(in oklch, var(--project-accent) 38%, transparent);
   padding: 0.85rem 1rem;
   text-align: center;
 }
@@ -1424,14 +1444,32 @@ dd {
   z-index: -1;
 }
 
-/* Sits between the project titles below it and the name in the root above. */
+/*
+ * Sits between the project titles below it and the name in the root above.
+ *
+ * Set as a plaque rather than as a heading, in a face of its own: caps, heavy,
+ * tracked open. Inter at 600 with negative tracking is the same treatment every
+ * card title gets, which is why it read as plain here, and the mono made it
+ * read as a field label — so the site gained a third face for exactly this
+ * job. See `app/fonts.ts`.
+ *
+ * `text-indent` is half the tracking, and it is not decoration. Letter-spacing
+ * adds its gap after the last glyph too, so a centred line sits half a gap left
+ * of true centre — visible on the one box in the tree that has to be centred on
+ * the connector arriving at it.
+ */
 .project-tree-branch-node h2,
 .project-tree-branch-node h3 {
   color: var(--project-accent);
-  font-size: clamp(1.2rem, 2.4vw, 1.45rem);
-  font-weight: 600;
-  letter-spacing: -0.025em;
+  font-family: var(--font-label);
+  font-size: clamp(1.05rem, 2.1vw, 1.28rem);
+  font-weight: 700;
+  /* More than the wider faces wanted: Chakra Petch is narrow, so its caps run
+     together at the 0.1em that suited Sora. */
+  letter-spacing: 0.12em;
   line-height: 1.2;
+  text-indent: 0.05em;
+  text-transform: uppercase;
 }
 
 .project-tree-branch-empty {

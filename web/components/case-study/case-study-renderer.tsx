@@ -95,7 +95,7 @@ function CaseStudyOutline({
 }
 
 // Not every entry is a measurement: some are stated project facts such as a
-// policy or an opt-in behavior, so the heading must not claim more than it has.
+// policy or a count, so the heading must not claim more than it has.
 const projectFactsHeading = {
   id: "project-facts",
   label: "Project facts",

@@ -1,5 +1,5 @@
 /**
- * The site's two typefaces.
+ * The site's typefaces.
  *
  * Before this file did its current job, `globals.css` named `"Inter"` and
  * `"Cascadia Code"` in its font stacks and **neither was ever loaded** — no
@@ -24,7 +24,7 @@
  * this by hand-writing preload tags without measuring first.
  */
 
-import { Inter, JetBrains_Mono } from "next/font/google";
+import { Chakra_Petch, Inter, JetBrains_Mono } from "next/font/google";
 
 /**
  * Body text: paragraphs, headings, links, card titles.
@@ -57,6 +57,36 @@ export const jetbrainsMono = JetBrains_Mono({
 });
 
 /**
- * Both faces' CSS variables, for the `<html>` element in `app/layout.tsx`.
+ * Labels that name a thing rather than describe it: the project tree's three
+ * branch plaques today.
+ *
+ * The third face exists because two was one short. Inter is the voice of every
+ * paragraph and card title, so anything set in it reads as more of the same;
+ * JetBrains Mono is the voice of metadata, so a heading set in it reads as a
+ * field label. A branch plaque is neither — it names one of the three things
+ * the whole page is organised around, and it had no face of its own.
+ *
+ * Chakra Petch: a squarish sans with clipped corners and angled cuts on the
+ * stems — the most overtly technical of the faces tried here, and narrower than
+ * the alternatives, which is why it is tracked wider than they were.
+ *
+ * **Not variable.** Unlike the other two it ships static instances, so
+ * `weight` is required rather than optional, and asking for one weight means
+ * one weight is what the plaques can use. 700 is the only one they need.
  */
-export const fontVariables = [inter.variable, jetbrainsMono.variable].join(" ");
+export const chakraPetch = Chakra_Petch({
+  subsets: ["latin"],
+  weight: ["700"],
+  variable: "--font-chakra-petch",
+  display: "swap",
+  preload: true,
+});
+
+/**
+ * Every face's CSS variables, for the `<html>` element in `app/layout.tsx`.
+ */
+export const fontVariables = [
+  inter.variable,
+  jetbrainsMono.variable,
+  chakraPetch.variable,
+].join(" ");
