@@ -1,16 +1,25 @@
 ## Overview
 
 QuackTA was built by a five-person team during UIUC IEEE's March 28–29, 2026
-Bit-by-Bit Hardware Hackathon. Inspired by rubber-duck debugging, it turned the
+Bit-by-Bit Hardware Hackathon. The prompt: design a product that integrates hardware and 
+software and solves a problem an ECE student at UIUC regularly faces.
+Inspired by rubber-duck debugging (the idea of explaining your code and methodology to 
+a rubber duck or other similar figure to figure out whether your reasoning and thought process
+is correct), it turned the
 passive act of explaining a problem into an interactive physical teaching
-assistant for ECE coursework and schedule questions.
+assistant for ECE coursework and schedule questions. The idea was that we wanted
+it to act as a TA used for anything ECE-related, and to prevent the LLM from giving
+answers outright for difficult problems, we engineered a harness giving the LLM strict guidelines
+for how to provide guidance to struggling ECE students.
 
 ## Technical approach
 
 A Raspberry Pi 5 coordinated the application experience, while an Arduino Uno
 R4 Minima drove physical expressions inside a custom 3D-printed duck enclosure.
 The tutoring flow used GPT-4o mini with UIUC ECE course and schedule context to
-guide a student toward an answer instead of immediately revealing it.
+guide a student toward an answer instead of immediately revealing it. We used Flutter
+to create a mockup of an IOS-based application, allowing full control of QuackTA from 
+the user's phone.
 
 The device also borrowed from Tamagotchi-style feedback. Wing movement, eye
 color, and eyebrow position gave the assistant a visible emotional state, so
@@ -18,15 +27,19 @@ the enclosure communicated system behavior rather than serving as decoration.
 
 ## Contributions
 
-I contributed as a hardware, AI, and integration team member alongside Raghu
-Datla, Sanjit Kumar, Amogk Mahantesh Patil, and Vikhaash Kanagavel Chithra. The
-public project record does not separate each teammate's exact
-subsystem ownership, so this case study does not claim exclusive authorship of
-the device, model workflow, application, or enclosure.
+I contributed as a hardware, AI, and integration team member alongside my friends Raghu
+Datla, Sanjit Kumar, Amogk Mahantesh Patil, and Vikhaash Kanagavel Chithra. I primarily handled
+the Arduino aspects of the project, which involved integrating all of the electronics together through
+the I2C communication protocol, linking up custom body parts for the duck's expressive movement, and
+programming all emotional states represented by said body parts. I helped out with Raspberry Pi and LLM integration
+as well, and made sure the custom 3D model for the duck was dimensioned properly - a very important part of our project!
 
 ## Takeaways
 
 The strongest part of QuackTA was the integration of physical expression,
 contextual guidance, and scheduling into one coherent object. The AI model was
 one subsystem; the interaction design depended equally on embedded control,
-mechanical presentation, and the surrounding application.
+mechanical presentation, and the surrounding application. I also learned the importance
+of time management and working under major pressure and constraints - hackathons are quite
+difficult, and even though this was my first one, I feel that this project was one of my best
+ones so far given the time and quality constraints!
