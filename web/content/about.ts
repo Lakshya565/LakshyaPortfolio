@@ -231,7 +231,7 @@ export const aboutPanels = [
   {
     rail: "work",
     title: "What I am exploring",
-    body: "I am especially interested in intelligent IoT, human-centered technology, and AI systems whose behavior can be inspected and evaluated. The common thread is building across boundaries while keeping the result understandable to the people who use and maintain it. Beyond that, I'm always looking for the next productive, but fun opportunity! If I'm not interested in the work I'm doing, regardless of how influential it may be, I'll end up looking for the next challenge that excites me.",
+    body: "I am especially interested in intelligent IoT, human-centered technology, and AI systems whose behavior can be inspected and evaluated. The common thread is building across boundaries while keeping the result understandable to the people who use and maintain it. Beyond that, I'm always looking for the next productive, but fun opportunity! If I'm not interested in the work I'm doing, I'll end up looking for the next challenge that excites me.",
     displayOrder: 60,
   },
 ] as const satisfies readonly AboutPanel[];

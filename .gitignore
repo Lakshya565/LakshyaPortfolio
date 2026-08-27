@@ -21,3 +21,5 @@ web/.desk-review/
 Thumbs.db
 .idea/
 
+
+.vercel
