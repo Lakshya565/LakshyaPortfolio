@@ -1348,7 +1348,9 @@ dd {
 
 .project-tree-root-link strong {
   color: var(--primary);
-  font-size: var(--text-subsection);
+  /* A step up the scale, not a one-off number. Still well under the page's own
+     `h1`, which is the rule the type scale exists to hold. */
+  font-size: var(--text-section);
   letter-spacing: -0.035em;
   line-height: 1.08;
 }
