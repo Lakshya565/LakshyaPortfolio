@@ -201,7 +201,7 @@ export const aboutPanels = [
   {
     rail: "now",
     title: "What I'm up to",
-    body: "At UIUC studying Computer Engineering, with an expected May 2029 graduation (or May 2028, if I can get my degree done early!). Most recently I interned at Cisco as a Software Engineer on the Industrial IoT team. I'm always building, learning, and looking for new opportunities.",
+    body: "At UIUC studying Computer Engineering, with an expected May 2029 graduation (or May 2028, if I can get my degree done early!), and minoring in Hoeft Technology & Management and most likely Math! Most recently I interned at Cisco as a Software Engineer on the Industrial IoT team. ",
     displayOrder: 10,
   },
   {
