@@ -1,4 +1,4 @@
-# Lakshya Agarwal Portfolio
+# My Personal Portfolio
 
 A static-first personal portfolio showcasing software, AI, embedded, and hardware
 projects through detailed case studies and an atmospheric sci-fi isometric desk.
@@ -9,6 +9,9 @@ isometric desk experience, route continuity, and visual system. Phase 8 now has
 an explicit input inventory; Phase 9 has a measured local audit and safe
 discovery foundation; Phase 10 has an operating runbook. Final public content,
 final-content/native-device verification, and production deployment remain gated.
+
+## Public Link
+https://lakshya-agarwal.vercel.app
 
 ## Architecture
 
