@@ -1,12 +1,9 @@
 import type { ComponentType } from "react";
 import Link from "next/link";
 
-import {
-  CaseStudyGallery,
-  CaseStudyHero,
-  CaseStudyVideos,
-} from "@/components/case-study/case-study-media";
+import { CaseStudyVideos } from "@/components/case-study/case-study-media";
 import { CaseStudyNavigation } from "@/components/case-study/case-study-navigation";
+import { CaseStudyShuffle } from "@/components/case-study/case-study-shuffle";
 import { WorkModePattern } from "@/components/project-tree/work-mode-pattern";
 import { Badge } from "@/components/ui/badge";
 import type {
@@ -21,8 +18,15 @@ function CaseStudyHeader({ project }: Readonly<{ project: CaseStudyPageData }>) 
     project.dateLabel ? { label: "Timeline", value: project.dateLabel } : null,
   ].filter((fact): fact is NonNullable<typeof fact> => fact !== null);
 
+  /* The hero and the gallery are one surface now. Ordering matters: the hero
+     asset is the one the author chose to lead with. */
+  const photos = project.hero
+    ? [project.hero, ...project.media]
+    : project.media;
+
   return (
     <header className="case-study-header">
+      <div className="case-study-header-text">
       <p className="eyebrow">{project.category}</p>
       <h1>{project.title}</h1>
       <p className="case-study-summary">{project.description}</p>
@@ -69,6 +73,11 @@ function CaseStudyHeader({ project }: Readonly<{ project: CaseStudyPageData }>) 
           ))}
         </ul>
       ) : null}
+      </div>
+
+      {/* Second column at 68rem, and below the whole text block under that,
+          which is where the hero image used to land. */}
+      <CaseStudyShuffle media={photos} />
     </header>
   );
 }
@@ -163,7 +172,6 @@ export function CaseStudyRenderer({
         <WorkModePattern tone="band" workMode={project.workMode} />
 
         <CaseStudyHeader project={project} />
-        {project.hero ? <CaseStudyHero media={project.hero} /> : null}
 
         <div className="case-study-reading-layout">
           <CaseStudyOutline
@@ -178,7 +186,6 @@ export function CaseStudyRenderer({
             <div className="case-study-content">
               <Content />
             </div>
-            <CaseStudyGallery media={project.media} />
             <CaseStudyVideos videos={project.videos} />
           </div>
         </div>

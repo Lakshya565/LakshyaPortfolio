@@ -2025,8 +2025,14 @@ dd {
 }
 
 .case-study-header {
-  max-width: 48rem;
   padding-bottom: 2rem;
+}
+
+/* Holds the reading measure on its own, so the header element is free to become
+   a grid at 68rem without dragging the prose wide with it. */
+.case-study-header-text {
+  min-width: 0;
+  max-width: 48rem;
 }
 
 .case-study-header h1 {
@@ -2083,9 +2089,87 @@ dd {
   list-style: none;
 }
 
-.case-study-hero {
-  max-width: 64rem;
-  margin-top: 1rem;
+/*
+ * The photo shuffle beside the header. See
+ * `components/case-study/case-study-shuffle.tsx` for why every image is mounted
+ * at once rather than swapped in and out.
+ *
+ * Below 68rem this is a plain block and lands under the whole header text, so
+ * there is no stacked-layout variant to write.
+ */
+.case-study-shuffle {
+  min-width: 0;
+  margin-top: 2rem;
+}
+
+/*
+ * **The fixed ratio is load-bearing.** Real project photos arrive at whatever
+ * size the camera produced, and all of them occupy this one box: without a
+ * ratio here the header would resize every time the crossfade advanced.
+ */
+.case-study-shuffle-frame {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  background: var(--surface);
+}
+
+.case-study-shuffle-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  object-fit: cover;
+  transition: opacity 900ms var(--ease-out);
+}
+
+.case-study-shuffle-image[data-active="true"] {
+  opacity: 1;
+}
+
+.case-study-shuffle-caption {
+  margin-top: 0.7rem;
+  color: var(--muted);
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+.case-study-shuffle-dots {
+  display: flex;
+  gap: 0.4rem;
+  margin-top: 0.85rem;
+  padding: 0;
+  list-style: none;
+}
+
+/* A 24px hit area around a 7px dot. The dot is the smallest mark on the page;
+   the thing you have to hit must not be. */
+.case-study-shuffle-dots button {
+  display: block;
+  width: 1.5rem;
+  height: 1.5rem;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+
+.case-study-shuffle-dots button::before {
+  display: block;
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 50%;
+  background: var(--line-strong);
+  content: "";
+  transition: background var(--duration-interaction) var(--ease-out);
+}
+
+.case-study-shuffle-dots button[aria-current]::before,
+.case-study-shuffle-dots button:hover::before {
+  background: var(--project-accent, var(--accent-green));
 }
 
 .case-study-reading-layout {
@@ -2270,7 +2354,6 @@ dd {
   line-height: 1.6;
 }
 
-.case-study-gallery,
 .case-study-video-list {
   display: grid;
   grid-template-columns: repeat(
@@ -2786,5 +2869,33 @@ dd {
   .project-tree-root-label {
     background: none;
     color: currentColor;
+  }
+}
+
+/* The header's second column. Photos only appear beside the text once there is
+   width for both; under this the shuffle is a block under the whole header. */
+@media (min-width: 68rem) {
+  .case-study-header {
+    display: grid;
+    grid-template-columns: minmax(0, 48rem) minmax(16rem, 24rem);
+    align-items: start;
+    gap: clamp(2rem, 4vw, 3.5rem);
+  }
+
+  /*
+   * Centred against the text rather than aligned to its top. The header column
+   * runs about 700px and the frame is 240: hung from the top it left a hole
+   * under it the height of the whole technologies list, which read as a photo
+   * dropped into a gap rather than as a second column.
+   */
+  .case-study-shuffle {
+    align-self: center;
+    margin-top: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .case-study-shuffle-image {
+    transition: none;
   }
 }

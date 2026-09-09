@@ -32,13 +32,30 @@ export const projects = [
         context: "The project expanded troubleshooting beyond a fixed catalog of predefined procedures.",
       },
       {
-        label: "Reported triage time",
+        label: "Triage time",
         value: "<25 min",
-        context: "The LinkedIn experience entry reports a reduction from hours to under 25 minutes as a project-level result.",
+        context: "Reduced from hours to under 25 minutes.",
       },
     ],
     videos: [],
-    assets: [],
+    assets: [
+      {
+        kind: "hero",
+        path: "/media/projects/cisco-agentic-runbook-creator/placeholder-1.svg",
+        alt: "Placeholder tile 1 for Cisco - Agentic Runbook Creator",
+        width: 1200,
+        height: 750,
+        placeholder: true,
+      },
+      {
+        kind: "gallery",
+        path: "/media/projects/cisco-agentic-runbook-creator/placeholder-2.svg",
+        alt: "Placeholder tile 2 for Cisco - Agentic Runbook Creator",
+        width: 1200,
+        height: 750,
+        placeholder: true,
+      },
+    ],
   },
   {
     slug: "repoframe",
@@ -82,7 +99,24 @@ export const projects = [
       },
     ],
     videos: [],
-    assets: [],
+    assets: [
+      {
+        kind: "hero",
+        path: "/media/projects/repoframe/placeholder-1.svg",
+        alt: "Placeholder tile 1 for RepoFrame",
+        width: 1200,
+        height: 750,
+        placeholder: true,
+      },
+      {
+        kind: "gallery",
+        path: "/media/projects/repoframe/placeholder-2.svg",
+        alt: "Placeholder tile 2 for RepoFrame",
+        width: 1200,
+        height: 750,
+        placeholder: true,
+      },
+    ],
   },
   {
     slug: "nucurrent-inventory-system",
@@ -110,9 +144,37 @@ export const projects = [
         href: "https://www.cubeconsulting.org/",
       },
     ],
-    metrics: [],
+    metrics: [
+      {
+        label: "Frontend workflows",
+        value: "4",
+        context: "Part search, check-in and check-out, barcode scanning, and label generation.",
+      },
+      {
+        label: "Replaced",
+        value: "Spreadsheets",
+        context: "Distributed part data and stock changes became one consistent source.",
+      },
+    ],
     videos: [],
-    assets: [],
+    assets: [
+      {
+        kind: "hero",
+        path: "/media/projects/nucurrent-inventory-system/placeholder-1.svg",
+        alt: "Placeholder tile 1 for NuCurrent Inventory Platform",
+        width: 1200,
+        height: 750,
+        placeholder: true,
+      },
+      {
+        kind: "gallery",
+        path: "/media/projects/nucurrent-inventory-system/placeholder-2.svg",
+        alt: "Placeholder tile 2 for NuCurrent Inventory Platform",
+        width: 1200,
+        height: 750,
+        placeholder: true,
+      },
+    ],
   },
   {
     slug: "smartlift-sleeve",
@@ -141,14 +203,42 @@ export const projects = [
         href: "https://docs.google.com/document/d/1cCzJ8lISLLhE4yzjLJxJp5p-JJJQ-S5TbfhIbs_qMEc/edit?usp=sharing",
       },
     ],
-    metrics: [],
+    metrics: [
+      {
+        label: "Team size",
+        value: "3",
+        context: "An ECE 145 project at UIUC.",
+      },
+      {
+        label: "Implementation",
+        value: "No firmware",
+        context: "Hardware logic only: no app, smartwatch, or microcontroller in the loop.",
+      },
+    ],
     videos: [
       {
         label: "Watch the project demo",
         href: "https://youtu.be/zs9B30EeIYc?si=GJ0-GUet2lZYPIlu&t=309",
       },
     ],
-    assets: [],
+    assets: [
+      {
+        kind: "hero",
+        path: "/media/projects/smartlift-sleeve/placeholder-1.svg",
+        alt: "Placeholder tile 1 for SmartLift Sleeve",
+        width: 1200,
+        height: 750,
+        placeholder: true,
+      },
+      {
+        kind: "gallery",
+        path: "/media/projects/smartlift-sleeve/placeholder-2.svg",
+        alt: "Placeholder tile 2 for SmartLift Sleeve",
+        width: 1200,
+        height: 750,
+        placeholder: true,
+      },
+    ],
   },
   {
     slug: "quackta",
@@ -171,9 +261,37 @@ export const projects = [
     contentStatus: "reviewed",
     displayOrder: 50,
     links: [],
-    metrics: [],
+    metrics: [
+      {
+        label: "Team size",
+        value: "5",
+        context: "Built during UIUC IEEE's Bit-by-Bit Hardware Hackathon, March 28 to 29, 2026.",
+      },
+      {
+        label: "Tutoring model",
+        value: "GPT-4o mini",
+        context: "Given UIUC ECE course and schedule context, and harnessed to guide rather than answer.",
+      },
+    ],
     videos: [],
-    assets: [],
+    assets: [
+      {
+        kind: "hero",
+        path: "/media/projects/quackta/placeholder-1.svg",
+        alt: "Placeholder tile 1 for QuackTA",
+        width: 1200,
+        height: 750,
+        placeholder: true,
+      },
+      {
+        kind: "gallery",
+        path: "/media/projects/quackta/placeholder-2.svg",
+        alt: "Placeholder tile 2 for QuackTA",
+        width: 1200,
+        height: 750,
+        placeholder: true,
+      },
+    ],
   },
   {
     slug: "lucky-arduino",
@@ -224,7 +342,7 @@ export const projects = [
       {
         label: "Video views",
         value: "50K+",
-        context: "Reported across the Lucky Arduino channel.",
+        context: "Across the Lucky Arduino channel.",
       },
       {
         label: "Documented builds",
@@ -239,10 +357,27 @@ export const projects = [
       {
         label: "Subscribers",
         value: "200+",
-        context: "Reported for the Lucky Arduino channel.",
+        context: "On the Lucky Arduino channel.",
       },
     ],
-    assets: [],
+    assets: [
+      {
+        kind: "hero",
+        path: "/media/projects/lucky-arduino/placeholder-1.svg",
+        alt: "Placeholder tile 1 for Lucky Arduino",
+        width: 1200,
+        height: 750,
+        placeholder: true,
+      },
+      {
+        kind: "gallery",
+        path: "/media/projects/lucky-arduino/placeholder-2.svg",
+        alt: "Placeholder tile 2 for Lucky Arduino",
+        width: 1200,
+        height: 750,
+        placeholder: true,
+      },
+    ],
     videos: [],
   },
   {
@@ -266,8 +401,30 @@ export const projects = [
         value: "2nd place",
         context: "Engineering and product pitch among more than 30 projects.",
       },
+      {
+        label: "Team size",
+        value: "3",
+        context: "Built for the PLTW Engineering Design and Development capstone.",
+      },
     ],
-    assets: [],
+    assets: [
+      {
+        kind: "hero",
+        path: "/media/projects/backbuddy/placeholder-1.svg",
+        alt: "Placeholder tile 1 for BackBuddy",
+        width: 1200,
+        height: 750,
+        placeholder: true,
+      },
+      {
+        kind: "gallery",
+        path: "/media/projects/backbuddy/placeholder-2.svg",
+        alt: "Placeholder tile 2 for BackBuddy",
+        width: 1200,
+        height: 750,
+        placeholder: true,
+      },
+    ],
     videos: [],
   },
   {
@@ -285,8 +442,36 @@ export const projects = [
     contentStatus: "reviewed",
     displayOrder: 120,
     links: [],
-    metrics: [],
-    assets: [],
+    metrics: [
+      {
+        label: "Response latency",
+        value: "<100 ms",
+        context: "Classification in real time rather than from preloaded data.",
+      },
+      {
+        label: "Interfaces",
+        value: "2",
+        context: "A custom API alongside the Spotify Web API, covering deprecated functions.",
+      },
+    ],
+    assets: [
+      {
+        kind: "hero",
+        path: "/media/projects/neurify/placeholder-1.svg",
+        alt: "Placeholder tile 1 for Neurify",
+        width: 1200,
+        height: 750,
+        placeholder: true,
+      },
+      {
+        kind: "gallery",
+        path: "/media/projects/neurify/placeholder-2.svg",
+        alt: "Placeholder tile 2 for Neurify",
+        width: 1200,
+        height: 750,
+        placeholder: true,
+      },
+    ],
     videos: [],
   },
   {
@@ -310,8 +495,36 @@ export const projects = [
         href: "https://github.com/Lakshya565/agri-sense",
       },
     ],
-    metrics: [],
-    assets: [],
+    metrics: [
+      {
+        label: "Sensor poll",
+        value: "10 s",
+        context: "An API automates collection on a ten-second trigger.",
+      },
+      {
+        label: "Sensor types",
+        value: "4",
+        context: "Temperature, heat, soil quality, and moisture.",
+      },
+    ],
+    assets: [
+      {
+        kind: "hero",
+        path: "/media/projects/agrisense/placeholder-1.svg",
+        alt: "Placeholder tile 1 for AgriSense",
+        width: 1200,
+        height: 750,
+        placeholder: true,
+      },
+      {
+        kind: "gallery",
+        path: "/media/projects/agrisense/placeholder-2.svg",
+        alt: "Placeholder tile 2 for AgriSense",
+        width: 1200,
+        height: 750,
+        placeholder: true,
+      },
+    ],
     videos: [],
   },
   {
@@ -341,8 +554,30 @@ export const projects = [
         value: "User trials",
         context: "Tested beyond the lab through real-world deployment and user trials.",
       },
+      {
+        label: "Team size",
+        value: "2",
+        context: "Developed with one partner through COSMOS.",
+      },
     ],
-    assets: [],
+    assets: [
+      {
+        kind: "hero",
+        path: "/media/projects/risenrun-wifi-alarm-clock/placeholder-1.svg",
+        alt: "Placeholder tile 1 for COSMOS RiseNRun",
+        width: 1200,
+        height: 750,
+        placeholder: true,
+      },
+      {
+        kind: "gallery",
+        path: "/media/projects/risenrun-wifi-alarm-clock/placeholder-2.svg",
+        alt: "Placeholder tile 2 for COSMOS RiseNRun",
+        width: 1200,
+        height: 750,
+        placeholder: true,
+      },
+    ],
     videos: [],
   },
 ] as const satisfies readonly Project[];

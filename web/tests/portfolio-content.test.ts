@@ -110,14 +110,21 @@ describe("portfolio content validation", () => {
     expect(issues).toContain("deskHotspots.anime: missing motif anime");
   });
 
-  it("accepts the repository content in release mode", async () => {
+  /*
+   * The repository is release-clean *except* for the placeholder media every
+   * project currently carries, which release mode is supposed to reject. The
+   * assertion is therefore "nothing but placeholders is wrong" rather than
+   * "nothing is wrong": it holds today, and it still holds on the day the real
+   * photos land and the list empties.
+   */
+  it("finds nothing but placeholder media wrong with the repository content in release mode", async () => {
     const issues = await getPortfolioContentValidationIssues(portfolioContent, {
       mode: "release",
       webRoot: process.cwd(),
       checkFiles: false,
     });
 
-    expect(issues).toEqual([]);
+    expect(issues.filter((issue) => !/placeholder/.test(issue))).toEqual([]);
   });
 
   it("accepts a release-ready minimal and rich content set", async () => {

@@ -108,7 +108,7 @@ describe("case-study renderer", () => {
     expect(html).not.toContain("case-study-technologies");
     expect(html).not.toContain("case-study-links");
     expect(html).not.toContain("case-study-metrics");
-    expect(html).not.toContain("case-study-gallery");
+    expect(html).not.toContain("case-study-shuffle");
     expect(html).not.toContain("case-study-video-list");
     expect(html).not.toContain('aria-label="Adjacent projects"');
     expect(html).not.toContain('aria-label="Case study sections"');
@@ -141,6 +141,12 @@ describe("case-study renderer", () => {
     expect(html).toContain('width="1200"');
     expect(html).toContain('height="675"');
     expect(html).toContain('alt="Representative architecture diagram"');
+    /* Photos are one surface in the header now, hero first. The dots only exist
+       because there is more than one. */
+    expect(html).toContain('class="case-study-shuffle-frame"');
+    expect(html).toContain('aria-label="Choose a photo"');
+    expect(html).toContain('aria-label="Show photo 1 of 2"');
+    expect(html).not.toContain('class="case-study-gallery"');
     expect(html).toContain('href="https://example.com/video"');
     expect(html).toContain('href="https://example.com/technical-tour"');
     expect(html).toContain('class="case-study-video-list"');

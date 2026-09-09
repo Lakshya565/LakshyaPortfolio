@@ -469,12 +469,35 @@ header of the project's own page.
 | `role` | The role line |
 | `category` | The category chip |
 | `technologies` | The tech list |
-| `metrics` | The numbers, each with a `label`, `value`, and `context` |
+| `metrics` | The **At a glance / Project facts** cards, each with a `label`, `value`, and `context` |
+| `assets` | The photos in the header shuffle, in order. The first one shown is `kind: "hero"` |
 | `links` | The outbound buttons (repo, demo, video) |
 | `workMode` | **Which branch of the tree the project hangs from** — `software`, `hardware`, or `hybrid` |
 | `displayOrder` | Position within the branch. Must be unique across all projects |
 | `publication` | `draft` hides the project from a release build |
 | `slug` | The URL, **and** the case-study filename it must match |
+
+**Every project carries at least two facts.** The "At a glance" block hides
+itself when `metrics` is empty, which used to mean it was missing from seven of
+the ten pages. Nothing enforces the minimum, so if you add a project, write it
+two facts. They should be things the case study already says — a team size, a
+count, a latency — not new claims.
+
+Facts are stated, never sourced. A number's provenance ("reported on LinkedIn",
+"according to the report") does not belong on the page; if you believe the
+number, write it as a fact, and if you do not, leave it out.
+
+**The photos are placeholders.** Every project currently points at two generated
+tiles in `web/public/media/projects/<slug>/placeholder-*.svg`, flagged
+`placeholder: true`. To replace them: drop real files in that same folder, swap
+the `path`, `alt`, `width` and `height`, and delete the `placeholder: true` line.
+Until you do, `npm run validate:content:release` fails and names every one of
+them — that is the reminder, and it is deliberate. `npm run check` and
+`npm run build` are unaffected.
+
+The frame is 16:10 and crops with `object-fit: cover`, so a photo of any shape
+will fit without moving the layout, but anything important should sit near the
+middle of the image.
 
 `slug` is load-bearing in two directions: it is the URL at `/projects/<slug>`,
 and the validator requires `web/content/case-studies/<slug>.mdx` to exist. It

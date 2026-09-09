@@ -5,55 +5,24 @@ import type {
   CaseStudyVideoData,
 } from "@/lib/content/case-study-normalization";
 
-function ProjectFigure({
-  media,
-  preload = false,
-}: Readonly<{
-  media: CaseStudyMediaData;
-  preload?: boolean;
-}>) {
+/**
+ * The one figure left on the page: a video thumbnail. Project photos moved to
+ * `case-study-shuffle.tsx`, which stacks them rather than laying them out.
+ */
+function ProjectFigure({ media }: Readonly<{ media: CaseStudyMediaData }>) {
   return (
     <figure className="case-study-figure" data-media-kind={media.kind}>
       <Image
         alt={media.alt}
         className="case-study-image"
         height={media.height}
-        preload={preload}
-        sizes="(min-width: 56rem) 48rem, (min-width: 40rem) calc(100vw - 6rem), calc(100vw - 2rem)"
+        sizes="(min-width: 56rem) 24rem, calc(100vw - 2rem)"
         src={media.src}
         unoptimized={media.src.endsWith(".svg")}
         width={media.width}
       />
       {media.caption ? <figcaption>{media.caption}</figcaption> : null}
     </figure>
-  );
-}
-
-export function CaseStudyHero({ media }: Readonly<{ media: CaseStudyMediaData }>) {
-  return (
-    <div className="case-study-hero">
-      <ProjectFigure media={media} preload />
-    </div>
-  );
-}
-
-export function CaseStudyGallery({
-  media,
-}: Readonly<{ media: readonly CaseStudyMediaData[] }>) {
-  if (media.length === 0) {
-    return null;
-  }
-
-  return (
-    <section aria-labelledby="project-media-heading" className="case-study-section">
-      <p className="eyebrow">Artifacts</p>
-      <h2 id="project-media-heading">Project media</h2>
-      <div className="case-study-gallery">
-        {media.map((item) => (
-          <ProjectFigure key={item.src} media={item} />
-        ))}
-      </div>
-    </section>
   );
 }
 

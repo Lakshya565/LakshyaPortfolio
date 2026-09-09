@@ -24,8 +24,12 @@ describe("case-study normalization", () => {
     const pageData = toCaseStudyPageData(getCaseStudy("repoframe"));
 
     expect(pageData.metrics).toHaveLength(2);
-    expect(pageData.media).toEqual([]);
-    expect(pageData.hero).toBeNull();
+    /* Every project carries placeholder tiles until real media replaces them:
+       the first is the hero, the rest are gallery. Assert the split rather than
+       the count, so swapping in real photos does not break this. */
+    expect(pageData.hero).not.toBeNull();
+    expect(pageData.hero?.kind).toBe("hero");
+    expect(pageData.media.every((item) => item.kind !== "hero")).toBe(true);
     expect(pageData.videos).toEqual([]);
     expect(pageData).not.toHaveProperty("publication");
     expect(pageData).not.toHaveProperty("contentStatus");
