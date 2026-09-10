@@ -141,11 +141,15 @@ describe("case-study renderer", () => {
     expect(html).toContain('width="1200"');
     expect(html).toContain('height="675"');
     expect(html).toContain('alt="Representative architecture diagram"');
-    /* Photos are one surface in the header now, hero first. The dots only exist
-       because there is more than one. */
+    /* Photos are one surface in the header now, hero first. The progress bar
+       only exists because there is more than one, it carries one segment per
+       photo, and the first is the one filling. */
     expect(html).toContain('class="case-study-shuffle-frame"');
     expect(html).toContain('aria-label="Choose a photo"');
     expect(html).toContain('aria-label="Show photo 1 of 2"');
+    expect(html.match(/class="case-study-shuffle-fill"/g)).toHaveLength(2);
+    expect(html).toContain('data-state="current"');
+    expect(html).toContain('data-state="upcoming"');
     expect(html).not.toContain('class="case-study-gallery"');
     expect(html).toContain('href="https://example.com/video"');
     expect(html).toContain('href="https://example.com/technical-tour"');

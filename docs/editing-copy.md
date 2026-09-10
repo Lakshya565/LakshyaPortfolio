@@ -470,7 +470,7 @@ header of the project's own page.
 | `category` | The category chip |
 | `technologies` | The tech list |
 | `metrics` | The **At a glance / Project facts** cards, each with a `label`, `value`, and `context` |
-| `assets` | The photos in the header shuffle, in order. The first one shown is `kind: "hero"` |
+| `assets` | The photos in the header shuffle, in order. The first one shown is `kind: "hero"`. The story-style progress bar takes one segment per photo, so the count is visible on the page — a project with eight photos gets eight slivers |
 | `links` | The outbound buttons (repo, demo, video) |
 | `workMode` | **Which branch of the tree the project hangs from** — `software`, `hardware`, or `hybrid` |
 | `displayOrder` | Position within the branch. Must be unique across all projects |
