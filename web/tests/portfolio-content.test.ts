@@ -156,7 +156,12 @@ describe("portfolio content validation", () => {
             ...project,
             publication: "published",
             contentStatus: "reviewed",
-            assets: [],
+            /* Drop placeholders, keep everything else. Blanking `assets`
+               outright was fine while placeholders were the only assets, but
+               real ones are load-bearing now: a video's `thumbnailPath` has to
+               resolve to an asset, so an empty list fails a rule that has
+               nothing to do with what this test is asserting. */
+            assets: project.assets.filter((asset) => !asset.placeholder),
           }) as Project,
       ),
     } satisfies PortfolioContent;

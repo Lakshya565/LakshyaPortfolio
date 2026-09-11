@@ -4,6 +4,7 @@ import { type CSSProperties, useEffect, useId, useRef, useState } from "react";
 import Image from "next/image";
 import { useReducedMotion } from "motion/react";
 
+import { Backlight } from "@/components/ui/backlight";
 import type { CaseStudyMediaData } from "@/lib/content/case-study-normalization";
 
 /**
@@ -19,6 +20,16 @@ import type { CaseStudyMediaData } from "@/lib/content/case-study-normalization"
  * image mid-fade and flash; changing an opacity cannot. It also means the frame
  * cannot resize between slides, because all of them occupy it at once.
  *
+ * **Nothing is cropped.** These are phone photos: the set runs from 9:16
+ * portrait to 2:1 landscape, and most projects mix both, so a fixed box with
+ * `object-fit: cover` would guillotine half of them. Instead each photo is
+ * `contain`ed, and a blurred, enlarged copy of that same photo fills whatever
+ * is left over — the frame is always full, and the leftover is made of the
+ * picture rather than of a grey bar.
+ *
+ * The frame's ratio is still fixed for the whole run, for the resize reason
+ * above, but it is **this project's** ratio: see `frameRatio`.
+ *
  * The dash between "shows one photo" and "is usable" is the pause: the cycle
  * stops on hover and on `focus-within`, so a slide is never moving out from
  * under a pointer or a keyboard focus ring.
@@ -33,6 +44,36 @@ import type { CaseStudyMediaData } from "@/lib/content/case-study-normalization"
 
 /** Long enough to look at a photo, short enough to see a second one. */
 const slideDuration = 5000;
+
+/* Portrait phones and landscape cameras cannot share one box without one of
+   them being stranded in a wide margin. The bounds are the tallest and widest
+   frames the header column can carry without either dwarfing the text beside
+   it or squashing to a letterbox. */
+const narrowestFrame = 0.82;
+const widestFrame = 1.6;
+
+/**
+ * One aspect ratio for a whole set of photos: the geometric mean of theirs.
+ *
+ * The mean has to be geometric rather than arithmetic because these are
+ * ratios — 2:1 and 1:2 are equal and opposite, and should average to square.
+ * Arithmetically they average to 1.25, which tilts every mixed set landscape
+ * and pushes the portraits into pillarboxes.
+ */
+function frameRatio(media: readonly CaseStudyMediaData[]) {
+  const ratios = media
+    .map((item) => item.width / item.height)
+    .filter((ratio) => Number.isFinite(ratio) && ratio > 0);
+
+  if (ratios.length === 0) {
+    return widestFrame;
+  }
+
+  const mean = Math.exp(
+    ratios.reduce((total, ratio) => total + Math.log(ratio), 0) / ratios.length,
+  );
+  return Math.min(widestFrame, Math.max(narrowestFrame, Number(mean.toFixed(3))));
+}
 
 export function CaseStudyShuffle({
   media,
@@ -74,6 +115,7 @@ export function CaseStudyShuffle({
   }
 
   const current = media[index] ?? media[0];
+  const ratio = frameRatio(media);
 
   /* A segment is one of three things, and the CSS reads this rather than a
      class per state: filled behind the playhead, filling on it, empty ahead. */
@@ -101,25 +143,51 @@ export function CaseStudyShuffle({
         Project photos
       </h2>
 
-      <div className="case-study-shuffle-frame">
+      {/* The halo is made of the photo's own colours — see the class comment in
+          `globals.css`. It has to wrap the frame rather than sit inside it: the
+          frame clips to its own rounded corners, which would clip the glow. */}
+      <Backlight className="case-study-backlight">
+      <div
+        className="case-study-shuffle-frame"
+        style={{ "--shuffle-ratio": ratio } as CSSProperties}
+      >
         {media.map((item, itemIndex) => (
-          <Image
-            alt={item.alt}
-            aria-hidden={itemIndex === index ? undefined : true}
-            className="case-study-shuffle-image"
+          <div
+            className="case-study-shuffle-slide"
             data-active={itemIndex === index ? "true" : undefined}
-            height={item.height}
             key={item.src}
-            /* Only the first is worth blocking on: the rest are behind a fade
-               that has not started yet when the page paints. */
-            preload={itemIndex === 0}
-            sizes="(min-width: 68rem) 22rem, (min-width: 40rem) calc(100vw - 6rem), calc(100vw - 2rem)"
-            src={item.src}
-            unoptimized={item.src.endsWith(".svg")}
-            width={item.width}
-          />
+          >
+            {/* The fill behind a photo that does not cover the frame. Asked for
+                at 96px and then blown up: a thumbnail is both cheaper to fetch
+                and already halfway to blurred, so the filter has less to do. */}
+            <Image
+              alt=""
+              aria-hidden="true"
+              className="case-study-shuffle-backdrop"
+              height={item.height}
+              sizes="96px"
+              src={item.src}
+              unoptimized={item.src.endsWith(".svg")}
+              width={item.width}
+            />
+            <Image
+              alt={item.alt}
+              aria-hidden={itemIndex === index ? undefined : true}
+              className="case-study-shuffle-image"
+              data-active={itemIndex === index ? "true" : undefined}
+              height={item.height}
+              /* Only the first is worth blocking on: the rest are behind a fade
+                 that has not started yet when the page paints. */
+              preload={itemIndex === 0}
+              sizes="(min-width: 68rem) 24rem, (min-width: 40rem) calc(100vw - 6rem), calc(100vw - 2rem)"
+              src={item.src}
+              unoptimized={item.src.endsWith(".svg")}
+              width={item.width}
+            />
+          </div>
         ))}
       </div>
+      </Backlight>
 
       {media.length > 1 ? (
         <ul aria-label="Choose a photo" className="case-study-shuffle-progress">

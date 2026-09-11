@@ -470,12 +470,30 @@ header of the project's own page.
 | `category` | The category chip |
 | `technologies` | The tech list |
 | `metrics` | The **At a glance / Project facts** cards, each with a `label`, `value`, and `context` |
-| `assets` | The photos in the header shuffle, in order. The first one shown is `kind: "hero"`. The story-style progress bar takes one segment per photo, so the count is visible on the page — a project with eight photos gets eight slivers |
+| `assets` | The photos in the header shuffle, in order. The first one shown is `kind: "hero"`. The story-style progress bar takes one segment per photo, so the count is visible on the page — a project with eight photos gets eight slivers. `kind: "video-thumbnail"` assets are not photos: they are the title cards the video cards use, and the shuffle skips them |
 | `links` | The outbound buttons (repo, demo, video) |
 | `workMode` | **Which branch of the tree the project hangs from** — `software`, `hardware`, or `hybrid` |
 | `displayOrder` | Position within the branch. Must be unique across all projects |
 | `publication` | `draft` hides the project from a release build |
 | `slug` | The URL, **and** the case-study filename it must match |
+
+### Adding photos
+
+Drop originals anywhere outside the repo and convert them in — phone photos are
+5MB each and carry GPS coordinates in their EXIF, neither of which belongs in
+git. The conversion (`sharp`: auto-rotate, cap the long edge at 1800, WebP,
+strip metadata) is what produces the files under
+`public/media/projects/<slug>/`, and the `width`/`height` in `assets` must match
+what it wrote.
+
+**You do not have to crop anything to a shape.** The header frame takes one
+aspect ratio per project, computed from that project's own photos — the
+geometric mean of their ratios, clamped between 0.82 and 1.6 — and each photo is
+`contain`ed inside it with a blurred copy of itself filling the remainder.
+Portrait and landscape can sit in the same set. What that does mean is that a
+project of two photos at opposite extremes (a 9:16 portrait and a 2:1 panorama)
+gives both of them a lot of blur to sit in, so a set that leans one way looks
+tighter than one that is split.
 
 **Every project carries at least two facts.** The "At a glance" block hides
 itself when `metrics` is empty, which used to mean it was missing from seven of

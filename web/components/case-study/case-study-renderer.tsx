@@ -25,7 +25,13 @@ function CaseStudyHeader({ project }: Readonly<{ project: CaseStudyPageData }>) 
     : project.media;
 
   return (
-    <header className="case-study-header">
+    /* Two projects have no photographs at all, and the second column must not
+       be reserved for them — an empty 24rem gutter beside the text is exactly
+       the hole the shuffle was built to fill. */
+    <header
+      className="case-study-header"
+      data-has-media={photos.length > 0 ? "true" : undefined}
+    >
       <div className="case-study-header-text">
       <p className="eyebrow">{project.category}</p>
       <h1>{project.title}</h1>

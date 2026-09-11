@@ -2103,31 +2103,84 @@ dd {
 }
 
 /*
+ * Magic UI's `Backlight` (`components/ui/backlight.tsx`), which every image on
+ * the site is wrapped in. It blurs the element, saturates the blur four times
+ * over, and composites the crisp original back on top — so the halo is made of
+ * the photo's own colours rather than a colour we picked. A dim photo glows
+ * dimly, which is the honest behaviour and the reason it was worth a filter
+ * instead of the `box-shadow` the tree's branch chips use.
+ *
+ * Two rules it needs from us:
+ *
+ * The component holds its filter in a `width="0" height="0"` `<svg>`, and an
+ * inline replaced element still sits on a line box — zero-sized or not, it
+ * would push the frame down by a line of leading. `display: block` gives it no
+ * line box to sit on.
+ *
+ * `filter` establishes a containing block, so the wrapper needs `min-width: 0`
+ * to keep collapsing inside the header grid and the video grid.
+ */
+.case-study-backlight {
+  min-width: 0;
+}
+
+.case-study-backlight > svg {
+  display: block;
+}
+
+/*
  * **The fixed ratio is load-bearing.** Real project photos arrive at whatever
  * size the camera produced, and all of them occupy this one box: without a
  * ratio here the header would resize every time the crossfade advanced.
  */
 .case-study-shuffle-frame {
   position: relative;
-  aspect-ratio: 16 / 10;
+  /* Set per project by the component, from its own photos. See `frameRatio`. */
+  aspect-ratio: var(--shuffle-ratio, 1.6);
   overflow: hidden;
   border: 1px solid var(--line);
   border-radius: 1rem;
   background: var(--surface);
 }
 
+.case-study-shuffle-slide {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 900ms var(--ease-out);
+}
+
+.case-study-shuffle-slide[data-active="true"] {
+  opacity: 1;
+}
+
+/*
+ * `contain`, not `cover`: a phone photo in a frame that is not its shape must
+ * lose its edges or keep them, and on a page about the work it keeps them.
+ */
 .case-study-shuffle-image {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
-  opacity: 0;
-  object-fit: cover;
-  transition: opacity 900ms var(--ease-out);
+  object-fit: contain;
 }
 
-.case-study-shuffle-image[data-active="true"] {
-  opacity: 1;
+/*
+ * What fills the rest. An enlarged, blurred copy of the same photo, so a
+ * portrait shot sits in a wash of its own colour rather than in two grey bars.
+ * `scale` past the frame because a blur's own edge is soft and would otherwise
+ * show as a pale seam inside the border.
+ */
+.case-study-shuffle-backdrop {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.5;
+  object-fit: cover;
+  filter: blur(18px) saturate(1.3);
+  transform: scale(1.2);
 }
 
 /*
@@ -2410,11 +2463,16 @@ dd {
   line-height: 1.6;
 }
 
+/*
+ * `auto-fit` collapses the empty tracks, so a project with one video still
+ * gets one full-width card while Lucky Arduino's eighteen pack three-up
+ * instead of running nine rows down the page.
+ */
 .case-study-video-list {
   display: grid;
   grid-template-columns: repeat(
     auto-fit,
-    minmax(min(100%, 18rem), 1fr)
+    minmax(min(100%, 13rem), 1fr)
   );
   gap: 1.25rem;
   margin-top: 1.5rem;
@@ -2931,7 +2989,9 @@ dd {
 /* The header's second column. Photos only appear beside the text once there is
    width for both; under this the shuffle is a block under the whole header. */
 @media (min-width: 68rem) {
-  .case-study-header {
+  /* Only when there is something to put in it: two projects have no photos,
+     and for those the header stays a single block. */
+  .case-study-header[data-has-media="true"] {
     display: grid;
     grid-template-columns: minmax(0, 48rem) minmax(16rem, 24rem);
     align-items: start;
