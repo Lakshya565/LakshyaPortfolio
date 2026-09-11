@@ -21,7 +21,10 @@ function ProjectFigure({ media }: Readonly<{ media: CaseStudyMediaData }>) {
           alt={media.alt}
           className="case-study-image"
           height={media.height}
-          sizes="(min-width: 56rem) 24rem, calc(100vw - 2rem)"
+          /* Must match `.case-study-video-link`'s max-width, not the old 24rem
+           guess: a lone card fills its track, and under-asking here served a
+           288px image into a 766px box. */
+        sizes="(min-width: 56rem) 32rem, calc(100vw - 2rem)"
           src={media.src}
           unoptimized={media.src.endsWith(".svg")}
           width={media.width}

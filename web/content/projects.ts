@@ -37,7 +37,13 @@ export const projects = [
         context: "Reduced from hours to under 25 minutes.",
       },
     ],
-    videos: [],
+    videos: [
+      {
+        label: "Watch the ARC demo",
+        href: "https://www.youtube.com/watch?v=zgIBykCVlzA",
+        thumbnailPath: "/media/projects/cisco-agentic-runbook-creator/video-arc-demo.webp",
+      },
+    ],
     assets: [
       {
         kind: "hero",
@@ -64,6 +70,14 @@ export const projects = [
         caption: "We all went out to see The Odyssey together!",
         width: 1800,
         height: 1350,
+        placeholder: false,
+      },
+      {
+        kind: "video-thumbnail",
+        path: "/media/projects/cisco-agentic-runbook-creator/video-arc-demo.webp",
+        alt: "A slide titled Agentic Runbook Creator Scenario, diagramming OT architects handing a problem to ARC, which diagnoses it, automates the process and verifies the solution inside twenty minutes of downtime",
+        width: 480,
+        height: 270,
         placeholder: false,
       },
     ],

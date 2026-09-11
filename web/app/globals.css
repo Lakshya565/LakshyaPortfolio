@@ -2510,9 +2510,12 @@ dd {
   line-height: 1.55;
 }
 
+/* Capped so a single video does not stretch a 16:9 thumbnail across the whole
+   reading column — and the cap is the channel card's, so the two agree. */
 .case-study-video-link {
   display: grid;
   gap: 0.75rem;
+  max-width: 32rem;
   color: var(--primary);
   font-weight: 600;
   text-decoration: none;
