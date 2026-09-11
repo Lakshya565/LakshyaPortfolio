@@ -124,6 +124,16 @@ const projectVideoSchema = z.object({
   thumbnailPath: projectAssetSchema.shape.path.optional(),
 });
 
+/* One card standing in for a whole body of work published elsewhere. The logo
+   reuses the asset path rule, so it is held to the same `/media/projects/…`
+   shape as every other image. */
+const projectChannelSchema = z.object({
+  label: nonEmptyText,
+  href: webUrl,
+  logoPath: projectAssetSchema.shape.path,
+  blurb: nonEmptyText,
+});
+
 const projectBaseSchema = z.object({
   slug: z.enum(projectSlugs),
   title: nonEmptyText,
@@ -141,6 +151,7 @@ const projectBaseSchema = z.object({
   metrics: z.array(projectMetricSchema),
   assets: z.array(projectAssetSchema),
   videos: z.array(projectVideoSchema),
+  channel: projectChannelSchema.optional(),
 });
 
 const skillGroupSchema = z.object({

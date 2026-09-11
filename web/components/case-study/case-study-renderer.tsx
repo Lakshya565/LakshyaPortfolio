@@ -1,7 +1,10 @@
 import type { ComponentType } from "react";
 import Link from "next/link";
 
-import { CaseStudyVideos } from "@/components/case-study/case-study-media";
+import {
+  CaseStudyChannel,
+  CaseStudyVideos,
+} from "@/components/case-study/case-study-media";
 import { CaseStudyNavigation } from "@/components/case-study/case-study-navigation";
 import { CaseStudyShuffle } from "@/components/case-study/case-study-shuffle";
 import { WorkModePattern } from "@/components/project-tree/work-mode-pattern";
@@ -193,6 +196,9 @@ export function CaseStudyRenderer({
               <Content />
             </div>
             <CaseStudyVideos videos={project.videos} />
+            {project.channel ? (
+              <CaseStudyChannel channel={project.channel} />
+            ) : null}
           </div>
         </div>
 

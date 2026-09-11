@@ -28,6 +28,7 @@ const minimalProject: CaseStudyPageData = {
   hero: null,
   media: [],
   videos: [],
+  channel: null,
 };
 
 const richProject: CaseStudyPageData = {

@@ -211,6 +211,21 @@ function getProjectCrossRecordIssues(projects: readonly Project[]) {
       );
     }
 
+    if (project.channel) {
+      const logo = project.assets.find(
+        (asset) => asset.path === project.channel?.logoPath,
+      );
+      if (!logo) {
+        issues.push(
+          `projects.${project.slug}: channel logo is missing from assets (${project.channel.logoPath})`,
+        );
+      } else if (logo.kind !== "video-thumbnail") {
+        issues.push(
+          `projects.${project.slug}: channel logo asset must use kind video-thumbnail (${project.channel.logoPath})`,
+        );
+      }
+    }
+
     for (const video of project.videos) {
       if (!video.thumbnailPath) {
         continue;
@@ -230,14 +245,19 @@ function getProjectCrossRecordIssues(projects: readonly Project[]) {
       }
     }
 
-    const referencedThumbnailSet = new Set(referencedThumbnailPaths);
+    /* A channel logo is a `video-thumbnail` too — it is artwork for a link out
+       to video — so it counts as claimed and must not trip the orphan rule. */
+    const referencedThumbnailSet = new Set([
+      ...referencedThumbnailPaths,
+      ...(project.channel ? [project.channel.logoPath] : []),
+    ]);
     for (const asset of project.assets) {
       if (
         asset.kind === "video-thumbnail" &&
         !referencedThumbnailSet.has(asset.path)
       ) {
         issues.push(
-          `projects.${project.slug}: video-thumbnail asset is not assigned to a video (${asset.path})`,
+          `projects.${project.slug}: video-thumbnail asset is not assigned to a video or channel (${asset.path})`,
         );
       }
     }

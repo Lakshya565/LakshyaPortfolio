@@ -122,6 +122,21 @@ type ProjectVideo = Readonly<{
   thumbnailPath?: string;
 }>;
 
+/**
+ * A body of work that lives somewhere else and is too big to list.
+ *
+ * Lucky Arduino is fifty-odd videos: enumerating them buried the page, and
+ * linking one of them misrepresents what the project is. This is the third
+ * option — one card pointing at the whole channel. `logoPath` must name an
+ * asset on the same project, the way a video's thumbnail does.
+ */
+type ProjectChannel = Readonly<{
+  label: string;
+  href: string;
+  logoPath: string;
+  blurb: string;
+}>;
+
 type ProjectBase = Readonly<{
   slug: ProjectSlug;
   title: string;
@@ -139,6 +154,7 @@ type ProjectBase = Readonly<{
   metrics: readonly ProjectMetric[];
   assets: readonly ProjectAsset[];
   videos: readonly ProjectVideo[];
+  channel?: ProjectChannel;
 }>;
 
 export type Project = ProjectBase;

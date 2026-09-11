@@ -2,6 +2,7 @@ import Image from "next/image";
 
 import { Backlight } from "@/components/ui/backlight";
 import type {
+  CaseStudyChannelData,
   CaseStudyMediaData,
   CaseStudyVideoData,
 } from "@/lib/content/case-study-normalization";
@@ -46,6 +47,49 @@ function CaseStudyVideoCard({ video }: Readonly<{ video: CaseStudyVideoData }>) 
         <span className="sr-only"> (opens in a new tab)</span>
       </span>
     </a>
+  );
+}
+
+/**
+ * One card for a whole channel, for a project whose output is the channel
+ * rather than any single video. The logo is the channel's own artwork, served
+ * from this site rather than hotlinked.
+ */
+export function CaseStudyChannel({
+  channel,
+}: Readonly<{ channel: CaseStudyChannelData }>) {
+  return (
+    <section aria-labelledby="project-channel-heading" className="case-study-section">
+      <p className="eyebrow">Channel</p>
+      <h2 id="project-channel-heading">Watch the channel</h2>
+      <a
+        className="case-study-channel"
+        href={channel.href}
+        rel="noreferrer noopener"
+        target="_blank"
+      >
+        <Backlight blur={14} className="case-study-backlight case-study-channel-art">
+          <Image
+            alt={channel.logo.alt}
+            className="case-study-channel-logo"
+            height={channel.logo.height}
+            sizes="7rem"
+            src={channel.logo.src}
+            width={channel.logo.width}
+          />
+        </Backlight>
+        <span className="case-study-channel-text">
+          <span className="case-study-channel-name">
+            {channel.label}
+            <span aria-hidden="true"> ↗</span>
+            <span className="sr-only"> (opens in a new tab)</span>
+          </span>
+          {channel.blurb ? (
+            <span className="case-study-channel-blurb">{channel.blurb}</span>
+          ) : null}
+        </span>
+      </a>
+    </section>
   );
 }
 

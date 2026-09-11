@@ -34,6 +34,13 @@ export type CaseStudyVideoData = Readonly<{
   thumbnail: CaseStudyMediaData | null;
 }>;
 
+export type CaseStudyChannelData = Readonly<{
+  href: string;
+  label: string;
+  blurb: string | null;
+  logo: CaseStudyMediaData;
+}>;
+
 export type CaseStudyPageData = Readonly<{
   slug: string;
   title: string;
@@ -48,6 +55,7 @@ export type CaseStudyPageData = Readonly<{
   hero: CaseStudyMediaData | null;
   media: readonly CaseStudyMediaData[];
   videos: readonly CaseStudyVideoData[];
+  channel: CaseStudyChannelData | null;
 }>;
 
 export type CaseStudyNavigationItem = Readonly<{
@@ -231,6 +239,33 @@ function normalizeVideos(
   });
 }
 
+/**
+ * The channel card, held to the same bar as a video: a real label, an https
+ * destination, and a logo that resolves to one of this project's own assets.
+ * Anything short of that and the card does not render at all, rather than
+ * rendering with a hole in it.
+ */
+function normalizeChannel(
+  project: CaseStudyProject,
+  assets: readonly CaseStudyMediaData[],
+): CaseStudyChannelData | null {
+  const channel = project.channel;
+  if (!channel) {
+    return null;
+  }
+
+  const label = normalizeOptionalText(channel.label);
+  const blurb = normalizeOptionalText(channel.blurb);
+  const href = channel.href.trim();
+  const logo = assets.find((asset) => asset.src === channel.logoPath.trim());
+
+  if (!label || !isSafeHttpsUrl(href) || logo?.kind !== "video-thumbnail") {
+    return null;
+  }
+
+  return { href, label, blurb, logo };
+}
+
 export function toCaseStudyPageData(
   project: CaseStudyProject,
 ): CaseStudyPageData {
@@ -259,6 +294,7 @@ export function toCaseStudyPageData(
       (asset) => asset.kind !== "hero" && asset.kind !== "video-thumbnail",
     ),
     videos: normalizeVideos(project, assets),
+    channel: normalizeChannel(project, assets),
   };
 }
 

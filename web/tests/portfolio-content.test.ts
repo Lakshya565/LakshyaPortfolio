@@ -337,7 +337,7 @@ describe("portfolio content validation", () => {
     });
 
     expect(issues).toContain(
-      "projects.repoframe: video-thumbnail asset is not assigned to a video (/media/projects/repoframe/architecture-fixture.svg)",
+      "projects.repoframe: video-thumbnail asset is not assigned to a video or channel (/media/projects/repoframe/architecture-fixture.svg)",
     );
   });
 
